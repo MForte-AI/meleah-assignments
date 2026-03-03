@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Drag & Sort Words 🔀</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --purple: #7C5CBF; --purple-light: #EDE8F8;
+    --teal: #1E8A8A; --teal-light: #E6F4F4;
+    --gold: #F4A62A; --green: #4CAF50; --green-light: #E8F5E9;
+    --coral: #E8643A; --coral-light: #FCEEE8;
+    --bg: #FFF8F0; --card: #FFFFFF; --text: #2C2C2C;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, var(--teal), #157070); color: white; padding: 20px 24px 60px; text-align: center; position: relative; }
+  .header::after { content:''; position:absolute; bottom:-28px; left:0; right:0; height:56px; background:var(--bg); border-radius:50% 50% 0 0 / 40px 40px 0 0; }
+  .header-title { font-size: 22px; font-weight: 900; }
+  .header-sub { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+
+  .game { padding: 16px 20px 40px; max-width: 520px; margin: 0 auto; }
+
+  /* Score / progress */
+  .score-row { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 14px; font-weight: 800; color: #888; }
+  .score-row .val { color: var(--teal); font-size: 18px; }
+
+  /* Word pool */
+  .pool-label { font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+  .word-pool {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    background: white; border-radius: 16px; padding: 14px;
+    min-height: 60px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 20px; border: 2px dashed #DDD;
+    transition: border-color 0.2s;
+  }
+  .word-pool.drag-over { border-color: var(--teal); background: var(--teal-light); }
+
+  .word-chip {
+    background: var(--purple-light); border: 2px solid var(--purple);
+    border-radius: 10px; padding: 10px 16px; font-size: 18px; font-weight: 800;
+    color: var(--purple); cursor: grab; user-select: none;
+    transition: all 0.2s; touch-action: none;
+  }
+  .word-chip:active { cursor: grabbing; transform: scale(0.97); }
+  .word-chip.dragging { opacity: 0.4; }
+  .word-chip.correct-placed { background: var(--green-light); border-color: var(--green); color: var(--green); cursor: default; }
+  .word-chip.wrong-flash { animation: shake 0.3s ease; background: var(--coral-light); border-color: var(--coral); }
+
+  /* Sort buckets */
+  .buckets { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .bucket {
+    background: white; border-radius: 16px; padding: 14px;
+    min-height: 100px; border: 3px solid #EEE;
+    transition: all 0.2s; display: flex; flex-direction: column; gap: 6px;
+  }
+  .bucket.drag-over { border-color: var(--teal); background: var(--teal-light); transform: scale(1.02); }
+  .bucket-label { font-size: 14px; font-weight: 900; color: var(--teal); margin-bottom: 6px; padding-bottom: 8px; border-bottom: 2px solid #EEE; }
+  .bucket-word { font-size: 16px; font-weight: 800; color: var(--green); }
+
+  @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} 100%{transform:translateX(0)} }
+  @keyframes pop  { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+
+  /* Feedback */
+  .feedback { text-align: center; font-size: 16px; font-weight: 900; margin: 8px 0; height: 24px; transition: opacity 0.3s; }
+  .feedback.correct-flash { color: var(--green); }
+  .feedback.wrong-flash   { color: var(--coral); }
+
+  /* Complete */
+  .complete-screen { display: none; text-align: center; padding: 40px 24px; }
+  .complete-screen.visible { display: block; }
+  .complete-emoji { font-size: 72px; margin-bottom: 12px; }
+  .complete-title { font-size: 28px; font-weight: 900; color: var(--teal); margin-bottom: 8px; }
+  .complete-sub { font-size: 16px; color: #666; margin-bottom: 12px; }
+  .coins-earned { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 24px; }
+  .play-again-btn { background: var(--teal); color: white; border: none; border-radius: 16px; padding: 16px 32px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; cursor: pointer; }
+
+  .loading { text-align: center; padding: 60px 20px; font-size: 16px; color: #888; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🔀 Drag & Sort Words</div>
+  <div class="header-sub" id="headerSub">Loading your words...</div>
+</div>
+
+<div id="gameArea" class="game"></div>
+
+<div class="complete-screen" id="completeScreen">
+  <div class="complete-emoji">🏆</div>
+  <div class="complete-title">Amazing Sorting!</div>
+  <div class="complete-sub" id="completeMsg"></div>
+  <div class="coins-earned" id="coinsMsg">🪙 +5 coins earned!</div>
+  <button class="play-again-btn" onclick="startGame()">Play Again 🔄</button>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+const USER_ID = 'meleah';
+const COINS_PER_GAME = 5;
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let words = [];
+let categories = [];  // [{label, words[]}, {label, words[]}]
+let remaining = [];   // words not yet sorted
+let score = 0;
+let total = 0;
+let dragWord = null;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+// ── Auto-categorize words by ending pattern ──
+function autoCategories(wordList) {
+  // Try to split by detecting common ending patterns
+  // Look at the last 2 characters of each word and group
+  const patternMap = {};
+  wordList.forEach(w => {
+    const ending = w.slice(-2);
+    if (!patternMap[ending]) patternMap[ending] = [];
+    patternMap[ending].push(w);
+  });
+  // Take top 2 patterns by count
+  const topPatterns = Object.entries(patternMap)
+    .sort((a, b) => b[1].length - a[1].length)
+    .slice(0, 2);
+  if (topPatterns.length >= 2) {
+    return [
+      { label: `"${topPatterns[0][0]}" words`, words: topPatterns[0][1] },
+      { label: `"${topPatterns[1][0]}" words`, words: topPatterns[1][1] },
+    ];
+  }
+  // Fallback: split in half
+  const half = Math.ceil(wordList.length / 2);
+  return [
+    { label: 'Group A', words: wordList.slice(0, half) },
+    { label: 'Group B', words: wordList.slice(half) },
+  ];
+}
+
+async function loadWords() {
+  const params = new URLSearchParams(window.location.search);
+  const weekId = params.get('week');
+  const day    = params.get('day') || 'monday';
+  if (!weekId) { document.getElementById('gameArea').innerHTML = '<div class="loading">❌ No week in URL.</div>'; return; }
+  try {
+    const { data } = await db.from('meleah_daily_assignments')
+      .select('word_list').eq('week_id', weekId).eq('day_of_week', day).eq('track', 'reading').maybeSingle();
+    const raw = data?.word_list || '';
+    words = raw.split(',').map(w => w.trim()).filter(Boolean);
+    if (words.length < 4) { document.getElementById('gameArea').innerHTML = '<div class="loading">📋 Not enough words yet — check back after Melissa publishes the plan!</div>'; return; }
+    document.getElementById('headerSub').textContent = `Sort ${words.length} words into groups!`;
+    startGame();
+  } catch(e) {
+    document.getElementById('gameArea').innerHTML = '<div class="loading">❌ Could not load words.</div>';
+  }
+}
+
+function startGame() {
+  document.getElementById('completeScreen').classList.remove('visible');
+  document.getElementById('gameArea').style.display = 'block';
+  categories = autoCategories(shuffle(words));
+  remaining = shuffle(words);
+  score = 0;
+  total = words.length;
+  renderGame();
+}
+
+function renderGame() {
+  const placed = total - remaining.length;
+  document.getElementById('gameArea').innerHTML = `
+    <div class="score-row">
+      <div>Sorted: <span class="val">${placed}/${total}</span></div>
+      <div>⭐ ${score} correct</div>
+    </div>
+
+    <div class="pool-label">Word Pool — drag a word to the right box</div>
+    <div class="word-pool" id="pool"
+      ondragover="onDragOverPool(event)" ondrop="onDropPool(event)"
+      ontouchend="onTouchEndPool(event)">
+      ${remaining.map(w => `
+        <div class="word-chip" draggable="true" data-word="${w}"
+          ondragstart="onDragStart(event,'${w}')"
+          ontouchstart="onTouchStart(event,'${w}')"
+          ontouchmove="onTouchMove(event)"
+          ontouchend="onTouchEndChip(event,'${w}')">
+          ${w}
+        </div>`).join('')}
+    </div>
+
+    <div class="buckets">
+      ${categories.map((cat, i) => `
+        <div class="bucket" id="bucket-${i}"
+          ondragover="onDragOver(event,${i})" ondrop="onDrop(event,${i})"
+          ontouchend="onTouchEndBucket(event,${i})">
+          <div class="bucket-label">${cat.label}</div>
+          ${cat.words.filter(w => !remaining.includes(w) && !words.includes(w) || !remaining.includes(w) && placedCorrectly.includes(w + ':' + i)).map(w => `<div class="bucket-word">✅ ${w}</div>`).join('')}
+        </div>`).join('')}
+    </div>
+
+    <div class="feedback" id="feedback">&nbsp;</div>
+    <div style="text-align:center;font-size:13px;color:#888;font-weight:700">Drag words from the pool into the box they belong in!</div>
+  `;
+}
+
+// Track correctly placed words with their bucket index
+let placedCorrectly = []; // "word:bucketIndex"
+
+// ── Desktop drag ──
+function onDragStart(e, word) { dragWord = word; e.dataTransfer.effectAllowed = 'move'; }
+function onDragOver(e, bucket) { e.preventDefault(); document.getElementById('bucket-' + bucket)?.classList.add('drag-over'); }
+function onDragOverPool(e) { e.preventDefault(); document.getElementById('pool')?.classList.add('drag-over'); }
+function onDrop(e, bucketIdx) {
+  e.preventDefault();
+  document.querySelectorAll('.bucket').forEach(b => b.classList.remove('drag-over'));
+  if (dragWord) handlePlace(dragWord, bucketIdx);
+}
+function onDropPool(e) { e.preventDefault(); document.getElementById('pool')?.classList.remove('drag-over'); dragWord = null; }
+
+// ── Touch drag (mobile) ──
+let touchWord = null;
+let touchGhost = null;
+function onTouchStart(e, word) { touchWord = word; }
+function onTouchMove(e) { if (!touchWord) return; e.preventDefault(); }
+function onTouchEndChip(e, word) { touchWord = word; }
+function onTouchEndBucket(e, bucketIdx) {
+  if (touchWord) { handlePlace(touchWord, bucketIdx); touchWord = null; }
+}
+function onTouchEndPool(e) { touchWord = null; }
+
+// ── Core: handle a word being placed in a bucket ──
+function handlePlace(word, bucketIdx) {
+  const isCorrect = categories[bucketIdx].words.includes(word);
+  const idx = remaining.indexOf(word);
+  const feedback = document.getElementById('feedback');
+
+  if (isCorrect) {
+    if (idx !== -1) remaining.splice(idx, 1);
+    placedCorrectly.push(word + ':' + bucketIdx);
+    score++;
+    feedback.textContent = `✅ "${word}" goes in ${categories[bucketIdx].label}! Nice!`;
+    feedback.className = 'feedback correct-flash';
+    // Add word to bucket display immediately
+    const bucket = document.getElementById('bucket-' + bucketIdx);
+    if (bucket) {
+      const div = document.createElement('div');
+      div.className = 'bucket-word';
+      div.textContent = '✅ ' + word;
+      bucket.appendChild(div);
+    }
+    // Remove from pool
+    document.querySelector(`.word-chip[data-word="${word}"]`)?.remove();
+    if (remaining.length === 0) { setTimeout(endGame, 800); return; }
+  } else {
+    feedback.textContent = `❌ Try the other box for "${word}"!`;
+    feedback.className = 'feedback wrong-flash';
+    const chip = document.querySelector(`.word-chip[data-word="${word}"]`);
+    if (chip) { chip.classList.add('wrong-flash'); setTimeout(() => chip.classList.remove('wrong-flash'), 400); }
+  }
+  dragWord = null;
+}
+
+async function endGame() {
+  document.getElementById('gameArea').style.display = 'none';
+  const screen = document.getElementById('completeScreen');
+  screen.classList.add('visible');
+  const pct = Math.round((score / total) * 100);
+  document.getElementById('completeMsg').textContent = `You sorted ${score} of ${total} words correctly (${pct}%)!`;
+  document.getElementById('coinsMsg').textContent = `🪙 +${COINS_PER_GAME} coins earned!`;
+  try {
+    const genId = () => Math.random().toString(36).slice(2);
+    await db.from('meleah_coin_history').insert({ id: genId(), user_id: USER_ID, amount: COINS_PER_GAME, reason: `Drag & Sort activity 🔀 (${pct}%)`, timestamp: new Date().toISOString() });
+    const { data: st } = await db.from('meleah_state').select('coins_total').eq('user_id', USER_ID).maybeSingle();
+    if (st) await db.from('meleah_state').update({ coins_total: (st.coins_total || 0) + COINS_PER_GAME }).eq('user_id', USER_ID);
+  } catch(e) { console.warn('Coins error', e); }
+}
+
+loadWords();
+</script>
+</body>
+</html>
