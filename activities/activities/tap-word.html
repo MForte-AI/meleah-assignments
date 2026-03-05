@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tap the Right Word 👆</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --purple: #7C5CBF; --purple-light: #EDE8F8;
+    --gold: #F4A62A; --green: #4CAF50; --green-light: #E8F5E9;
+    --coral: #E8643A; --coral-light: #FCEEE8;
+    --bg: #FFF8F0; --card: #FFFFFF; --text: #2C2C2C;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  .header {
+    background: linear-gradient(135deg, var(--purple), #5A3D9E);
+    color: white; padding: 20px 24px 60px; text-align: center; position: relative;
+  }
+  .header::after { content:''; position:absolute; bottom:-28px; left:0; right:0; height:56px; background:var(--bg); border-radius:50% 50% 0 0 / 40px 40px 0 0; }
+  .header-title { font-size: 22px; font-weight: 900; }
+  .header-sub { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+
+  .game { flex: 1; padding: 12px 20px 32px; max-width: 500px; margin: 0 auto; width: 100%; }
+
+  /* Progress bar */
+  .progress-bar { background: #EEE; border-radius: 20px; height: 10px; margin: 16px 0; overflow: hidden; }
+  .progress-fill { background: var(--purple); height: 100%; border-radius: 20px; transition: width 0.4s ease; }
+  .progress-label { font-size: 12px; font-weight: 800; color: #888; text-align: center; margin-bottom: 16px; }
+
+  /* Target word */
+  .target-card {
+    background: var(--card); border-radius: var(--radius); padding: 24px;
+    text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.1); margin-bottom: 20px;
+  }
+  .listen-label { font-size: 12px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .listen-btn {
+    background: var(--purple-light); border: 3px solid var(--purple); border-radius: 16px;
+    padding: 16px 28px; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900;
+    color: var(--purple); cursor: pointer; transition: all 0.2s; display: inline-block;
+  }
+  .listen-btn:active { background: var(--purple); color: white; transform: scale(0.97); }
+  .listen-hint { font-size: 12px; color: #888; margin-top: 8px; font-weight: 700; }
+
+  /* Choices */
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .choice-btn {
+    background: var(--card); border: 3px solid #E0E0E0; border-radius: 16px;
+    padding: 18px 12px; font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 900;
+    color: var(--text); cursor: pointer; transition: all 0.2s; min-height: 70px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .choice-btn:active { transform: scale(0.95); }
+  .choice-btn.correct { background: var(--green-light); border-color: var(--green); color: var(--green); animation: pop 0.3s ease; }
+  .choice-btn.wrong { background: var(--coral-light); border-color: var(--coral); color: var(--coral); animation: shake 0.3s ease; }
+  .choice-btn:disabled { cursor: not-allowed; }
+
+  @keyframes pop  { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} 100%{transform:translateX(0)} }
+
+  /* Score display */
+  .score-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 800; color: #888; margin-bottom: 16px; }
+  .score-row span { color: var(--purple); font-size: 18px; }
+
+  /* Feedback flash */
+  .feedback { height: 28px; text-align: center; font-size: 16px; font-weight: 900; transition: opacity 0.3s; }
+  .feedback.correct-flash { color: var(--green); }
+  .feedback.wrong-flash   { color: var(--coral); }
+
+  /* Completion screen */
+  .complete-screen {
+    display: none; text-align: center; padding: 32px 20px;
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1); margin: 20px;
+  }
+  .complete-screen.visible { display: block; }
+  .complete-emoji { font-size: 72px; margin-bottom: 12px; }
+  .complete-title { font-size: 28px; font-weight: 900; color: var(--purple); margin-bottom: 8px; }
+  .complete-sub { font-size: 16px; color: #666; margin-bottom: 20px; }
+  .coins-earned { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 24px; }
+  .play-again-btn {
+    background: var(--purple); color: white; border: none; border-radius: 16px;
+    padding: 16px 32px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .play-again-btn:active { transform: scale(0.95); opacity: 0.9; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 60px 20px; font-size: 16px; color: #888; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">👆 Tap the Right Word</div>
+  <div class="header-sub" id="headerSub">Loading...</div>
+</div>
+
+<div class="game" id="gameArea">
+  <div class="loading">⏳ Loading your words...</div>
+</div>
+
+<div class="complete-screen" id="completeScreen">
+  <div class="complete-emoji">🌟</div>
+  <div class="complete-title">You Did It!</div>
+  <div class="complete-sub" id="completeMsg"></div>
+  <div class="coins-earned" id="coinsMsg"></div>
+  <button class="play-again-btn" onclick="startGame()">Play Again 🔄</button>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+const USER_ID = 'meleah';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const COINS_PER_GAME = 5;
+const ROUNDS = 10;
+
+let words = [];
+let deck = [];
+let currentIndex = 0;
+let score = 0;
+let answerLocked = false;
+
+// ── Load words from Supabase ──
+async function loadWords() {
+  const params = new URLSearchParams(window.location.search);
+  const weekId = params.get('week');
+  const day    = params.get('day') || 'monday';
+
+  if (!weekId) {
+    document.getElementById('gameArea').innerHTML = '<div class="loading">❌ No week in URL. Open from the weekly plan.</div>';
+    return;
+  }
+
+  try {
+    const { data } = await db.from('meleah_daily_assignments')
+      .select('word_list, week_id')
+      .eq('week_id', weekId)
+      .eq('day_of_week', day)
+      .eq('track', 'reading')
+      .maybeSingle();
+
+    const raw = data?.word_list || '';
+    words = raw.split(',').map(w => w.trim()).filter(Boolean);
+
+    if (words.length < 4) {
+      document.getElementById('gameArea').innerHTML = '<div class="loading">📋 Not enough words yet — Melissa is still adding the word list. Check back later!</div>';
+      return;
+    }
+
+    document.getElementById('headerSub').textContent = `${words.length} words · ${ROUNDS} rounds`;
+    startGame();
+  } catch(e) {
+    document.getElementById('gameArea').innerHTML = '<div class="loading">❌ Could not load words. Check internet and try again.</div>';
+  }
+}
+
+// ── Fisher-Yates shuffle ──
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── Build deck of rounds ──
+function startGame() {
+  document.getElementById('completeScreen').classList.remove('visible');
+  document.getElementById('gameArea').style.display = 'block';
+  deck = shuffle(words).slice(0, Math.min(ROUNDS, words.length));
+  currentIndex = 0;
+  score = 0;
+  showRound();
+}
+
+// ── Render a round ──
+function showRound() {
+  if (currentIndex >= deck.length) { endGame(); return; }
+
+  const target = deck[currentIndex];
+  const progress = (currentIndex / deck.length) * 100;
+  answerLocked = false;
+
+  // Build 3 wrong choices from the rest of the word list
+  const others = shuffle(words.filter(w => w !== target)).slice(0, 3);
+  const choices = shuffle([target, ...others]);
+
+  document.getElementById('gameArea').innerHTML = `
+    <div class="score-row">
+      <div>Round ${currentIndex + 1} / ${deck.length}</div>
+      <div>Score: <span>${score}</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+    <div class="progress-label">${deck.length - currentIndex} words to go</div>
+
+    <div class="target-card">
+      <div class="listen-label">Listen carefully, then tap the word you hear</div>
+      <button class="listen-btn" onclick="speakWord('${target.replace(/'/g, "\\'")}')">🔊 Hear Word</button>
+      <div class="listen-hint">Tap the speaker to hear the word again</div>
+    </div>
+
+    <div class="choices" id="choices">
+      ${choices.map(w => `
+        <button class="choice-btn" onclick="checkAnswer('${w.replace(/'/g, "\\'")}', '${target.replace(/'/g, "\\'")}', this)">
+          ${w}
+        </button>`).join('')}
+    </div>
+    <div class="feedback" id="feedback">&nbsp;</div>
+  `;
+
+  // Auto-speak after short delay
+  setTimeout(() => speakWord(target), 600);
+}
+
+// ── Speak a word ──
+function speakWord(word) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(word);
+  utt.rate = 0.85;
+  utt.pitch = 1.1;
+  window.speechSynthesis.speak(utt);
+}
+
+// ── Check answer ──
+function checkAnswer(chosen, target, btn) {
+  if (answerLocked) return;
+  answerLocked = true;
+
+  const allBtns = document.querySelectorAll('.choice-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  const feedback = document.getElementById('feedback');
+  if (chosen === target) {
+    btn.classList.add('correct');
+    feedback.textContent = '✅ Yes! Great reading!';
+    feedback.className = 'feedback correct-flash';
+    score++;
+    speakWord('Great job!');
+  } else {
+    btn.classList.add('wrong');
+    feedback.textContent = `❌ The word was "${target}" — try again next round!`;
+    feedback.className = 'feedback wrong-flash';
+    // Highlight correct answer
+    allBtns.forEach(b => { if (b.textContent.trim() === target) b.classList.add('correct'); });
+  }
+
+  setTimeout(() => {
+    currentIndex++;
+    showRound();
+  }, 1400);
+}
+
+// ── End game ──
+async function endGame() {
+  document.getElementById('gameArea').style.display = 'none';
+  const screen = document.getElementById('completeScreen');
+  screen.classList.add('visible');
+
+  const pct = Math.round((score / deck.length) * 100);
+  const emoji = pct >= 80 ? '🌟' : pct >= 60 ? '👍' : '💪';
+  screen.querySelector('.complete-emoji').textContent = emoji;
+  document.getElementById('completeMsg').textContent = `You got ${score} out of ${deck.length} right (${pct}%)!`;
+  document.getElementById('coinsMsg').textContent = `🪙 +${COINS_PER_GAME} coins earned!`;
+
+  // Award coins in Supabase
+  try {
+    const genId = () => Math.random().toString(36).slice(2);
+    await db.from('meleah_coin_history').insert({
+      id: genId(),
+      user_id: USER_ID,
+      amount: COINS_PER_GAME,
+      reason: `Tap the Word activity 👆 (${pct}%)`,
+      timestamp: new Date().toISOString(),
+    });
+    // Also increment total coins
+    const { data: st } = await db.from('meleah_state').select('coins_total').eq('user_id', USER_ID).maybeSingle();
+    if (st) {
+      await db.from('meleah_state').update({ coins_total: (st.coins_total || 0) + COINS_PER_GAME }).eq('user_id', USER_ID);
+    }
+  } catch(e) {
+    console.warn('Could not award coins:', e);
+  }
+}
+
+loadWords();
+</script>
+</body>
+</html>

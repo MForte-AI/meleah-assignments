@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Spell It Out! 🔤</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --purple: #7C5CBF; --purple-light: #EDE8F8;
+    --gold: #F4A62A; --green: #4CAF50; --green-light: #E8F5E9;
+    --coral: #E8643A; --coral-light: #FCEEE8;
+    --teal: #1E8A8A; --bg: #FFF8F0; --text: #2C2C2C;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, var(--gold), #E8940A); color: white; padding: 20px 24px 60px; text-align: center; position: relative; }
+  .header::after { content:''; position:absolute; bottom:-28px; left:0; right:0; height:56px; background:var(--bg); border-radius:50% 50% 0 0 / 40px 40px 0 0; }
+  .header-title { font-size: 22px; font-weight: 900; }
+  .header-sub { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+
+  .game { padding: 16px 20px 40px; max-width: 480px; margin: 0 auto; }
+
+  /* Progress */
+  .progress-row { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 14px; font-weight: 800; color: #888; }
+  .progress-row .val { color: var(--gold); font-size: 18px; }
+  .progress-bar { background: #EEE; border-radius: 20px; height: 10px; margin-bottom: 20px; overflow: hidden; }
+  .progress-fill { background: var(--gold); height: 100%; border-radius: 20px; transition: width 0.4s ease; }
+
+  /* Hear button */
+  .hear-card { background: white; border-radius: var(--radius); padding: 24px; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.1); margin-bottom: 20px; }
+  .hear-btn { background: var(--gold); color: white; border: none; border-radius: 16px; padding: 18px 36px; font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 900; cursor: pointer; transition: all 0.2s; }
+  .hear-btn:active { transform: scale(0.95); opacity: 0.9; }
+  .hear-hint { font-size: 13px; color: #888; margin-top: 10px; font-weight: 700; }
+
+  /* Letter boxes display */
+  .letter-boxes { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .letter-box {
+    width: 44px; height: 52px;
+    border-bottom: 3px solid var(--purple);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 900; color: var(--purple);
+    transition: all 0.2s;
+  }
+  .letter-box.filled { border-bottom-color: var(--purple); }
+  .letter-box.cursor { border-bottom-color: var(--gold); background: var(--gold-light); border-radius: 8px 8px 0 0; }
+  .letter-box.correct { color: var(--green); border-bottom-color: var(--green); }
+  .letter-box.wrong   { color: var(--coral); border-bottom-color: var(--coral); animation: shake 0.3s ease; }
+
+  /* Input (hidden, for keyboard on mobile) */
+  .hidden-input { position: absolute; left: -9999px; opacity: 0; width: 1px; height: 1px; }
+
+  /* On-screen keyboard (for devices where keyboard doesn't auto-open) */
+  .soft-keyboard { background: white; border-radius: 16px; padding: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 14px; }
+  .key-row { display: flex; justify-content: center; gap: 5px; margin-bottom: 5px; }
+  .key-btn {
+    width: 36px; height: 42px;
+    background: #F5F5F5; border: 1px solid #DDD; border-radius: 8px;
+    font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800;
+    cursor: pointer; transition: all 0.15s; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .key-btn:active { background: var(--purple); color: white; transform: scale(0.92); }
+  .key-btn.backspace { width: 52px; background: var(--coral-light); color: var(--coral); font-size: 18px; }
+  .key-btn.submit-key { flex: 1; background: var(--purple); color: white; font-size: 14px; height: 42px; border-radius: 10px; }
+
+  /* Feedback */
+  .feedback { text-align: center; font-size: 16px; font-weight: 900; margin: 10px 0; height: 24px; }
+  .feedback.correct-flash { color: var(--green); }
+  .feedback.wrong-flash   { color: var(--coral); }
+
+  @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} 100%{transform:translateX(0)} }
+
+  /* Submit button */
+  .submit-btn { width: 100%; background: var(--purple); color: white; border: none; border-radius: 16px; padding: 16px; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; }
+  .submit-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+  /* Complete */
+  .complete-screen { display: none; text-align: center; padding: 40px 24px; }
+  .complete-screen.visible { display: block; }
+  .complete-emoji { font-size: 72px; margin-bottom: 12px; }
+  .complete-title { font-size: 28px; font-weight: 900; color: var(--gold); margin-bottom: 8px; }
+  .complete-sub { font-size: 16px; color: #666; margin-bottom: 12px; }
+  .coins-earned { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 24px; }
+  .play-again-btn { background: var(--gold); color: white; border: none; border-radius: 16px; padding: 16px 32px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; cursor: pointer; }
+
+  .loading { text-align: center; padding: 60px 20px; font-size: 16px; color: #888; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🔤 Spell It Out!</div>
+  <div class="header-sub" id="headerSub">Loading your words...</div>
+</div>
+
+<div id="gameArea" class="game"></div>
+
+<div class="complete-screen" id="completeScreen">
+  <div class="complete-emoji">✏️</div>
+  <div class="complete-title">Super Speller!</div>
+  <div class="complete-sub" id="completeMsg"></div>
+  <div class="coins-earned">🪙 +5 coins earned!</div>
+  <button class="play-again-btn" onclick="startGame()">Spell More! 🔄</button>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+const USER_ID = 'meleah';
+const COINS_PER_GAME = 5;
+const ROUNDS = 8;
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let words = [], deck = [], currentIndex = 0, score = 0;
+let typed = '';
+
+function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; }
+
+async function loadWords() {
+  const params = new URLSearchParams(window.location.search);
+  const weekId = params.get('week');
+  const day    = params.get('day') || 'monday';
+  if (!weekId) { document.getElementById('gameArea').innerHTML = '<div class="loading">❌ No week in URL.</div>'; return; }
+  try {
+    const { data } = await db.from('meleah_daily_assignments').select('word_list').eq('week_id', weekId).eq('day_of_week', day).eq('track', 'reading').maybeSingle();
+    words = (data?.word_list || '').split(',').map(w => w.trim()).filter(Boolean);
+    if (words.length < 2) { document.getElementById('gameArea').innerHTML = '<div class="loading">📋 No words yet — Melissa is still adding the word list!</div>'; return; }
+    document.getElementById('headerSub').textContent = `Spell ${Math.min(ROUNDS, words.length)} words correctly!`;
+    startGame();
+  } catch(e) { document.getElementById('gameArea').innerHTML = '<div class="loading">❌ Could not load words.</div>'; }
+}
+
+function startGame() {
+  document.getElementById('completeScreen').classList.remove('visible');
+  document.getElementById('gameArea').style.display = 'block';
+  deck = shuffle(words).slice(0, Math.min(ROUNDS, words.length));
+  currentIndex = 0; score = 0;
+  showRound();
+}
+
+function showRound() {
+  if (currentIndex >= deck.length) { endGame(); return; }
+  const target = deck[currentIndex];
+  typed = '';
+  const pct = (currentIndex / deck.length) * 100;
+
+  document.getElementById('gameArea').innerHTML = `
+    <div class="progress-row">
+      <div>Word ${currentIndex + 1} / ${deck.length}</div>
+      <div>✅ <span class="val">${score}</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+
+    <div class="hear-card">
+      <button class="hear-btn" onclick="speakWord('${target.replace(/'/g, "\\'")}')">🔊 Hear the Word</button>
+      <div class="hear-hint">Listen, then spell it out below!</div>
+    </div>
+
+    <div class="letter-boxes" id="letterBoxes">
+      ${Array.from({length: target.length}).map((_, i) =>
+        `<div class="letter-box" id="lb-${i}"></div>`).join('')}
+    </div>
+
+    <div class="soft-keyboard">
+      ${renderKeyboard()}
+    </div>
+
+    <button class="submit-btn" onclick="checkSpelling()">✅ Check My Spelling</button>
+    <div class="feedback" id="feedback">&nbsp;</div>
+
+    <input type="text" class="hidden-input" id="hiddenInput" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="onKeyDown(event)">
+  `;
+
+  // Auto-speak
+  setTimeout(() => speakWord(target), 500);
+
+  // Focus hidden input for real keyboard users
+  setTimeout(() => document.getElementById('hiddenInput')?.focus(), 100);
+}
+
+function renderKeyboard() {
+  const rows = [
+    ['q','w','e','r','t','y','u','i','o','p'],
+    ['a','s','d','f','g','h','j','k','l'],
+    ['z','x','c','v','b','n','m','⌫'],
+  ];
+  return rows.map(row => `
+    <div class="key-row">
+      ${row.map(k => k === '⌫'
+        ? `<button class="key-btn backspace" onclick="tapKey('BACK')">⌫</button>`
+        : `<button class="key-btn" onclick="tapKey('${k}')">${k}</button>`
+      ).join('')}
+    </div>`).join('') + `
+    <div class="key-row" style="margin-top:4px">
+      <button class="key-btn submit-key" onclick="checkSpelling()">✅ Check Spelling</button>
+    </div>`;
+}
+
+function tapKey(k) {
+  const target = deck[currentIndex];
+  if (k === 'BACK') {
+    if (typed.length > 0) typed = typed.slice(0, -1);
+  } else {
+    if (typed.length < target.length) typed += k;
+  }
+  updateBoxes();
+}
+
+function onKeyDown(e) {
+  const target = deck[currentIndex];
+  if (e.key === 'Enter') { checkSpelling(); return; }
+  if (e.key === 'Backspace') { if (typed.length > 0) typed = typed.slice(0, -1); updateBoxes(); return; }
+  if (e.key.length === 1 && /[a-zA-Z]/.test(e.key) && typed.length < target.length) {
+    typed += e.key.toLowerCase();
+    updateBoxes();
+  }
+}
+
+function updateBoxes() {
+  const target = deck[currentIndex];
+  for (let i = 0; i < target.length; i++) {
+    const box = document.getElementById('lb-' + i);
+    if (!box) continue;
+    box.textContent = typed[i] || '';
+    box.className = 'letter-box' + (i === typed.length ? ' cursor' : '') + (typed[i] ? ' filled' : '');
+  }
+}
+
+function speakWord(word) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(word);
+  utt.rate = 0.8; utt.pitch = 1.1;
+  window.speechSynthesis.speak(utt);
+}
+
+function checkSpelling() {
+  const target = deck[currentIndex];
+  if (typed.length === 0) { speakWord(target); return; }
+  const correct = typed.toLowerCase() === target.toLowerCase();
+  const feedback = document.getElementById('feedback');
+
+  // Color the boxes
+  for (let i = 0; i < target.length; i++) {
+    const box = document.getElementById('lb-' + i);
+    if (!box) continue;
+    if (correct) {
+      box.className = 'letter-box correct';
+    } else {
+      box.className = 'letter-box wrong';
+      box.textContent = typed[i] || '_';
+    }
+  }
+
+  if (correct) {
+    feedback.textContent = '✅ Perfect spelling! 🌟';
+    feedback.className = 'feedback correct-flash';
+    score++;
+    speakWord('Great job!');
+  } else {
+    feedback.textContent = `❌ The word is "${target}" — let's try the next one!`;
+    feedback.className = 'feedback wrong-flash';
+  }
+
+  setTimeout(() => { currentIndex++; showRound(); }, 1600);
+}
+
+async function endGame() {
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('completeScreen').classList.add('visible');
+  const pct = Math.round((score / deck.length) * 100);
+  document.getElementById('completeMsg').textContent = `You spelled ${score} of ${deck.length} words correctly (${pct}%)!`;
+  try {
+    const genId = () => Math.random().toString(36).slice(2);
+    await db.from('meleah_coin_history').insert({ id: genId(), user_id: USER_ID, amount: COINS_PER_GAME, reason: `Spell It Out! 🔤 (${pct}%)`, timestamp: new Date().toISOString() });
+    const { data: st } = await db.from('meleah_state').select('coins_total').eq('user_id', USER_ID).maybeSingle();
+    if (st) await db.from('meleah_state').update({ coins_total: (st.coins_total || 0) + COINS_PER_GAME }).eq('user_id', USER_ID);
+  } catch(e) { console.warn('Coins error', e); }
+}
+
+loadWords();
+</script>
+</body>
+</html>
