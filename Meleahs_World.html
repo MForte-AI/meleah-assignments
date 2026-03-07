@@ -1,1 +1,3825 @@
-âœ¨ MELEAH'S WORLD Good morning, Meleah! âš™ï¸ ðŸ  Today ðŸ“‹ Week ðŸª™ My Coins â­ Streaks ðŸ’­ Journal ðŸ‘©â€ðŸ’¼ Melissa ðŸ“… Calendar ðŸ· MY COINS 0 Keep going! ðŸŒŸ ðŸ“‹ My 3 Things Today ðŸ“š My Learning Tracks âœ… My Own To-Do's 0 / 5 + Add a To-Do ðŸŽ¯ My Goals ðŸ’­ End of Day ðŸ’­ How did today go? Add a To-Do âœ… Pick an emoji and type what you want to do! What do you want to do? ðŸª™ You earn 2 coins when you check it off! Add it! âœ¨ How did today go? ðŸ’­ Pick how you feel, then write or talk about your day. Tell me about your day... ðŸŽ™ï¸ Speak it! Tap to dictate your journal Save My Entry ðŸ’• ðŸ“… Monday, March 3
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meleah's World">
+<title>Meleah's World 🌟</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<style>
+  :root {
+    --purple: #7C5CBF;
+    --purple-light: #EDE8F8;
+    --gold: #F4A62A;
+    --gold-light: #FEF3D8;
+    --teal: #1E8A8A;
+    --teal-light: #E6F4F4;
+    --coral: #E8643A;
+    --coral-light: #FCEEE8;
+    --green: #4CAF50;
+    --green-light: #E8F5E9;
+    --pink: #E91E8C;
+    --pink-light: #FCE4F3;
+    --bg: #FFF8F0;
+    --card: #FFFFFF;
+    --text: #2C2C2C;
+    --muted: #888;
+    --radius: 20px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 110px; }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, var(--purple) 0%, #5A3D9E 100%); padding: 28px 24px 24px; color: white; position: relative; overflow: hidden; }
+  .header::after { content: ''; position: absolute; bottom: -30px; left: 0; right: 0; height: 60px; background: var(--bg); border-radius: 50% 50% 0 0 / 40px 40px 0 0; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .app-title { font-size: 13px; font-weight: 700; opacity: 0.75; letter-spacing: 1.5px; text-transform: uppercase; }
+  .greeting { font-size: 28px; font-weight: 900; margin-top: 6px; line-height: 1.2; }
+  .date-str { font-size: 14px; opacity: 0.8; margin-top: 4px; font-weight: 600; }
+  .settings-btn { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+
+  /* MAIN AREAS */
+  .main { padding: 16px 20px; max-width: 600px; margin: 0 auto; }
+  .panel { display: none; padding: 16px 20px; max-width: 600px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* COIN CARD */
+  .coin-card { background: linear-gradient(135deg, var(--gold) 0%, #E8940A 100%); border-radius: var(--radius); padding: 22px 24px; color: white; box-shadow: 0 8px 32px rgba(244,166,42,0.35); display: flex; align-items: center; gap: 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .coin-card::before { content: '🪙'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 64px; opacity: 0.25; }
+  .coin-jar { font-size: 52px; line-height: 1; }
+  .coin-info { flex: 1; }
+  .coin-label { font-size: 13px; font-weight: 700; opacity: 0.85; text-transform: uppercase; letter-spacing: 1px; }
+  .coin-amount { font-size: 48px; font-weight: 900; line-height: 1.1; }
+  .coin-sub { font-size: 13px; opacity: 0.9; font-weight: 600; margin-top: 2px; }
+
+  /* SECTION HEADERS */
+  .section-header { font-size: 18px; font-weight: 900; color: var(--text); margin: 24px 0 12px; display: flex; align-items: center; gap: 8px; }
+  .section-header .icon { font-size: 22px; }
+  .section-header .badge { background: var(--purple-light); color: var(--purple); font-size: 13px; font-weight: 900; padding: 3px 10px; border-radius: 20px; margin-left: auto; }
+
+  /* MELISSA TASKS */
+  .task-grid { display: flex; flex-direction: column; gap: 12px; }
+  .task-card { background: var(--card); border-radius: var(--radius); padding: 16px 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); cursor: pointer; transition: all 0.25s ease; border: 3px solid transparent; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .task-card:active { transform: scale(0.97); }
+  .task-card.done { border-color: var(--green); background: var(--green-light); }
+  .task-card.done .task-name { text-decoration: line-through; opacity: 0.6; }
+  .task-check { width: 44px; height: 44px; border-radius: 50%; background: #F0F0F0; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; transition: all 0.3s; }
+  .task-card.done .task-check { background: var(--green); }
+  .task-body { flex: 1; }
+  .task-name { font-size: 17px; font-weight: 800; line-height: 1.3; }
+  .task-coins { font-size: 13px; font-weight: 700; color: var(--gold); margin-top: 2px; }
+  .task-badge { background: var(--gold-light); color: var(--gold); font-weight: 900; font-size: 14px; padding: 6px 12px; border-radius: 20px; white-space: nowrap; }
+
+  /* MY TO-DOs */
+  .todo-grid { display: flex; flex-direction: column; gap: 10px; }
+  .todo-card { background: var(--card); border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+  .todo-card:active { transform: scale(0.97); }
+  .todo-card.done { border-color: var(--teal); background: var(--teal-light); }
+  .todo-card.done .todo-text { text-decoration: line-through; opacity: 0.55; }
+  .todo-check { width: 38px; height: 38px; border-radius: 50%; background: #F0F0F0; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; transition: background 0.3s; }
+  .todo-card.done .todo-check { background: var(--teal); }
+  .todo-text { flex: 1; font-size: 16px; font-weight: 700; }
+  .todo-coins { font-size: 12px; color: var(--teal); font-weight: 800; }
+  .todo-del { background: none; border: none; font-size: 18px; color: #CCC; cursor: pointer; padding: 4px; flex-shrink: 0; }
+  .todo-del:active { color: var(--coral); }
+
+  .add-todo-btn { width: 100%; background: var(--purple-light); color: var(--purple); border: 2px dashed var(--purple); border-radius: 16px; padding: 14px; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 10px; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+  .add-todo-btn:active { background: var(--purple); color: white; }
+  .add-todo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* LEARNING TRACKS */
+  .tracks-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .track-card { background: var(--card); border-radius: 16px; padding: 16px 12px; text-align: center; box-shadow: var(--shadow); cursor: pointer; transition: all 0.25s; border: 3px solid transparent; -webkit-tap-highlight-color: transparent; }
+  .track-card:active { transform: scale(0.95); }
+  .track-card.done { border-color: var(--green); background: var(--green-light); }
+  .track-icon { font-size: 32px; margin-bottom: 8px; }
+  .track-name { font-size: 12px; font-weight: 800; line-height: 1.3; }
+  .track-coins { font-size: 11px; color: var(--gold); font-weight: 700; margin-top: 3px; }
+  .track-streak { font-size: 11px; font-weight: 800; color: var(--coral); margin-top: 4px; }
+
+  /* GOALS */
+  .goal-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .goal-title { font-size: 16px; font-weight: 900; }
+  .goal-amount { font-size: 14px; font-weight: 800; color: var(--purple); }
+  .goal-bar-bg { background: #F0F0F0; border-radius: 12px; height: 16px; overflow: hidden; }
+  .goal-bar-fill { height: 100%; border-radius: 12px; transition: width 0.6s ease; min-width: 8px; }
+  .goal-bar-fill.quick { background: linear-gradient(90deg, var(--teal), #2EC4B6); }
+  .goal-bar-fill.dream { background: linear-gradient(90deg, var(--purple), var(--coral)); }
+  .goal-meta { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 6px; }
+
+  /* JOURNAL BUTTON */
+  .journal-trigger { width: 100%; background: linear-gradient(135deg, var(--pink), #C2185B); color: white; border: none; border-radius: var(--radius); padding: 18px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 24px rgba(233,30,140,0.3); margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; -webkit-tap-highlight-color: transparent; }
+  .journal-trigger:active { transform: scale(0.98); opacity: 0.9; }
+
+  /* COMPLETE BANNER */
+  .complete-banner { background: linear-gradient(135deg, var(--green), #2E7D32); color: white; border-radius: var(--radius); padding: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(76,175,80,0.3); display: none; }
+  .complete-banner.visible { display: block; }
+  .complete-banner h3 { font-size: 20px; font-weight: 900; }
+  .complete-banner p { font-size: 14px; opacity: 0.9; margin-top: 4px; font-weight: 600; }
+
+  /* FLYING COINS */
+  .coin-fly { position: fixed; font-size: 28px; pointer-events: none; z-index: 9999; animation: flyUp 1.2s ease-out forwards; }
+  @keyframes flyUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 60% { transform: translateY(-180px) scale(1.3); opacity: 1; } 100% { transform: translateY(-280px) scale(0.5); opacity: 0; } }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #EEE; display: flex; padding: 8px 0 env(safe-area-inset-bottom, 8px); box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 100; }
+  .nav-btn { flex: 1; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0; -webkit-tap-highlight-color: transparent; }
+  .nav-btn:active { transform: scale(0.9); }
+  .nav-icon { font-size: 22px; }
+  .nav-label { font-size: 10px; font-weight: 800; color: var(--muted); }
+  .nav-btn.active .nav-label { color: var(--purple); }
+
+  /* STREAK / PROGRESS */
+  .streak-row { display: flex; gap: 8px; justify-content: space-between; }
+  .streak-day { flex: 1; text-align: center; }
+  .streak-label { font-size: 11px; font-weight: 800; color: var(--muted); margin-bottom: 4px; }
+  .streak-dot { width: 100%; aspect-ratio: 1; border-radius: 50%; background: #F0F0F0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .streak-dot.completed { background: var(--purple); }
+  .streak-dot.today-empty { border: 3px dashed var(--purple); background: transparent; }
+
+  /* HISTORY */
+  .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--card); border-radius: 14px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .history-task { font-size: 14px; font-weight: 700; }
+  .history-date { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .history-coins { font-size: 15px; font-weight: 900; color: var(--gold); }
+
+  /* MELISSA VIEW */
+  .melissa-section { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .melissa-section h3 { font-size: 16px; font-weight: 900; margin-bottom: 14px; color: var(--purple); display: flex; align-items: center; gap: 8px; }
+  .input-group { margin-bottom: 14px; }
+  .input-label { font-size: 13px; font-weight: 800; color: var(--muted); margin-bottom: 6px; display: block; }
+  .input-field { width: 100%; padding: 12px 16px; border: 2px solid #EEE; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 600; outline: none; transition: border-color 0.2s; background: #FAFAFA; }
+  .input-field:focus { border-color: var(--purple); background: white; }
+  .input-row { display: flex; gap: 10px; }
+  .input-row .input-field { flex: 1; }
+  .action-btn { background: var(--purple); color: white; border: none; border-radius: 12px; padding: 12px 20px; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .action-btn:active { transform: scale(0.95); opacity: 0.9; }
+  .action-btn.secondary { background: #F0F0F0; color: var(--text); }
+  .action-btn.danger { background: #FFEAEA; color: #E53935; }
+  .task-manage-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F5F5F5; }
+  .task-manage-item:last-child { border-bottom: none; }
+  .task-manage-name { flex: 1; font-size: 15px; font-weight: 700; }
+  .task-manage-coins { font-size: 14px; color: var(--gold); font-weight: 800; }
+  .cashout-btn { width: 100%; background: linear-gradient(135deg, var(--purple), #5A3D9E); color: white; border: none; border-radius: var(--radius); padding: 18px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 24px rgba(124,92,191,0.35); margin-top: 16px; }
+  .cashout-info { background: var(--gold-light); border-radius: 14px; padding: 16px; margin-top: 12px; display: none; }
+  .cashout-info.visible { display: block; }
+  .cashout-info p { font-size: 15px; font-weight: 700; line-height: 1.6; }
+
+  /* JOURNAL ENTRIES IN MELISSA VIEW */
+  .journal-entry-card { background: var(--pink-light); border-radius: 16px; padding: 16px 20px; margin-bottom: 10px; border-left: 4px solid var(--pink); }
+  .journal-entry-date { font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 6px; }
+  .journal-entry-mood { font-size: 28px; margin-bottom: 6px; }
+  .journal-entry-text { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.5; font-style: italic; }
+
+  /* ═══ WEEKLY PLANS ═══ */
+  .wp-day-tab { flex:1; min-width:52px; padding:8px 4px; border:2px solid #EEE; border-radius:10px; background:#F5F5F5; font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.2s; color:var(--text); }
+  .wp-day-tab.active { background:var(--purple); color:white; border-color:var(--purple); }
+  .wp-track-box { border-radius:14px; padding:14px; margin-bottom:12px; }
+  .wp-track-box.reading { background:var(--purple-light); }
+  .wp-track-box.story { background:var(--pink-light); }
+  .wp-track-box.plan { background:var(--teal-light); }
+  .wp-track-label { font-size:14px; font-weight:900; margin-bottom:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .wp-track-label.reading { color:var(--purple); }
+  .wp-track-label.story { color:var(--pink); }
+  .wp-track-label.plan { color:var(--teal); }
+  .wp-session-badge { font-size:11px; font-weight:800; padding:3px 9px; border-radius:20px; }
+  .wp-session-badge.interactive { background:#E8F5E9; color:#388E3C; border:1px solid #C8E6C9; }
+  .wp-session-badge.paper { background:#FFF3E0; color:#E65100; border:1px solid #FFE0B2; }
+  .wp-upload-zone { border:2px dashed #CCC; border-radius:12px; padding:16px; text-align:center; cursor:pointer; transition:border-color 0.2s; background:#FAFAFA; }
+  .wp-upload-zone:hover { border-color:var(--purple); background:var(--purple-light); }
+  .wp-share-box { background:var(--green-light); border:2px solid var(--green); border-radius:16px; padding:18px; margin-top:16px; display:none; }
+  .wp-share-box.visible { display:block; }
+  .wp-share-text { background:white; border-radius:10px; padding:14px; font-size:13px; font-weight:600; line-height:1.6; color:var(--text); border:1px solid #DDD; white-space:pre-wrap; word-break:break-word; }
+  .wp-status-badge { display:inline-block; font-size:12px; font-weight:800; padding:3px 10px; border-radius:20px; }
+  .wp-status-badge.draft { background:#FFF3E0; color:#E65100; }
+  .wp-status-badge.published { background:#E8F5E9; color:#2E7D32; }
+  .wp-ai-box { background:linear-gradient(135deg,#f0ebff,#ede0ff); border:2px solid #C4A8F5; border-radius:14px; padding:14px; margin-bottom:14px; }
+  .wp-ai-btn { background:linear-gradient(135deg,#7C5CBF,#9b6ee8); color:white; border:none; border-radius:20px; padding:10px 18px; margin:4px 4px 0 0; font-size:14px; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; }
+  .wp-ai-btn:active { opacity:0.85; transform:scale(0.97); }
+  #wpAiStatus { margin-top:10px; font-size:13px; font-weight:700; min-height:18px; }
+  .wp-ai-box { background:linear-gradient(135deg,#f0ebff,#ede0ff); border:2px solid #C4A8F5; border-radius:14px; padding:14px; margin-bottom:14px; }
+  .wp-ai-btn { background:linear-gradient(135deg,#7C5CBF,#9b6ee8); color:white; border:none; border-radius:20px; padding:10px 18px; margin:4px 4px 0 0; font-size:14px; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; }
+  .wp-ai-btn:active { opacity:0.85; transform:scale(0.97); }
+  #wpAiStatus { margin-top:10px; font-size:13px; font-weight:700; min-height:18px; }
+  .wp-ai-box { background:linear-gradient(135deg,#f0ebff,#ede0ff); border:2px solid #C4A8F5; border-radius:14px; padding:14px; margin-bottom:14px; }
+  .wp-ai-btn { background:linear-gradient(135deg,#7C5CBF,#9b6ee8); color:white; border:none; border-radius:20px; padding:10px 18px; margin:4px 4px 0 0; font-size:14px; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; }
+  .wp-ai-btn:active { opacity:0.85; transform:scale(0.97); }
+  #wpAiStatus { margin-top:10px; font-size:13px; font-weight:700; min-height:18px; }
+
+  /* ═══ WEEKLY PLANS ═══ */
+  .wp-day-tab { flex:1; min-width:52px; padding:8px 4px; border:2px solid #EEE; border-radius:10px; background:#F5F5F5; font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.2s; color:var(--text); }
+  .wp-day-tab.active { background:var(--purple); color:white; border-color:var(--purple); }
+  .wp-track-box { border-radius:14px; padding:14px; margin-bottom:12px; }
+  .wp-track-box.reading { background:var(--purple-light); }
+  .wp-track-box.story { background:var(--pink-light); }
+  .wp-track-box.plan { background:var(--teal-light); }
+  .wp-track-label { font-size:14px; font-weight:900; margin-bottom:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .wp-track-label.reading { color:var(--purple); }
+  .wp-track-label.story { color:var(--pink); }
+  .wp-track-label.plan { color:var(--teal); }
+  .wp-session-badge { font-size:11px; font-weight:800; padding:3px 9px; border-radius:20px; }
+  .wp-session-badge.interactive { background:#E8F5E9; color:#388E3C; border:1px solid #C8E6C9; }
+  .wp-session-badge.paper { background:#FFF3E0; color:#E65100; border:1px solid #FFE0B2; }
+  .wp-upload-zone { border:2px dashed #CCC; border-radius:12px; padding:16px; text-align:center; cursor:pointer; transition:border-color 0.2s; background:#FAFAFA; }
+  .wp-upload-zone:hover { border-color:var(--purple); background:var(--purple-light); }
+  .wp-share-box { background:var(--green-light); border:2px solid var(--green); border-radius:16px; padding:18px; margin-top:16px; display:none; }
+  .wp-share-box.visible { display:block; }
+  .wp-share-text { background:white; border-radius:10px; padding:14px; font-size:13px; font-weight:600; line-height:1.6; color:var(--text); border:1px solid #DDD; white-space:pre-wrap; word-break:break-word; }
+  .wp-status-badge { display:inline-block; font-size:12px; font-weight:800; padding:3px 10px; border-radius:20px; }
+  .wp-status-badge.draft { background:#FFF3E0; color:#E65100; }
+  .wp-status-badge.published { background:#E8F5E9; color:#2E7D32; }
+
+  /* ═══ MODALS / SHEETS ═══ */
+  .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+  .sheet-overlay.visible { opacity: 1; pointer-events: all; }
+  .sheet { background: white; border-radius: 28px 28px 0 0; padding: 10px 24px 40px; width: 100%; max-width: 600px; transform: translateY(100%); transition: transform 0.3s ease; }
+  .sheet-overlay.visible .sheet { transform: translateY(0); }
+  .sheet-handle { width: 40px; height: 5px; background: #E0E0E0; border-radius: 3px; margin: 10px auto 20px; }
+  .sheet h2 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  .sheet .sub { font-size: 14px; color: var(--muted); font-weight: 600; margin-bottom: 20px; }
+
+  /* TODO EMOJI PICKER */
+  .emoji-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .emoji-opt { font-size: 28px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 14px; background: #F5F5F5; border: 3px solid transparent; cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+  .emoji-opt.selected { border-color: var(--purple); background: var(--purple-light); }
+  .emoji-opt:active { transform: scale(0.9); }
+
+  /* JOURNAL SHEET */
+  .mood-row { display: flex; gap: 10px; margin-bottom: 20px; }
+  .mood-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px; border-radius: 14px; background: #F5F5F5; border: 3px solid transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.15s; }
+  .mood-btn:active { transform: scale(0.92); }
+  .mood-btn.selected { border-color: var(--pink); background: var(--pink-light); }
+  .mood-emoji { font-size: 28px; }
+  .mood-label { font-size: 10px; font-weight: 800; color: var(--muted); text-align: center; line-height: 1.2; }
+
+  .journal-textarea { width: 100%; min-height: 120px; padding: 16px; border: 2px solid #EEE; border-radius: 16px; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 600; outline: none; resize: none; line-height: 1.5; }
+  .journal-textarea:focus { border-color: var(--pink); }
+
+  .voice-row { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+  .voice-btn { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border: none; border-radius: 14px; background: var(--teal-light); color: var(--teal); font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
+  .voice-btn.listening { background: var(--coral); color: white; animation: pulse 1s infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.7; } }
+  .voice-hint { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .save-journal-btn { width: 100%; background: linear-gradient(135deg, var(--pink), #C2185B); color: white; border: none; border-radius: var(--radius); padding: 16px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; cursor: pointer; margin-top: 16px; }
+  .save-journal-btn:active { opacity: 0.9; }
+  .voice-not-supported { font-size: 12px; color: var(--coral); font-weight: 700; }
+
+  /* CELEBRATION */
+  .celebration { position: fixed; inset: 0; z-index: 500; background: rgba(124,92,191,0.92); display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 40px; }
+  .celebration.visible { display: flex; }
+  .celebration .big-emoji { font-size: 80px; margin-bottom: 16px; animation: bounce 0.5s ease infinite alternate; }
+  @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.1); } }
+  .celebration h2 { font-size: 32px; font-weight: 900; margin-bottom: 10px; }
+  .celebration p { font-size: 18px; opacity: 0.9; font-weight: 600; margin-bottom: 28px; }
+  .celebration button { background: white; color: var(--purple); border: none; border-radius: 20px; padding: 16px 40px; font-size: 18px; font-weight: 900; cursor: pointer; font-family: 'Nunito', sans-serif; }
+
+  /* GOAL MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-end; justify-content: center; z-index: 200; }
+  .modal-overlay.visible { display: flex; }
+  .modal { background: white; border-radius: 28px 28px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 600px; }
+  .modal h2 { font-size: 22px; font-weight: 900; margin-bottom: 10px; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-btns button { flex: 1; }
+
+  @media (min-width: 640px) {
+    .main, .panel { padding: 24px 32px; }
+    .greeting { font-size: 34px; }
+    .coin-amount { font-size: 56px; }
+  }
+
+  /* OFFLINE BANNER */
+  .offline-banner { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 999; background: #F59E0B; color: white; text-align: center; padding: 8px 16px; font-size: 13px; font-weight: 800; }
+  .offline-banner.visible { display: block; }
+
+  /* ADMIN LOCK */
+  .admin-lock-screen { text-align: center; padding: 50px 20px 30px; }
+  .admin-lock-screen .lock-icon { font-size: 72px; margin-bottom: 20px; }
+  .admin-lock-screen h2 { font-size: 24px; font-weight: 900; color: var(--purple); margin-bottom: 8px; }
+  .admin-lock-screen p { font-size: 14px; color: var(--muted); font-weight: 600; margin-bottom: 28px; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+  .shake { animation: shake 0.5s ease; }
+
+  /* CALENDAR */
+  .cal-nav-bar { display: flex; align-items: center; justify-content: space-between; background: var(--card); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .cal-month-title { font-size: 20px; font-weight: 900; color: var(--purple); }
+  .cal-nav-btn { background: var(--purple-light); border: none; color: var(--purple); width: 40px; height: 40px; border-radius: 50%; font-size: 16px; font-weight: 900; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .cal-nav-btn:active { background: var(--purple); color: white; }
+  .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+  .cal-weekdays span { text-align: center; font-size: 11px; font-weight: 800; color: var(--muted); padding: 4px 0; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-cell { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; background: var(--card); border: 2px solid transparent; -webkit-tap-highlight-color: transparent; min-height: 44px; transition: transform 0.1s; }
+  .cal-cell:active { transform: scale(0.9); }
+  .cal-cell.empty { background: transparent; border: none; cursor: default; pointer-events: none; }
+  .cal-cell.today { background: var(--purple); border-color: var(--purple); }
+  .cal-cell.today .cal-num { color: white; font-weight: 900; }
+  .cal-cell.past { opacity: 0.55; }
+  .cal-cell.future { border-color: #EFEFEF; }
+  .cal-num { font-size: 14px; font-weight: 800; color: var(--text); line-height: 1; }
+  .cal-dots { display: flex; gap: 2px; margin-top: 2px; }
+  .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .cal-dot.ev { background: var(--gold); }
+  .cal-dot.jn { background: var(--pink); }
+  .cal-hint { background: var(--purple-light); border-radius: 14px; padding: 12px 16px; margin-top: 12px; text-align: center; font-size: 13px; font-weight: 700; color: var(--purple); }
+
+  /* DAY DETAIL SHEET extras */
+  .day-event-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--gold-light); border-radius: 12px; margin-bottom: 8px; }
+  .day-event-row span.ev-title { font-size: 15px; font-weight: 700; flex: 1; }
+  .ev-del-btn { background: none; border: none; font-size: 18px; color: #CCC; cursor: pointer; padding: 4px; }
+  .ev-del-btn:active { color: var(--coral); }
+  .cal-event-section { margin-top: 16px; }
+  .cal-event-section .sub-label { font-size: 13px; font-weight: 800; color: var(--purple); margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offlineBanner">📶 Offline — changes saved locally, will sync when back online</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-row">
+    <div>
+      <div class="app-title">✨ Meleah's World</div>
+      <div class="greeting" id="greeting">Good morning, Meleah!</div>
+      <div class="date-str" id="dateStr"></div>
+    </div>
+    <button class="settings-btn" onclick="showPanel('melissa')">⚙️</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-home" onclick="showPanel('home')">
+    <span class="nav-icon">🏠</span><span class="nav-label">Today</span>
+  </button>
+  <button class="nav-btn" id="nav-week" onclick="showPanel('week')">
+    <span class="nav-icon">📋</span><span class="nav-label">Week</span>
+  </button>
+  <button class="nav-btn" id="nav-rewards" onclick="showPanel('rewards')">
+    <span class="nav-icon">🪙</span><span class="nav-label">My Coins</span>
+  </button>
+  <button class="nav-btn" id="nav-progress" onclick="showPanel('progress')">
+    <span class="nav-icon">⭐</span><span class="nav-label">Streaks</span>
+  </button>
+  <button class="nav-btn" id="nav-journal" onclick="showPanel('journalView')">
+    <span class="nav-icon">💭</span><span class="nav-label">Journal</span>
+  </button>
+  <button class="nav-btn" id="nav-melissa" onclick="showPanel('melissa')">
+    <span class="nav-icon">👩‍💼</span><span class="nav-label">Melissa</span>
+  </button>
+  <button class="nav-btn" id="nav-calendar" onclick="showPanel('calendar')">
+    <span class="nav-icon">📅</span><span class="nav-label">Calendar</span>
+  </button>
+</div>
+
+<!-- ═══ HOME PANEL ═══ -->
+<div class="panel active" id="panel-home">
+  <div class="complete-banner" id="completeBanner">
+    <h3>🎉 Amazing day, Meleah!</h3>
+    <p>You did everything! Don't forget to write in your journal! 💭</p>
+  </div>
+
+  <!-- Coin Balance -->
+  <div class="coin-card">
+    <div class="coin-jar">🐷</div>
+    <div class="coin-info">
+      <div class="coin-label">My Coins</div>
+      <div class="coin-amount" id="coinDisplay">0</div>
+      <div class="coin-sub" id="coinSub">Keep going! 🌟</div>
+    </div>
+  </div>
+
+  <!-- Melissa's Tasks -->
+  <div class="section-header"><span class="icon">📋</span> My 3 Things Today</div>
+  <div class="task-grid" id="taskGrid"></div>
+
+  <!-- Learning Tracks -->
+  <div class="section-header"><span class="icon">📚</span> My Learning Tracks</div>
+  <div class="tracks-grid" id="tracksGrid"></div>
+
+  <!-- Meleah's Own To-Dos -->
+  <div class="section-header">
+    <span class="icon">✅</span> My Own To-Do's
+    <span class="badge" id="todoCountBadge">0 / 5</span>
+  </div>
+  <div class="todo-grid" id="myTodosGrid"></div>
+  <button class="add-todo-btn" id="addTodoBtn" onclick="openAddTodo()">+ Add a To-Do</button>
+
+  <!-- Goals Preview -->
+  <div class="section-header"><span class="icon">🎯</span> My Goals</div>
+  <div id="goalsPreview"></div>
+
+  <!-- Journal Button -->
+  <div class="section-header"><span class="icon">💭</span> End of Day</div>
+  <button class="journal-trigger" onclick="openJournal()">
+    <span style="font-size:24px">💭</span> How did today go?
+  </button>
+  <div style="height:16px"></div>
+</div>
+
+<!-- ═══ REWARDS PANEL ═══ -->
+<div class="panel" id="panel-rewards">
+  <div class="section-header"><span class="icon">🪙</span> My Coin Jar</div>
+  <div class="coin-card" style="margin-bottom:20px">
+    <div class="coin-jar">🐷</div>
+    <div class="coin-info">
+      <div class="coin-label">Total Coins</div>
+      <div class="coin-amount" id="coinDisplay2">0</div>
+      <div class="coin-sub">You earned these! 💪</div>
+    </div>
+  </div>
+  <div class="section-header"><span class="icon">⚡</span> Quick Reward</div>
+  <div class="goal-card">
+    <div class="goal-header">
+      <div class="goal-title" id="quickGoalName">Quick Reward</div>
+      <div class="goal-amount" id="quickGoalAmt">0 / 0 🪙</div>
+    </div>
+    <div class="goal-bar-bg"><div class="goal-bar-fill quick" id="quickGoalBar" style="width:0%"></div></div>
+    <div class="goal-meta" id="quickGoalMeta">Keep going!</div>
+  </div>
+  <div class="section-header"><span class="icon">✈️</span> Big Dream</div>
+  <div class="goal-card">
+    <div class="goal-header">
+      <div class="goal-title" id="dreamGoalName">NYC Dream Trip</div>
+      <div class="goal-amount" id="dreamGoalAmt">0 / 0 🪙</div>
+    </div>
+    <div class="goal-bar-bg"><div class="goal-bar-fill dream" id="dreamGoalBar" style="width:0%"></div></div>
+    <div class="goal-meta" id="dreamGoalMeta">One coin at a time!</div>
+  </div>
+  <div class="section-header"><span class="icon">📜</span> Coin History</div>
+  <div id="historyList"></div>
+</div>
+
+<!-- ═══ PROGRESS PANEL ═══ -->
+<div class="panel" id="panel-progress">
+  <div class="section-header"><span class="icon">🔥</span> My Streaks</div>
+  <div class="melissa-section" style="margin-bottom:16px">
+    <h3>📚 Reading Studio</h3>
+    <div style="font-size:48px;text-align:center;margin:10px 0" id="readingStreakDisplay">0</div>
+    <p style="text-align:center;font-size:14px;font-weight:700;color:var(--muted)" id="readingStreakMsg">Start your streak today!</p>
+  </div>
+  <div class="melissa-section" style="margin-bottom:16px">
+    <h3>🗣️ Story Studio</h3>
+    <div style="font-size:48px;text-align:center;margin:10px 0" id="storyStreakDisplay">0</div>
+    <p style="text-align:center;font-size:14px;font-weight:700;color:var(--muted)" id="storyStreakMsg">Start your streak today!</p>
+  </div>
+  <div class="melissa-section" style="margin-bottom:16px">
+    <h3>📝 My Plan</h3>
+    <div style="font-size:48px;text-align:center;margin:10px 0" id="planStreakDisplay">0</div>
+    <p style="text-align:center;font-size:14px;font-weight:700;color:var(--muted)" id="planStreakMsg">Start your streak today!</p>
+  </div>
+  <div class="section-header"><span class="icon">📅</span> This Week</div>
+  <div class="melissa-section">
+    <div class="streak-row" id="weekCalendar"></div>
+  </div>
+  <div class="section-header"><span class="icon">🌟</span> My Achievements</div>
+  <div class="melissa-section">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="achievementsGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ JOURNAL VIEW PANEL ═══ -->
+<div class="panel" id="panel-journalView">
+  <div style="background:linear-gradient(135deg,var(--pink),#C2185B);color:white;border-radius:var(--radius);padding:20px;margin-bottom:20px;text-align:center">
+    <div style="font-size:36px">💭</div>
+    <div style="font-size:20px;font-weight:900;margin-top:8px">My Journal</div>
+    <div style="font-size:13px;opacity:0.85;margin-top:4px;font-weight:600">How I felt each day</div>
+  </div>
+  <button class="journal-trigger" onclick="openJournal()" style="margin-bottom:20px">
+    <span>✏️</span> Write today's entry
+  </button>
+  <div class="section-header"><span class="icon">📖</span> Past Entries</div>
+  <div id="journalEntriesList">
+    <p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:30px">No entries yet — write your first one! 💕</p>
+  </div>
+</div>
+
+<!-- ═══ MELISSA PANEL ═══ -->
+<div class="panel" id="panel-melissa">
+
+  <!-- Lock screen -->
+  <div id="adminLockScreen" class="admin-lock-screen">
+    <div class="lock-icon">🔒</div>
+    <h2>Melissa's Space</h2>
+    <p>Enter your password to manage Meleah's World</p>
+    <input class="input-field" id="adminPasswordInput" type="password" placeholder="Password"
+      style="font-size:18px;text-align:center;margin-bottom:16px;letter-spacing:4px;max-width:280px;display:block;margin-left:auto;margin-right:auto"
+      onkeydown="if(event.key==='Enter')tryUnlockAdmin()">
+    <button class="action-btn" style="width:100%;max-width:280px;padding:16px;font-size:17px;border-radius:16px" onclick="tryUnlockAdmin()">Unlock 🔓</button>
+    <p id="adminErrorMsg" style="color:var(--coral);font-size:14px;font-weight:700;margin-top:12px;display:none">Wrong password 🔒 Try again!</p>
+  </div>
+
+  <!-- Admin content (shown after unlock) -->
+  <div id="adminContent" style="display:none">
+  <div style="background:linear-gradient(135deg,var(--purple),#5A3D9E);color:white;border-radius:var(--radius);padding:20px;margin-bottom:20px;text-align:center">
+    <div style="font-size:36px">👩‍💼</div>
+    <div style="font-size:20px;font-weight:900;margin-top:8px">Melissa's View</div>
+    <div style="font-size:13px;opacity:0.85;margin-top:4px;font-weight:600">Manage Meleah's World</div>
+  </div>
+
+  <!-- Tasks Manager -->
+  <div class="melissa-section">
+    <h3>📋 Today's 3 Tasks (you set these)</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px">These appear on Meleah's home screen for her to check off.</p>
+    <div id="taskManagerList" style="margin-bottom:16px"></div>
+    <div class="input-group">
+      <label class="input-label">Add a task</label>
+      <div class="input-row">
+        <input class="input-field" id="newTaskEmoji" placeholder="😊" style="max-width:70px;text-align:center">
+        <input class="input-field" id="newTaskName" placeholder="Task name">
+        <input class="input-field" id="newTaskCoins" placeholder="🪙" type="number" min="1" max="100" style="max-width:80px">
+        <button class="action-btn" onclick="addTask()">Add</button>
+      </div>
+    </div>
+    <button class="action-btn secondary" style="width:100%" onclick="resetTasks()">🔄 Reset Today's Checkmarks</button>
+  </div>
+
+  <!-- Goals Manager -->
+  <div class="melissa-section">
+    <h3>🎯 Meleah's Goals</h3>
+    <div class="input-group"><label class="input-label">Quick Reward Name</label><input class="input-field" id="quickGoalNameInput" placeholder="e.g. Movie night 🍿"></div>
+    <div class="input-group"><label class="input-label">Quick Reward Target (🪙 coins)</label><input class="input-field" id="quickGoalTargetInput" type="number" placeholder="50"></div>
+    <div class="input-group"><label class="input-label">Big Dream Name</label><input class="input-field" id="dreamGoalNameInput" placeholder="e.g. NYC Trip ✈️"></div>
+    <div class="input-group"><label class="input-label">Big Dream Target (🪙 coins)</label><input class="input-field" id="dreamGoalTargetInput" type="number" placeholder="500"></div>
+    <button class="action-btn" style="width:100%" onclick="saveGoals()">Save Goals</button>
+  </div>
+
+  <!-- Track Coin Values -->
+  <div class="melissa-section">
+    <h3>💰 Learning Track Coin Values</h3>
+    <div class="input-group"><label class="input-label">📚 Reading Studio</label><input class="input-field" id="readingCoinsInput" type="number" placeholder="10"></div>
+    <div class="input-group"><label class="input-label">🗣️ Story Studio</label><input class="input-field" id="storyCoinsInput" type="number" placeholder="10"></div>
+    <div class="input-group"><label class="input-label">📝 My Plan</label><input class="input-field" id="planCoinsInput" type="number" placeholder="5"></div>
+    <button class="action-btn" style="width:100%" onclick="saveTrackCoins()">Save Values</button>
+  </div>
+
+  <!-- Cash Out -->
+  <div class="melissa-section">
+    <h3>💳 Cash Out Reward</h3>
+    <div class="input-group"><label class="input-label">$ value per coin (e.g. $0.05)</label><input class="input-field" id="coinValueInput" type="number" step="0.01" placeholder="0.05"></div>
+    <button class="cashout-btn" onclick="showCashout()">💳 Calculate Reward Amount</button>
+    <div class="cashout-info" id="cashoutInfo">
+      <p id="cashoutText"></p>
+      <button class="action-btn danger" style="margin-top:12px;width:100%" onclick="redeemReward()">✅ Mark as Redeemed (reset quick goal)</button>
+    </div>
+  </div>
+
+  <!-- Journal Entries -->
+  <div class="melissa-section">
+    <h3>💭 Meleah's Journal Entries</h3>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <select id="journalWeekSelect" class="input-field" style="flex:1;font-size:13px">
+        <option value="">Select a week to download...</option>
+      </select>
+      <button class="action-btn" style="white-space:nowrap;padding:10px 14px" onclick="downloadJournalPDF()">📄 PDF</button>
+    </div>
+    <div id="melissaJournalList">
+      <p style="color:var(--muted);font-size:13px;font-weight:600">No entries yet.</p>
+    </div>
+  </div>
+
+  <!-- Weekly Plans -->
+  <div class="melissa-section">
+    <h3>📋 Weekly Plans</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px">Build and share Meleah's weekly assignment plan every Friday. Mon & Wed are interactive iPad days; Tue, Thu, Fri are paper days.</p>
+
+    <!-- Week navigation -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="action-btn secondary" style="padding:8px 16px;flex-shrink:0" onclick="wpPrevWeek()">◀</button>
+      <div style="flex:1;text-align:center">
+        <div style="font-size:16px;font-weight:900" id="wpWeekLabel">Loading...</div>
+        <span class="wp-status-badge draft" id="wpStatusBadge">Draft</span>
+      </div>
+      <button class="action-btn secondary" style="padding:8px 16px;flex-shrink:0" onclick="wpNextWeek()">▶</button>
+    </div>
+
+    <!-- Site URL (one-time setup) -->
+    <div class="input-group">
+      <label class="input-label">🔗 Your Vercel Site URL (set once, then forget)</label>
+      <input class="input-field" id="wpBaseUrl" placeholder="https://meleahsworld.vercel.app" style="font-size:13px">
+      <button class="action-btn secondary" style="margin-top:8px;width:100%" onclick="wpSaveBaseUrl()">💾 Save URL</button>
+    </div>
+
+    <!-- Teacher doc upload -->
+    <div style="margin-bottom:16px">
+      <label class="input-label">📄 Upload Teacher's Lesson Doc (.docx or .pdf)</label>
+      <div class="wp-upload-zone" onclick="document.getElementById('wpFileInput').click()">
+        <div style="font-size:28px;margin-bottom:4px">📤</div>
+        <div style="font-size:14px;font-weight:700;color:var(--purple)">Click to upload teacher doc</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">.docx files work best — PDF works too</div>
+      </div>
+      <input type="file" id="wpFileInput" accept=".docx,.pdf" style="display:none" onchange="wpUploadDoc(this)">
+      <div id="wpUploadStatus" style="font-size:13px;font-weight:700;color:var(--teal);margin-top:8px;display:none"></div>
+    </div>
+
+    <!-- Teacher notes preview -->
+    <div class="input-group" id="wpNotesGroup" style="display:none">
+      <label class="input-label">Extracted Teacher Notes (reference while you fill in below)</label>
+      <textarea class="input-field" id="wpTeacherNotes" rows="5" readonly style="font-size:12px;line-height:1.6;background:#F9F9F9;resize:vertical"></textarea>
+    </div>
+
+    <!-- FCL Concept -->
+    <div class="input-group">
+      <label class="input-label">📚 FCL Concept Number This Week (26–43)</label>
+      <input class="input-field" id="wpFclNumber" type="number" min="26" max="43" placeholder="e.g. 26" style="max-width:100px;display:inline-block" oninput="wpFclAutoFill()">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Concept Name (what are you working on?)</label>
+      <input class="input-field" id="wpConceptName" placeholder="e.g. Beginning Consonant Blends">
+    </div>
+
+    <!-- Additional Notes for this week -->
+    <div class="input-group">
+      <label class="input-label">📝 Additional Notes for This Week (optional)</label>
+      <textarea class="input-field" id="wpAdditionalNotes" rows="3" placeholder="e.g. Meleah had a hard week — keep it gentle. Focus on the 'tr' blend words from Tuesday's lesson."></textarea>
+    </div>
+
+    <!-- AI Auto-Generate -->
+    <div class="wp-ai-box">
+      <div style="font-size:14px;font-weight:900;color:#5A3D9E;margin-bottom:6px">✨ Auto-Generate with AI</div>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px">Fill in the FCL concept + notes above, then let Claude build the whole week's plan!</p>
+      <button onclick="wpGenerateWithAI(false)" class="wp-ai-btn">✨ Generate This Week</button>
+      <button onclick="wpGenerateWithAI(true)" class="wp-ai-btn">✨ Generate 2 Weeks</button>
+      <div id="wpAiStatus"></div>
+
+      <!-- AI Instructions (collapsible) -->
+      <div style="margin-top:12px;border-top:1px solid #D4BBFF;padding-top:10px">
+        <button onclick="wpToggleInstructions()" style="background:none;border:none;font-size:12px;font-weight:800;color:#5A3D9E;cursor:pointer;padding:0;font-family:'Nunito',sans-serif">
+          ✏️ Student Profile for AI &nbsp;<span id="wpInstrToggle">▼ show</span>
+        </button>
+        <div id="wpInstrPanel" style="display:none;margin-top:10px">
+          <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Describe Meleah to the AI — her interests, strengths, and what she finds hard. Saved permanently and used every time you generate.</p>
+          <textarea class="input-field" id="wpAiInstructions" rows="4" placeholder="e.g. Meleah is 9 years old and loves horses and Roblox. She does best with short numbered steps and lots of encouragement. She struggles most with blends but is improving fast! Keep activities fun and upbeat."></textarea>
+          <button class="action-btn secondary" style="margin-top:8px;width:100%" onclick="wpSaveAiInstructions()">💾 Save Student Profile</button>
+          <div id="wpInstrSaved" style="display:none;font-size:12px;font-weight:800;color:var(--green);margin-top:4px;text-align:center">Saved ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button class="wp-day-tab active" id="wptab-monday" onclick="wpSelectDay('monday')">Mon<br><span style="font-size:10px;opacity:0.8">🖥️</span></button>
+      <button class="wp-day-tab" id="wptab-tuesday" onclick="wpSelectDay('tuesday')">Tue<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
+      <button class="wp-day-tab" id="wptab-wednesday" onclick="wpSelectDay('wednesday')">Wed<br><span style="font-size:10px;opacity:0.8">🖥️</span></button>
+      <button class="wp-day-tab" id="wptab-thursday" onclick="wpSelectDay('thursday')">Thu<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
+      <button class="wp-day-tab" id="wptab-friday" onclick="wpSelectDay('friday')">Fri<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
+    </div>
+
+    <!-- Day editor (dynamically rendered) -->
+    <div id="wpDayEditor">
+      <!-- filled by wpRenderDay() -->
+    </div>
+
+    <!-- Story Studio (week-level — for Aunt) -->
+    <div class="wp-track-box story" style="margin-top:8px">
+      <div class="wp-track-label story">📖 Story Studio — Aunt's Section (FaceTime 3×/week) 📱</div>
+      <p style="font-size:12px;color:var(--pink);font-weight:700;margin-bottom:10px">Aunt reads this on her phone before/during FaceTime calls from LA. Three sessions build on each other each week.</p>
+
+      <div class="input-group">
+        <label class="input-label">Story Theme / Topic This Week</label>
+        <input class="input-field" id="wpStoryTopic" placeholder="e.g. A rainy day adventure 🌧️">
+      </div>
+
+      <!-- SESSION 1: Vocabulary -->
+      <div style="background:#FFF0F8;border-left:4px solid var(--pink);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--pink);margin-bottom:6px">Session 1 — Vocabulary Exploration</div>
+        <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Aunt opens Vocab Cards on her phone &amp; shares screen on FaceTime. Go through each word together.</p>
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">Vocabulary Words (reference — comma separated)</label>
+          <input class="input-field" id="wpStoryVocab" placeholder="e.g. adventurous, determined, mysterious">
+        </div>
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">Vocab Card Details (AI fills this — one word per line: word | emoji | definition | synonyms | example)</label>
+          <textarea class="input-field" id="wpStoryVocabWords" rows="5" placeholder="adventurous | 🗺️ | Someone who likes trying new exciting things | brave, daring, bold | Meleah is adventurous when she tries new foods!"></textarea>
+        </div>
+        <button onclick="wpOpenVocabCards()" style="background:var(--pink);color:white;border:none;border-radius:12px;padding:10px 18px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;width:100%">🃏 Open Vocab Cards Page (share on FaceTime)</button>
+      </div>
+
+      <!-- SESSION 2: Aunt Tells a Story -->
+      <div style="background:#F0F4FF;border-left:4px solid var(--purple);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--purple);margin-bottom:6px">Session 2 — Aunt Tells a Story</div>
+        <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Aunt reads this short story aloud. Meleah listens and identifies story elements.</p>
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">Aunt's Story Script (read aloud on FaceTime)</label>
+          <textarea class="input-field" id="wpStoryAuntText" rows="7" placeholder="Once upon a time, there was a brave girl named Lily who loved exploring..."></textarea>
+        </div>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">Story Element Discussion Prompts (after Aunt reads)</label>
+          <textarea class="input-field" id="wpStoryDiscussion" rows="5" placeholder="Character: Who was in the story?&#10;Setting: Where did it happen?&#10;Problem: What went wrong?&#10;Action: What did the character do?&#10;Ending: How did the story end?"></textarea>
+        </div>
+      </div>
+
+      <!-- SESSION 3: Meleah Tells Her Story -->
+      <div style="background:#F0FFF4;border-left:4px solid var(--green);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-bottom:6px">Session 3 — Meleah Tells Her Story</div>
+        <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Meleah retells something that happened this week. Aunt scaffolds with these prompts if she gets stuck. Bonus coins for using vocab words! 🪙</p>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">Retelling Scaffolding Prompts (Aunt uses if Meleah gets stuck)</label>
+          <textarea class="input-field" id="wpStoryPrompts" rows="5" placeholder="Tell me about something that happened this week!&#10;If stuck: Who was there?&#10;If stuck: Where were you?&#10;If stuck: What happened first? Then what?&#10;Bonus coins: Can you use one of our vocab words?"></textarea>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Text Message Aunt Sends Before the Call</label>
+        <textarea class="input-field" id="wpStoryTextMsg" rows="2" placeholder="Hey Meleah! 🌟 This week we're going to..."></textarea>
+      </div>
+    </div>
+
+    <!-- Publish button -->
+    <button class="cashout-btn" style="margin-top:16px" onclick="wpPublish()">📤 Publish & Get Share Link</button>
+
+    <!-- Share box -->
+    <div class="wp-share-box" id="wpShareBox">
+      <div style="font-size:16px;font-weight:900;color:#2E7D32;margin-bottom:10px">✅ Published! Ready to share</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Copy and paste this into iMessage for everyone:</div>
+      <div class="wp-share-text" id="wpShareText"></div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="action-btn" style="flex:1" onclick="wpCopyMessage()">📋 Copy Message</button>
+        <button class="action-btn secondary" style="flex:1" onclick="wpCopyLink()">🔗 Link Only</button>
+      </div>
+      <div id="wpCopyConfirm" style="text-align:center;font-size:13px;font-weight:800;color:var(--green);margin-top:8px;display:none">Copied! ✓</div>
+    </div>
+  </div>
+
+  <!-- Weekly Plans -->
+  <div class="melissa-section">
+    <h3>📋 Weekly Plans</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px">Build and share Meleah's weekly assignment plan every Friday. Mon & Wed are interactive iPad days; Tue, Thu, Fri are paper days.</p>
+
+    <!-- Week navigation -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="action-btn secondary" style="padding:8px 16px;flex-shrink:0" onclick="wpPrevWeek()">◀</button>
+      <div style="flex:1;text-align:center">
+        <div style="font-size:16px;font-weight:900" id="wpWeekLabel">Loading...</div>
+        <span class="wp-status-badge draft" id="wpStatusBadge">Draft</span>
+      </div>
+      <button class="action-btn secondary" style="padding:8px 16px;flex-shrink:0" onclick="wpNextWeek()">▶</button>
+    </div>
+
+    <!-- Site URL (one-time setup) -->
+    <div class="input-group">
+      <label class="input-label">🔗 Your Vercel Site URL (set once, then forget)</label>
+      <input class="input-field" id="wpBaseUrl" placeholder="https://meleahsworld.vercel.app" style="font-size:13px">
+      <button class="action-btn secondary" style="margin-top:8px;width:100%" onclick="wpSaveBaseUrl()">💾 Save URL</button>
+    </div>
+
+    <!-- Teacher doc upload -->
+    <div style="margin-bottom:16px">
+      <label class="input-label">📄 Upload Teacher's Lesson Doc (.docx or .pdf)</label>
+      <div class="wp-upload-zone" onclick="document.getElementById('wpFileInput').click()">
+        <div style="font-size:28px;margin-bottom:4px">📤</div>
+        <div style="font-size:14px;font-weight:700;color:var(--purple)">Click to upload teacher doc</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">.docx files work best — PDF works too</div>
+      </div>
+      <input type="file" id="wpFileInput" accept=".docx,.pdf" style="display:none" onchange="wpUploadDoc(this)">
+      <div id="wpUploadStatus" style="font-size:13px;font-weight:700;color:var(--teal);margin-top:8px;display:none"></div>
+    </div>
+
+    <!-- Teacher notes preview -->
+    <div class="input-group" id="wpNotesGroup" style="display:none">
+      <label class="input-label">Extracted Teacher Notes (reference while you fill in below)</label>
+      <textarea class="input-field" id="wpTeacherNotes" rows="5" readonly style="font-size:12px;line-height:1.6;background:#F9F9F9;resize:vertical"></textarea>
+    </div>
+
+    <!-- FCL Concept -->
+    <div class="input-group">
+      <label class="input-label">📚 FCL Concept Number This Week (26–43)</label>
+      <input class="input-field" id="wpFclNumber" type="number" min="26" max="43" placeholder="e.g. 26" style="max-width:100px;display:inline-block">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Concept Name (what are you working on?)</label>
+      <input class="input-field" id="wpConceptName" placeholder="e.g. Beginning Consonant Blends">
+    </div>
+
+    <!-- Additional Notes for this week -->
+    <div class="input-group">
+      <label class="input-label">📝 Additional Notes for This Week (optional)</label>
+      <textarea class="input-field" id="wpAdditionalNotes" rows="3" placeholder="e.g. Meleah had a hard week — keep it gentle. Focus on the 'tr' blend words from Tuesday's lesson."></textarea>
+    </div>
+
+    <!-- AI Auto-Generate -->
+    <div class="wp-ai-box">
+      <div style="font-size:14px;font-weight:900;color:#5A3D9E;margin-bottom:6px">✨ Auto-Generate with AI</div>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px">Fill in the FCL concept + notes above, then let Claude build the whole week's plan!</p>
+      <button onclick="wpGenerateWithAI(false)" class="wp-ai-btn">✨ Generate This Week</button>
+      <button onclick="wpGenerateWithAI(true)" class="wp-ai-btn">✨ Generate 2 Weeks</button>
+      <div id="wpAiStatus"></div>
+
+      <!-- AI Instructions (collapsible) -->
+      <div style="margin-top:12px;border-top:1px solid #D4BBFF;padding-top:10px">
+        <button onclick="wpToggleInstructions()" style="background:none;border:none;font-size:12px;font-weight:800;color:#5A3D9E;cursor:pointer;padding:0;font-family:'Nunito',sans-serif">
+          ✏️ Student Profile for AI &nbsp;<span id="wpInstrToggle">▼ show</span>
+        </button>
+        <div id="wpInstrPanel" style="display:none;margin-top:10px">
+          <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Describe Meleah to the AI — her interests, strengths, and what she finds hard. Saved permanently and used every time you generate.</p>
+          <textarea class="input-field" id="wpAiInstructions" rows="4" placeholder="e.g. Meleah is 9 years old and loves horses and Roblox. She does best with short numbered steps and lots of encouragement. She struggles most with blends but is improving fast! Keep activities fun and upbeat."></textarea>
+          <button class="action-btn secondary" style="margin-top:8px;width:100%" onclick="wpSaveAiInstructions()">💾 Save Student Profile</button>
+          <div id="wpInstrSaved" style="display:none;font-size:12px;font-weight:800;color:var(--green);margin-top:4px;text-align:center">Saved ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button class="wp-day-tab active" id="wptab-monday" onclick="wpSelectDay('monday')">Mon<br><span style="font-size:10px;opacity:0.8">🖥️</span></button>
+      <button class="wp-day-tab" id="wptab-tuesday" onclick="wpSelectDay('tuesday')">Tue<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
+      <button class="wp-day-tab" id="wptab-wednesday" onclick="wpSelectDay('wednesday')">Wed<br><span style="font-size:10px;opacity:0.8">🖥️</span></button>
+      <button class="wp-day-tab" id="wptab-thursday" onclick="wpSelectDay('thursday')">Thu<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
+      <button class="wp-day-tab" id="wptab-friday" onclick="wpSelectDay('friday')">Fri<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
+    </div>
+
+    <!-- Day editor (dynamically rendered) -->
+    <div id="wpDayEditor">
+      <!-- filled by wpRenderDay() -->
+    </div>
+
+    <!-- Story Studio (week-level — for Aunt) -->
+    <div class="wp-track-box story" style="margin-top:8px">
+      <div class="wp-track-label story">📖 Story Studio — Aunt's Section (FaceTime & Text) 📱</div>
+      <p style="font-size:12px;color:var(--pink);font-weight:700;margin-bottom:10px">Aunt reads this section on her phone before/during FaceTime calls.</p>
+      <div class="input-group">
+        <label class="input-label">Story Theme / Topic This Week</label>
+        <input class="input-field" id="wpStoryTopic" placeholder="e.g. Adventures with animals 🐸">
+      </div>
+      <div class="input-group">
+        <label class="input-label">FaceTime Talking Points (one per line)</label>
+        <textarea class="input-field" id="wpStoryPrompts" rows="4" placeholder="Tell me a story that starts with 'One day...'&#10;What would your character do if they got lost?&#10;Describe what the setting looks like"></textarea>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Text Message Idea (Aunt copies and sends to Meleah)</label>
+        <textarea class="input-field" id="wpStoryTextMsg" rows="2" placeholder="Hey Meleah! 🐸 Can you text me a story about..."></textarea>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Vocabulary Words to Explore Together</label>
+        <input class="input-field" id="wpStoryVocab" placeholder="e.g. adventurous, determined, mysterious">
+      </div>
+    </div>
+
+    <!-- Publish button -->
+    <button class="cashout-btn" style="margin-top:16px" onclick="wpPublish()">📤 Publish & Get Share Link</button>
+
+    <!-- Share box -->
+    <div class="wp-share-box" id="wpShareBox">
+      <div style="font-size:16px;font-weight:900;color:#2E7D32;margin-bottom:10px">✅ Published! Ready to share</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Copy and paste this into iMessage for everyone:</div>
+      <div class="wp-share-text" id="wpShareText"></div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="action-btn" style="flex:1" onclick="wpCopyMessage()">📋 Copy Message</button>
+        <button class="action-btn secondary" style="flex:1" onclick="wpCopyLink()">🔗 Link Only</button>
+      </div>
+      <div id="wpCopyConfirm" style="text-align:center;font-size:13px;font-weight:800;color:var(--green);margin-top:8px;display:none">Copied! ✓</div>
+    </div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="melissa-section">
+    <h3 style="color:#E53935">🚨 Reset Everything</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px">Only use this to start fresh. Cannot be undone.</p>
+    <button class="action-btn danger" style="width:100%" onclick="confirmReset()">Reset All Data</button>
+  </div>
+  </div><!-- end adminContent -->
+</div><!-- end panel-melissa -->
+
+<!-- ═══ CALENDAR PANEL ═══ -->
+<!-- ═══ WEEK PANEL ═══ -->
+<div class="panel" id="panel-week">
+  <div id="weekPanelInner">
+    <p style="text-align:center;padding:40px;color:var(--muted)">Tap the 📋 Week tab to load this week's plan</p>
+  </div>
+</div>
+
+<!-- ═══ WEEK PANEL ═══ -->
+<div class="panel" id="panel-week">
+  <div id="weekPanelInner">
+    <p style="text-align:center;padding:40px;color:var(--muted)">Tap the 📋 Week tab to load this week's plan</p>
+  </div>
+</div>
+
+<div class="panel" id="panel-calendar">
+  <div class="cal-nav-bar">
+    <button class="cal-nav-btn" onclick="prevMonth()">◀</button>
+    <div class="cal-month-title" id="calMonthTitle">March 2026</div>
+    <button class="cal-nav-btn" onclick="nextMonth()">▶</button>
+  </div>
+  <div class="cal-weekdays">
+    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="cal-hint">⭐ Tap any day to see or add plans!</div>
+</div>
+
+<!-- ═══ ADD TO-DO SHEET ═══ -->
+<div class="sheet-overlay" id="addTodoSheet" onclick="closeSheetIfBg(event,'addTodoSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Add a To-Do ✅</h2>
+    <p class="sub">Pick an emoji and type what you want to do!</p>
+    <div class="emoji-picker" id="emojiPicker"></div>
+    <div class="input-group">
+      <label class="input-label">What do you want to do?</label>
+      <input class="input-field" id="todoTextInput" placeholder="e.g. Make my bed" style="font-size:17px;padding:14px 16px"
+        onkeydown="if(event.key==='Enter')saveNewTodo()">
+    </div>
+    <p style="font-size:13px;color:var(--teal);font-weight:700;margin-bottom:16px">🪙 You earn 2 coins when you check it off!</p>
+    <button class="action-btn" style="width:100%;padding:16px;font-size:17px;border-radius:16px" onclick="saveNewTodo()">Add it! ✨</button>
+  </div>
+</div>
+
+<!-- ═══ JOURNAL SHEET ═══ -->
+<div class="sheet-overlay" id="journalSheet" onclick="closeSheetIfBg(event,'journalSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>How did today go? 💭</h2>
+    <p class="sub">Pick how you feel, then write or talk about your day.</p>
+
+    <div class="mood-row" id="moodRow"></div>
+
+    <label class="input-label">Tell me about your day...</label>
+    <textarea class="journal-textarea" id="journalText" placeholder="What went well? What was hard? What are you proud of?"></textarea>
+
+    <div class="voice-row">
+      <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
+        🎙️ Speak it!
+      </button>
+      <span class="voice-hint" id="voiceHint">Tap to dictate your journal</span>
+    </div>
+
+    <button class="save-journal-btn" onclick="saveJournalEntry()">Save My Entry 💕</button>
+  </div>
+</div>
+
+<!-- ═══ DAY DETAIL SHEET ═══ -->
+<div class="sheet-overlay" id="dayDetailSheet" onclick="closeSheetIfBg(event,'dayDetailSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="dayDetailTitle">📅 Monday, March 3</h2>
+    <p class="sub" id="dayDetailSub"></p>
+    <div id="dayDetailContent"></div>
+    <div id="dayDetailAddSection" style="display:none">
+      <div class="cal-event-section">
+        <div class="sub-label">＋ Add a plan for this day</div>
+        <div class="emoji-picker" id="calEmojiPicker"></div>
+        <input class="input-field" id="calEventInput" placeholder="What's happening? 📅"
+          style="font-size:16px;margin:10px 0 12px"
+          onkeydown="if(event.key==='Enter')saveCalendarEvent()">
+        <button class="action-btn" style="width:100%;padding:14px;font-size:16px;border-radius:16px" onclick="saveCalendarEvent()">Add Plan ⭐</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL REACHED MODAL -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal">
+    <h2 id="goalModalTitle">🎯 Goal Reached!</h2>
+    <p id="goalModalMsg" style="font-size:15px;color:var(--muted);font-weight:600;line-height:1.5;margin-top:8px"></p>
+    <div class="modal-btns">
+      <button class="action-btn" onclick="closeModal('goalModal')">Woohoo! 🎉</button>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATION OVERLAY -->
+<div class="celebration" id="celebration">
+  <div class="big-emoji" id="celebEmoji">🎉</div>
+  <h2 id="celebTitle">Amazing!</h2>
+  <p id="celebMsg">You did it!</p>
+  <button onclick="hideCelebration()">Keep Going! 🚀</button>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// CONSTANTS — edit these to configure the app
+// ════════════════════════════════════════════
+const SUPABASE_URL  = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+const ADMIN_PASSWORD = 'meleah2024';     // Change this to whatever you want!
+// CLAUDE_API_KEY is stored as a Netlify environment variable (CLAUDE_API_KEY)
+// — it is no longer kept in this file for security reasons.
+const USER_ID = 'meleah';
+
+const FCL_CONCEPTS = {
+  26: 'qu / kw patterns',
+  27: 'Long vowels: ā, ē, ī, ō, yōō',
+  34: 'Compound Words',
+  35: 'Closed/Open Syllables — VCCV and VCV patterns',
+  36: 'Beginning R Blends (br, cr, dr, fr, gr, pr, tr)',
+  37: 'Beginning L Blends (bl, cl, fl, gl, pl, sl)',
+  38: 'Beginning S Blends (sc, sk, sl, sm, sn, sp, st, sw)',
+  39: 'Beginning W Blends (qu, tw)',
+  40: 'Ending T Blends (ct, ft, lt, nt, pt, st, xt)',
+  41: 'Ending L Blends (ld, lf, lk, lm, lp, lt, lve)',
+  42: 'Remaining Ending Blends (nd, nk, nt, mp, sk, sp, st)',
+  43: 'y as a vowel (ī sound)',
+};
+
+// ════════════════════════════════════════════
+// SUPABASE CLIENT
+// ════════════════════════════════════════════
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ════════════════════════════════════════════
+// ONLINE STATE
+// ════════════════════════════════════════════
+let isOnline = navigator.onLine;
+window.addEventListener('online',  () => { isOnline = true;  hideOfflineBanner(); syncStateRow(); });
+window.addEventListener('offline', () => { isOnline = false; showOfflineBanner(); });
+function showOfflineBanner() { document.getElementById('offlineBanner')?.classList.add('visible'); }
+function hideOfflineBanner() { document.getElementById('offlineBanner')?.classList.remove('visible'); }
+
+// ════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════
+function genId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random()*16|0, v = c==='x' ? r : (r&0x3|0x8); return v.toString(16);
+  });
+}
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+// ════════════════════════════════════════════
+// DEFAULT STATE
+// ════════════════════════════════════════════
+const DEFAULT = {
+  coins: { total: 0, quickEarned: 0, dreamEarned: 0 },
+  tasks: [
+    { id: 1, emoji: '📚', name: 'Reading Studio', coins: 10, done: false },
+    { id: 2, emoji: '🗣️', name: 'Story Studio with Aunt', coins: 10, done: false },
+    { id: 3, emoji: '📝', name: 'Write My 3 Things', coins: 5, done: false },
+  ],
+  tracks: {
+    reading: { done: false, streak: 0, coins: 10 },
+    story:   { done: false, streak: 0, coins: 10 },
+    plan:    { done: false, streak: 0, coins: 5  },
+  },
+  myTodos: [], // { id, emoji, text, done, coins: 2 }
+  goals: {
+    quick: { name: 'Movie Night 🍿', target: 50,  earned: 0 },
+    dream: { name: 'NYC Trip ✈️',   target: 500, earned: 0 },
+  },
+  journal: [], // { date, dateDisplay, mood, moodEmoji, text }
+  history: [],
+  coinValue: 0.05,
+  lastDate: '',
+  weekData: {},
+  totalTasksDone: 0,
+  totalDaysActive: 0,
+  assignmentsBaseUrl: '',
+  aiInstructions: '',
+};
+
+// ─── Load from Supabase (falls back to localStorage) ───────
+async function loadFromSupabase() {
+  try {
+    const [stateRes, tasksRes, todosRes, tracksRes, journalRes, histRes] = await Promise.all([
+      db.from('meleah_state').select('*').eq('user_id', USER_ID).maybeSingle(),
+      db.from('meleah_tasks').select('*').eq('user_id', USER_ID).order('sort_order'),
+      db.from('meleah_todos').select('*').eq('user_id', USER_ID).eq('done', false),
+      db.from('meleah_tracks').select('*').eq('user_id', USER_ID),
+      db.from('meleah_journal').select('*').eq('user_id', USER_ID).order('created_at', {ascending:false}).limit(50),
+      db.from('meleah_coin_history').select('*').eq('user_id', USER_ID).order('timestamp', {ascending:false}).limit(30),
+    ]);
+    const st = JSON.parse(JSON.stringify(DEFAULT));
+    if (stateRes.data) {
+      const s = stateRes.data;
+      st.coins.total = s.coins_total || 0;
+      st.goals.quick = { name: s.quick_goal_name || 'Movie Night 🍿', target: s.quick_goal_target || 50, earned: s.coins_quick_earned || 0 };
+      st.goals.dream = { name: s.dream_goal_name || 'NYC Trip ✈️', target: s.dream_goal_target || 500, earned: s.coins_dream_earned || 0 };
+      st.coinValue = s.coin_value_cents || 0.05;
+      st.lastDate = s.last_date || '';
+      st.totalTasksDone = s.total_tasks_done || 0;
+      st.totalDaysActive = s.total_days_active || 0;
+      st.weekData = s.week_data || {};
+      st.assignmentsBaseUrl = s.assignments_base_url || '';
+      st.aiInstructions     = s.ai_instructions     || '';
+      st.aiInstructions     = s.ai_instructions     || '';
+    }
+    if (tasksRes.data?.length)  st.tasks   = tasksRes.data.map(t => ({id:t.id,emoji:t.emoji,name:t.name,coins:t.coins,done:t.done}));
+    if (todosRes.data?.length)  st.myTodos = todosRes.data.map(t => ({id:t.id,emoji:t.emoji,text:t.text,done:t.done,coins:t.coins}));
+    if (tracksRes.data?.length) tracksRes.data.forEach(t => { if (st.tracks[t.track_key]) st.tracks[t.track_key] = {done:t.done,streak:t.streak,coins:t.coins}; });
+    if (journalRes.data?.length) st.journal = journalRes.data.map(e => ({date:e.entry_date,dateDisplay:e.date_display,mood:e.mood,moodEmoji:e.mood_emoji,text:e.entry_text||''}));
+    if (histRes.data?.length)   st.history = histRes.data.map(h => ({task:h.reason,emoji:'✅',coins:h.amount,date:new Date(h.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short'})}));
+    localStorage.setItem('meleahWorld_v3', JSON.stringify(st));
+    console.log('✅ Supabase connected');
+    return st;
+  } catch(e) {
+    console.warn('📴 Supabase unavailable, loading from localStorage:', e.message);
+    showOfflineBanner();
+    return loadFromLocalStorage();
+  }
+}
+function loadFromLocalStorage() {
+  try {
+    const s = localStorage.getItem('meleahWorld_v3') || localStorage.getItem('meleahWorld_v2');
+    if (!s) return JSON.parse(JSON.stringify(DEFAULT));
+    return Object.assign({}, JSON.parse(JSON.stringify(DEFAULT)), JSON.parse(s));
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULT)); }
+}
+
+// ─── Save: always local, async Supabase ─────────────────────
+function saveState() {
+  localStorage.setItem('meleahWorld_v3', JSON.stringify(state));
+  if (isOnline) syncStateRow();
+}
+async function syncStateRow() {
+  try {
+    await db.from('meleah_state').upsert({
+      user_id: USER_ID,
+      coins_total: state.coins.total,
+      coins_quick_earned: state.goals.quick.earned,
+      coins_dream_earned: state.goals.dream.earned,
+      coin_value_cents: state.coinValue,
+      quick_goal_name: state.goals.quick.name,
+      quick_goal_target: state.goals.quick.target,
+      dream_goal_name: state.goals.dream.name,
+      dream_goal_target: state.goals.dream.target,
+      last_date: state.lastDate,
+      total_tasks_done: state.totalTasksDone,
+      total_days_active: state.totalDaysActive,
+      week_data: state.weekData || {},
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+  } catch(e) { console.warn('State sync failed:', e.message); }
+}
+
+let state = JSON.parse(JSON.stringify(DEFAULT)); // overwritten in initApp
+
+// ─── Daily reset (async) ─────────────────────────────────────
+async function checkDailyReset() {
+  const today = todayStr();
+  if (state.lastDate !== today) {
+    if (state.lastDate) {
+      const anyDone = state.tasks.some(t => t.done) ||
+        state.tracks.reading.done || state.tracks.story.done || state.tracks.plan.done ||
+        (state.myTodos || []).some(t => t.done);
+      if (!state.weekData) state.weekData = {};
+      state.weekData[state.lastDate] = anyDone;
+      state.totalDaysActive = (state.totalDaysActive || 0) + 1;
+    }
+    state.tasks.forEach(t => t.done = false);
+    state.tracks.reading.done = false;
+    state.tracks.story.done = false;
+    state.tracks.plan.done = false;
+    state.myTodos = (state.myTodos || []).filter(t => !t.done);
+    state.lastDate = today;
+    // Sync reset to Supabase
+    if (isOnline) {
+      try {
+        await db.from('meleah_tasks').update({done:false}).eq('user_id', USER_ID);
+        await db.from('meleah_tracks').update({done:false}).eq('user_id', USER_ID);
+      } catch(e) {}
+    }
+    await migrateCalendarEventsForToday();
+    saveState();
+  }
+}
+
+// ════════════════════════════════════════════
+// CALENDAR EVENTS STATE
+// ════════════════════════════════════════════
+let calendarEvents = [];
+let calViewYear  = new Date().getFullYear();
+let calViewMonth = new Date().getMonth();
+let selectedDayDate = null;
+let selectedCalEmoji = '⭐';
+
+async function loadCalendarEvents() {
+  if (!isOnline) return JSON.parse(localStorage.getItem('calEvents_v1') || '[]');
+  try {
+    const { data } = await db.from('meleah_calendar_events').select('*').eq('user_id', USER_ID).order('event_date');
+    const evts = (data||[]).map(e => ({id:e.id,event_date:e.event_date,emoji:e.emoji,title:e.title,done:e.done,coins:e.coins,migrated:e.migrated_to_todo}));
+    localStorage.setItem('calEvents_v1', JSON.stringify(evts));
+    return evts;
+  } catch(e) { return JSON.parse(localStorage.getItem('calEvents_v1') || '[]'); }
+}
+
+async function migrateCalendarEventsForToday() {
+  const today = todayStr();
+  const toMigrate = calendarEvents.filter(e => e.event_date === today && !e.migrated);
+  for (const evt of toMigrate) {
+    if ((state.myTodos||[]).length >= 5) break;
+    const newTodo = { id: genId(), emoji: evt.emoji, text: evt.title, done: false, coins: evt.coins || 2 };
+    if (!state.myTodos) state.myTodos = [];
+    state.myTodos.push(newTodo);
+    evt.migrated = true;
+    if (isOnline) {
+      try {
+        await db.from('meleah_todos').insert({id:newTodo.id,user_id:USER_ID,emoji:newTodo.emoji,text:newTodo.text,done:false,coins:newTodo.coins,date_added:today});
+        await db.from('meleah_calendar_events').update({migrated_to_todo:true}).eq('id', evt.id);
+      } catch(e) {}
+    }
+  }
+  localStorage.setItem('calEvents_v1', JSON.stringify(calendarEvents));
+}
+
+async function addCalendarEvent(dateStr, emoji, title) {
+  const newEvt = { id:genId(), event_date:dateStr, emoji, title, done:false, coins:2, migrated:false };
+  calendarEvents.push(newEvt);
+  localStorage.setItem('calEvents_v1', JSON.stringify(calendarEvents));
+  renderCalendar();
+  if (isOnline) {
+    try { await db.from('meleah_calendar_events').insert({id:newEvt.id,user_id:USER_ID,event_date:dateStr,emoji,title,done:false,coins:2,migrated_to_todo:false}); }
+    catch(e) {}
+  }
+  return newEvt;
+}
+
+async function removeCalendarEvent(id) {
+  calendarEvents = calendarEvents.filter(e => e.id !== id);
+  localStorage.setItem('calEvents_v1', JSON.stringify(calendarEvents));
+  renderCalendar();
+  if (selectedDayDate) document.getElementById('dayDetailContent').innerHTML = renderDayFutureContent(selectedDayDate);
+  if (isOnline) { try { await db.from('meleah_calendar_events').delete().eq('id', id); } catch(e) {} }
+}
+
+// ─── Calendar rendering ──────────────────────────────────────
+function renderCalendar() {
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const el = document.getElementById('calMonthTitle');
+  if (el) el.textContent = `${MONTHS[calViewMonth]} ${calViewYear}`;
+  const grid = document.getElementById('calGrid');
+  if (!grid) return;
+  const todayS = todayStr();
+  const firstDay = new Date(calViewYear, calViewMonth, 1).getDay();
+  const daysInMonth = new Date(calViewYear, calViewMonth+1, 0).getDate();
+  grid.innerHTML = '';
+  for (let i = 0; i < firstDay; i++) {
+    const e = document.createElement('div'); e.className = 'cal-cell empty'; grid.appendChild(e);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${calViewYear}-${String(calViewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = ds === todayS, isPast = ds < todayS;
+    const hasEvt = calendarEvents.some(e => e.event_date === ds && !e.migrated);
+    const hasJnl = (state.journal||[]).some(j => j.date === ds);
+    const cell = document.createElement('div');
+    cell.className = `cal-cell${isToday?' today':isPast?' past':' future'}`;
+    cell.onclick = () => openDayDetail(ds);
+    let dots = '';
+    if (hasEvt) dots += '<div class="cal-dot ev"></div>';
+    if (hasJnl) dots += '<div class="cal-dot jn"></div>';
+    cell.innerHTML = `<span class="cal-num">${d}</span>${dots?`<div class="cal-dots">${dots}</div>`:''}`;
+    grid.appendChild(cell);
+  }
+}
+function prevMonth() { calViewMonth--; if (calViewMonth<0){calViewMonth=11;calViewYear--;} renderCalendar(); }
+function nextMonth() { calViewMonth++; if (calViewMonth>11){calViewMonth=0;calViewYear++;} renderCalendar(); }
+
+// ─── Day Detail Sheet ────────────────────────────────────────
+function openDayDetail(dateStr) {
+  selectedDayDate = dateStr;
+  selectedCalEmoji = '⭐';
+  const d = new Date(dateStr + 'T12:00:00');
+  const DAYS  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MTHS  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('dayDetailTitle').textContent = `📅 ${DAYS[d.getDay()]}, ${MTHS[d.getMonth()]} ${d.getDate()}`;
+  const todayS = todayStr();
+  const isTd = dateStr === todayS, isPast = dateStr < todayS;
+  const sub = document.getElementById('dayDetailSub');
+  const content = document.getElementById('dayDetailContent');
+  const addSec = document.getElementById('dayDetailAddSection');
+  if (isTd) {
+    sub.textContent = '✨ Today\'s activities';
+    content.innerHTML = renderDayTodayContent();
+    addSec.style.display = 'none';
+  } else if (isPast) {
+    sub.textContent = '📖 Past day';
+    content.innerHTML = renderDayPastContent(dateStr);
+    addSec.style.display = 'none';
+  } else {
+    sub.textContent = '⭐ Future plans';
+    content.innerHTML = renderDayFutureContent(dateStr);
+    addSec.style.display = 'block';
+    buildCalEmojiPicker();
+    document.getElementById('calEventInput').value = '';
+  }
+  openSheet('dayDetailSheet');
+}
+
+function renderDayTodayContent() {
+  let html = '';
+  const tasks = state.tasks||[], todos = state.myTodos||[];
+  if (tasks.length) {
+    html += '<div style="font-size:13px;font-weight:800;color:var(--teal);margin-bottom:8px">📋 Today\'s Tasks</div>';
+    tasks.forEach(t => { html += `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F5F5F5"><span>${t.done?'✅':t.emoji}</span><span style="font-size:14px;font-weight:700;flex:1${t.done?';text-decoration:line-through;opacity:.5':''}">${t.name}</span><span style="font-size:12px;color:var(--gold);font-weight:800">+${t.coins}🪙</span></div>`; });
+    html += '<div style="height:10px"></div>';
+  }
+  if (todos.length) {
+    html += '<div style="font-size:13px;font-weight:800;color:var(--purple);margin-bottom:8px">✅ My To-Do\'s</div>';
+    todos.forEach(t => { html += `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F5F5F5"><span>${t.done?'✅':t.emoji}</span><span style="font-size:14px;font-weight:700${t.done?';text-decoration:line-through;opacity:.5':''}">${t.text}</span></div>`; });
+  }
+  if (!tasks.length && !todos.length) html = '<p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:20px">No tasks for today yet! 😊</p>';
+  return html;
+}
+
+function renderDayPastContent(dateStr) {
+  const jnl = (state.journal||[]).find(j => j.date === dateStr);
+  const evts = calendarEvents.filter(e => e.event_date === dateStr);
+  let html = '';
+  if (jnl) html += `<div style="background:var(--pink-light);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px">Journal Entry</div><div style="font-size:26px">${jnl.moodEmoji}</div><div style="font-size:13px;font-weight:800;color:var(--pink)">${jnl.mood}</div>${jnl.text?`<div style="font-size:13px;font-style:italic;margin-top:6px">"${jnl.text}"</div>`:''}</div>`;
+  if (evts.length) {
+    html += '<div style="font-size:13px;font-weight:800;color:var(--gold);margin-bottom:8px">⭐ Plans for this day</div>';
+    evts.forEach(e => { html += `<div class="day-event-row"><span style="font-size:20px">${e.emoji}</span><span class="ev-title">${e.title}</span>${e.done?'<span>✅</span>':''}</div>`; });
+  }
+  if (!jnl && !evts.length) html = '<p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:20px">Nothing recorded for this day.</p>';
+  return html;
+}
+
+function renderDayFutureContent(dateStr) {
+  const evts = calendarEvents.filter(e => e.event_date === dateStr);
+  if (!evts.length) return '<p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:12px 0">Nothing planned yet — add something below! ⭐</p>';
+  return evts.map(e =>
+    `<div class="day-event-row"><span style="font-size:20px">${e.emoji}</span><span class="ev-title">${e.title}</span><button class="ev-del-btn" onclick="removeCalendarEvent('${e.id}')">✕</button></div>`
+  ).join('') + '<p style="font-size:12px;color:var(--teal);font-weight:700;text-align:center;margin-top:8px">⭐ These will appear in your To-Do\'s on this day!</p>';
+}
+
+function buildCalEmojiPicker() {
+  const picker = document.getElementById('calEmojiPicker');
+  if (!picker) return;
+  picker.innerHTML = TODO_EMOJIS.map(e =>
+    `<div class="emoji-opt${e===selectedCalEmoji?' selected':''}" onclick="selectCalEmoji('${e}')">${e}</div>`
+  ).join('');
+}
+function selectCalEmoji(e) {
+  selectedCalEmoji = e;
+  document.querySelectorAll('#calEmojiPicker .emoji-opt').forEach(el => el.classList.toggle('selected', el.textContent===e));
+}
+async function saveCalendarEvent() {
+  const text = document.getElementById('calEventInput').value.trim();
+  if (!text) return;
+  await addCalendarEvent(selectedDayDate, selectedCalEmoji, text);
+  document.getElementById('calEventInput').value = '';
+  document.getElementById('dayDetailContent').innerHTML = renderDayFutureContent(selectedDayDate);
+}
+
+// ════════════════════════════════════════════
+// ADMIN AUTH
+// ════════════════════════════════════════════
+let adminUnlocked = false;
+function tryUnlockAdmin() {
+  const input = document.getElementById('adminPasswordInput');
+  const errMsg = document.getElementById('adminErrorMsg');
+  if (!input) return;
+  if (input.value === ADMIN_PASSWORD) {
+    adminUnlocked = true;
+    document.getElementById('adminLockScreen').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    renderMelissaPanel();
+    input.value = '';
+    if (errMsg) errMsg.style.display = 'none';
+  } else {
+    if (errMsg) errMsg.style.display = 'block';
+    input.classList.add('shake');
+    input.style.borderColor = 'var(--coral)';
+    setTimeout(() => { input.classList.remove('shake'); input.style.borderColor = ''; }, 600);
+    input.value = '';
+  }
+}
+
+// ════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════
+function render() {
+  renderHeader();
+  renderCoins();
+  renderTasks();
+  renderTracks();
+  renderMyTodos();
+  renderGoalsPreview();
+  renderRewards();
+  renderProgress();
+  renderJournalPanel();
+  renderMelissaPanel();
+  checkCompleteBanner();
+}
+
+function renderHeader() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greeting').textContent = `${greet}, Meleah! ✨`;
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('dateStr').textContent = `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function renderCoins() {
+  const c = state.coins.total;
+  ['coinDisplay','coinDisplay2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = c;
+  });
+  const msgs = [[0,9,'Let\'s go! 🌟'],[10,29,'You\'re doing great! 💪'],[30,49,'Look at those coins! 🎉'],[50,99,'You\'re on fire! 🔥'],[100,199,'100+ coins! 👑'],[200,9999,'Coin queen! 🌈']];
+  let msg = 'Keep going! 🌟';
+  msgs.forEach(([a,b,m]) => { if (c >= a && c <= b) msg = m; });
+  const sub = document.getElementById('coinSub');
+  if (sub) sub.textContent = msg;
+}
+
+function renderTasks() {
+  const grid = document.getElementById('taskGrid');
+  if (!grid) return;
+  if (!state.tasks.length) {
+    grid.innerHTML = '<p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:20px">Ask Melissa to add tasks! 😊</p>';
+    return;
+  }
+  grid.innerHTML = '';
+  state.tasks.forEach(task => {
+    const d = document.createElement('div');
+    d.className = `task-card${task.done ? ' done' : ''}`;
+    d.onclick = () => completeTask(task.id, 'task');
+    d.innerHTML = `
+      <div class="task-check">${task.done ? '✅' : task.emoji}</div>
+      <div class="task-body">
+        <div class="task-name">${task.name}</div>
+        <div class="task-coins">+${task.coins} 🪙 when done</div>
+      </div>
+      ${!task.done ? `<div class="task-badge">+${task.coins} 🪙</div>` : '<div style="font-size:24px">⭐</div>'}
+    `;
+    grid.appendChild(d);
+  });
+}
+
+function renderTracks() {
+  const grid = document.getElementById('tracksGrid');
+  if (!grid) return;
+  const defs = [
+    { key: 'reading', icon: '📚', name: 'Reading Studio',  color: 'var(--teal)' },
+    { key: 'story',   icon: '🗣️', name: 'Story Studio',    color: 'var(--coral)' },
+    { key: 'plan',    icon: '📝', name: 'My Plan',         color: 'var(--purple)' },
+  ];
+  grid.innerHTML = '';
+  defs.forEach(def => {
+    const t = state.tracks[def.key];
+    const d = document.createElement('div');
+    d.className = `track-card${t.done ? ' done' : ''}`;
+    d.onclick = () => completeTask(def.key, 'track');
+    d.innerHTML = `
+      <div class="track-icon">${t.done ? '✅' : def.icon}</div>
+      <div class="track-name" style="color:${t.done ? 'var(--green)' : def.color}">${def.name}</div>
+      <div class="track-coins">+${t.coins} 🪙</div>
+      ${t.streak > 0 ? `<div class="track-streak">🔥 ${t.streak} days</div>` : ''}
+    `;
+    grid.appendChild(d);
+  });
+}
+
+function renderMyTodos() {
+  const todos = state.myTodos || [];
+  const grid = document.getElementById('myTodosGrid');
+  const badge = document.getElementById('todoCountBadge');
+  const btn = document.getElementById('addTodoBtn');
+  if (!grid) return;
+
+  const count = todos.length;
+  if (badge) badge.textContent = `${count} / 5`;
+  if (btn) btn.disabled = count >= 5;
+
+  if (!todos.length) {
+    grid.innerHTML = '<p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:16px 0">Nothing yet! Tap below to add your own to-do. 😊</p>';
+    return;
+  }
+  grid.innerHTML = '';
+  todos.forEach(todo => {
+    const d = document.createElement('div');
+    d.className = `todo-card${todo.done ? ' done' : ''}`;
+    d.innerHTML = `
+      <div class="todo-check" onclick="completeTodo('${todo.id}')">${todo.done ? '✅' : todo.emoji}</div>
+      <div class="todo-body" style="flex:1" onclick="completeTodo('${todo.id}')">
+        <div class="todo-text">${todo.text}</div>
+        ${!todo.done ? '<div class="todo-coins">+2 🪙 when done</div>' : ''}
+      </div>
+      ${!todo.done ? `<button class="todo-del" onclick="deleteTodo('${todo.id}')">✕</button>` : '<div style="font-size:20px;padding:0 4px">⭐</div>'}
+    `;
+    grid.appendChild(d);
+  });
+}
+
+function renderGoalsPreview() {
+  const el = document.getElementById('goalsPreview');
+  if (!el) return;
+  const { quick, dream } = state.goals;
+  const qPct = quick.target > 0 ? Math.min(100, Math.round(quick.earned / quick.target * 100)) : 0;
+  const dPct = dream.target > 0 ? Math.min(100, Math.round(dream.earned / dream.target * 100)) : 0;
+  el.innerHTML = `
+    <div class="goal-card">
+      <div class="goal-header"><div class="goal-title">⚡ ${quick.name}</div><div class="goal-amount">${quick.earned} / ${quick.target} 🪙</div></div>
+      <div class="goal-bar-bg"><div class="goal-bar-fill quick" style="width:${qPct}%"></div></div>
+      <div class="goal-meta">${qPct < 100 ? `${quick.target - quick.earned} more to go!` : '🎉 Reached! Tell Melissa!'}</div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-header"><div class="goal-title">✈️ ${dream.name}</div><div class="goal-amount">${dream.earned} / ${dream.target} 🪙</div></div>
+      <div class="goal-bar-bg"><div class="goal-bar-fill dream" style="width:${dPct}%"></div></div>
+      <div class="goal-meta">${dPct < 100 ? `${dream.target - dream.earned} coins to the dream!` : '🎉 DREAM REACHED!'}</div>
+    </div>
+  `;
+}
+
+function renderRewards() {
+  const { quick, dream } = state.goals;
+  const qPct = quick.target > 0 ? Math.min(100, Math.round(quick.earned / quick.target * 100)) : 0;
+  const dPct = dream.target > 0 ? Math.min(100, Math.round(dream.earned / dream.target * 100)) : 0;
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el[el.tagName === 'INPUT' ? 'value' : 'textContent'] = val; };
+  set('quickGoalName', quick.name);
+  set('quickGoalAmt', `${quick.earned} / ${quick.target} 🪙`);
+  set('dreamGoalName', dream.name);
+  set('dreamGoalAmt', `${dream.earned} / ${dream.target} 🪙`);
+  const qb = document.getElementById('quickGoalBar'); if (qb) qb.style.width = qPct + '%';
+  const db = document.getElementById('dreamGoalBar'); if (db) db.style.width = dPct + '%';
+  const qm = document.getElementById('quickGoalMeta'); if (qm) qm.textContent = qPct < 100 ? `${quick.target - quick.earned} coins to go!` : '🎉 Reached! Tell Melissa!';
+  const dm = document.getElementById('dreamGoalMeta'); if (dm) dm.textContent = dPct < 100 ? `${dream.target - dream.earned} to the dream!` : '🎉 DREAM REACHED!';
+
+  // History
+  const hist = document.getElementById('historyList');
+  if (hist) {
+    if (!state.history?.length) {
+      hist.innerHTML = '<p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:20px">No coins yet — go earn some! 🌟</p>';
+    } else {
+      hist.innerHTML = [...state.history].reverse().slice(0,30).map(h =>
+        `<div class="history-item"><div><div class="history-task">${h.emoji||'✅'} ${h.task}</div><div class="history-date">${h.date}</div></div><div class="history-coins">+${h.coins} 🪙</div></div>`
+      ).join('');
+    }
+  }
+}
+
+function renderProgress() {
+  const sm = (n) => n >= 7 ? '🔥 On fire! Amazing!' : n >= 3 ? '⭐ Great streak!' : n > 0 ? '✨ Nice start!' : 'Start today!';
+  const se = (n) => n >= 7 ? '🔥' : n >= 3 ? '⭐' : n > 0 ? '✨' : '💤';
+  ['reading','story','plan'].forEach(k => {
+    const s = state.tracks[k]?.streak || 0;
+    const d = document.getElementById(`${k}StreakDisplay`);
+    const m = document.getElementById(`${k}StreakMsg`);
+    if (d) d.textContent = `${se(s)} ${s}`;
+    if (m) m.textContent = sm(s);
+  });
+  // Week
+  const wk = document.getElementById('weekCalendar');
+  if (wk) {
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const today = new Date(); wk.innerHTML = '';
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      const str = d.toISOString().split('T')[0];
+      const isDone = state.weekData?.[str];
+      const isToday = i === 0;
+      const div = document.createElement('div');
+      div.className = 'streak-day';
+      div.innerHTML = `<div class="streak-label">${days[d.getDay()]}</div><div class="streak-dot ${isDone ? 'completed' : isToday ? 'today-empty' : ''}">${isDone ? '⭐' : ''}</div>`;
+      wk.appendChild(div);
+    }
+  }
+  // Achievements
+  const ag = document.getElementById('achievementsGrid');
+  if (ag) {
+    const total = state.coins.total, days = state.totalDaysActive || 0, tasks = state.totalTasksDone || 0;
+    ag.innerHTML = `
+      <div style="text-align:center;background:var(--purple-light);border-radius:14px;padding:14px"><div style="font-size:28px">🪙</div><div style="font-size:24px;font-weight:900;color:var(--purple)">${total}</div><div style="font-size:12px;color:var(--muted);font-weight:700">Total Coins</div></div>
+      <div style="text-align:center;background:var(--gold-light);border-radius:14px;padding:14px"><div style="font-size:28px">📅</div><div style="font-size:24px;font-weight:900;color:var(--gold)">${days}</div><div style="font-size:12px;color:var(--muted);font-weight:700">Active Days</div></div>
+      <div style="text-align:center;background:var(--green-light);border-radius:14px;padding:14px"><div style="font-size:28px">✅</div><div style="font-size:24px;font-weight:900;color:var(--green)">${tasks}</div><div style="font-size:12px;color:var(--muted);font-weight:700">Tasks Done</div></div>
+      <div style="text-align:center;background:var(--pink-light);border-radius:14px;padding:14px"><div style="font-size:28px">${(state.journal||[]).length > 0 ? '💭' : '📝'}</div><div style="font-size:24px;font-weight:900;color:var(--pink)">${(state.journal||[]).length}</div><div style="font-size:12px;color:var(--muted);font-weight:700">Journal Days</div></div>
+    `;
+  }
+}
+
+function renderJournalPanel() {
+  const list = document.getElementById('journalEntriesList');
+  const journal = state.journal || [];
+  if (!list) return;
+  if (!journal.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:30px">No entries yet — write your first one! 💕</p>';
+    return;
+  }
+  list.innerHTML = [...journal].reverse().slice(0,20).map(e => `
+    <div class="journal-entry-card">
+      <div class="journal-entry-date">${e.dateDisplay}</div>
+      <div class="journal-entry-mood">${e.moodEmoji}</div>
+      <div style="font-size:13px;font-weight:800;color:var(--pink);margin-bottom:4px">${e.mood}</div>
+      ${e.text ? `<div class="journal-entry-text">"${e.text}"</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderMelissaPanel() {
+  // Initialize weekly plans section (lazy, runs once or on re-open)
+  wpInit().catch(()=>{});
+  populateJournalWeekSelect();
+
+  // Task list
+  const list = document.getElementById('taskManagerList');
+  if (list) {
+    list.innerHTML = !state.tasks.length
+      ? '<p style="color:var(--muted);font-size:13px;font-weight:600">No tasks. Add some below!</p>'
+      : state.tasks.map(t => `
+        <div class="task-manage-item">
+          <span style="font-size:20px">${t.emoji}</span>
+          <span class="task-manage-name">${t.name}</span>
+          <span class="task-manage-coins">${t.coins} 🪙</span>
+          <button onclick="removeTask('${t.id}')" style="background:#FFEAEA;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;font-weight:800;color:#E53935">✕</button>
+        </div>`).join('');
+  }
+  // Prefill inputs
+  const fillIfEmpty = (id, val) => { const el = document.getElementById(id); if (el && !el.value) el.value = val; };
+  fillIfEmpty('quickGoalNameInput', state.goals.quick.name);
+  fillIfEmpty('quickGoalTargetInput', state.goals.quick.target);
+  fillIfEmpty('dreamGoalNameInput', state.goals.dream.name);
+  fillIfEmpty('dreamGoalTargetInput', state.goals.dream.target);
+  fillIfEmpty('readingCoinsInput', state.tracks.reading.coins);
+  fillIfEmpty('storyCoinsInput', state.tracks.story.coins);
+  fillIfEmpty('planCoinsInput', state.tracks.plan.coins);
+  fillIfEmpty('coinValueInput', state.coinValue);
+
+  // Journal entries in Melissa view
+  const mj = document.getElementById('melissaJournalList');
+  const journal = state.journal || [];
+  if (mj) {
+    if (!journal.length) {
+      mj.innerHTML = '<p style="color:var(--muted);font-size:13px;font-weight:600">No entries yet.</p>';
+    } else {
+      mj.innerHTML = [...journal].reverse().slice(0,10).map(e => `
+        <div class="journal-entry-card" style="margin-bottom:10px">
+          <div class="journal-entry-date">${e.dateDisplay}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:22px">${e.moodEmoji}</span>
+            <span style="font-size:13px;font-weight:800;color:var(--pink)">${e.mood}</span>
+          </div>
+          ${e.text ? `<div class="journal-entry-text" style="font-style:italic;color:var(--text);font-size:13px;line-height:1.5">"${e.text}"</div>` : ''}
+        </div>`).join('');
+    }
+  }
+}
+
+function checkCompleteBanner() {
+  const banner = document.getElementById('completeBanner');
+  if (!banner) return;
+  const tasksDone = state.tasks.every(t => t.done);
+  const tracksDone = state.tracks.reading.done && state.tracks.story.done && state.tracks.plan.done;
+  banner.classList.toggle('visible', tasksDone && tracksDone && state.tasks.length > 0);
+}
+
+// ════════════════════════════════════════════
+// ACTIONS — COMPLETING ITEMS
+// ════════════════════════════════════════════
+function completeTask(id, type) {
+  let name, emoji, coins;
+  if (type === 'task') {
+    const t = state.tasks.find(x => x.id === id);
+    if (!t || t.done) return;
+    t.done = true;
+    name = t.name; emoji = t.emoji; coins = t.coins;
+    if (isOnline) db.from('meleah_tasks').update({done:true}).eq('id',id).then().catch(()=>{});
+  } else {
+    const t = state.tracks[id];
+    if (!t || t.done) return;
+    t.done = true;
+    t.streak = (t.streak || 0) + 1;
+    const defs = { reading:{name:'Reading Studio 📚',emoji:'📚'}, story:{name:'Story Studio 🗣️',emoji:'🗣️'}, plan:{name:'My Plan 📝',emoji:'📝'} };
+    name = defs[id].name; emoji = defs[id].emoji; coins = t.coins;
+    if (isOnline) db.from('meleah_tracks').update({done:true,streak:t.streak}).eq('user_id',USER_ID).eq('track_key',id).then().catch(()=>{});
+  }
+  awardCoins(coins, name, emoji);
+  checkGoalReached();
+  checkAllDone();
+  render();
+}
+
+function completeTodo(id) {
+  const t = (state.myTodos || []).find(x => x.id == id);
+  if (!t || t.done) return;
+  t.done = true;
+  awardCoins(2, t.text, t.emoji);
+  checkGoalReached();
+  render();
+  saveState();
+  if (isOnline) db.from('meleah_todos').update({done:true}).eq('id',id).then().catch(()=>{});
+}
+
+function deleteTodo(id) {
+  state.myTodos = (state.myTodos || []).filter(x => x.id != id);
+  saveState();
+  render();
+  if (isOnline) db.from('meleah_todos').delete().eq('id',id).then().catch(()=>{});
+}
+
+function awardCoins(coins, name, emoji) {
+  state.coins.total += coins;
+  state.goals.quick.earned = Math.min(state.goals.quick.target, state.goals.quick.earned + coins);
+  state.goals.dream.earned = Math.min(state.goals.dream.target, state.goals.dream.earned + coins);
+  state.totalTasksDone = (state.totalTasksDone || 0) + 1;
+  if (!state.history) state.history = [];
+  state.history.push({ task: name, emoji, coins, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' }) });
+  flyCoins(coins);
+  saveState();
+  // Log to Supabase coin history
+  if (isOnline) { db.from('meleah_coin_history').insert({user_id:USER_ID,amount:coins,reason:`${emoji} ${name}`}).then().catch(()=>{}); }
+}
+
+function checkAllDone() {
+  const all = state.tasks.every(t => t.done) && state.tracks.reading.done && state.tracks.story.done && state.tracks.plan.done;
+  if (all) setTimeout(() => celebrate('🎉', 'All done today!', 'You crushed it, Meleah! Don\'t forget your journal! 💭'), 800);
+}
+
+function checkGoalReached() {
+  const { quick, dream } = state.goals;
+  if (quick.earned >= quick.target && quick.target > 0 && quick.earned - (state.history.slice(-1)[0]?.coins || 0) < quick.target) {
+    document.getElementById('goalModalTitle').textContent = '⚡ Quick Goal Reached!';
+    document.getElementById('goalModalMsg').textContent = `You reached "${quick.name}"! Tell Melissa so she can give you your reward. You worked SO hard! 🎉`;
+    document.getElementById('goalModal').classList.add('visible');
+  }
+  if (dream.earned >= dream.target && dream.target > 0) {
+    setTimeout(() => celebrate('✈️', 'DREAM REACHED!', `You saved enough for "${dream.name}"! This is HUGE! 🌟`), 1200);
+  }
+}
+
+// ════════════════════════════════════════════
+// TO-DO SHEET
+// ════════════════════════════════════════════
+const TODO_EMOJIS = ['👕','🛏️','🧹','🚿','🎒','📝','💌','🐕','🎨','🏃','🍎','🧸','🌟','💪','🎵','🧺','🪥','📱','✏️','🏠'];
+let selectedEmoji = '✅';
+
+function openAddTodo() {
+  if ((state.myTodos || []).length >= 5) return;
+  selectedEmoji = '✅';
+  // Build emoji picker
+  const picker = document.getElementById('emojiPicker');
+  picker.innerHTML = TODO_EMOJIS.map(e =>
+    `<div class="emoji-opt${e === selectedEmoji ? ' selected' : ''}" onclick="selectEmoji('${e}')">${e}</div>`
+  ).join('');
+  document.getElementById('todoTextInput').value = '';
+  openSheet('addTodoSheet');
+  setTimeout(() => document.getElementById('todoTextInput').focus(), 400);
+}
+
+function selectEmoji(e) {
+  selectedEmoji = e;
+  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.toggle('selected', el.textContent === e));
+}
+
+function saveNewTodo() {
+  const text = document.getElementById('todoTextInput').value.trim();
+  if (!text) return;
+  if (!state.myTodos) state.myTodos = [];
+  const newId = genId();
+  const newTodo = { id: newId, emoji: selectedEmoji, text, done: false, coins: 2 };
+  state.myTodos.push(newTodo);
+  saveState();
+  closeSheet('addTodoSheet');
+  render();
+  if (isOnline) db.from('meleah_todos').insert({id:newId,user_id:USER_ID,emoji:selectedEmoji,text,done:false,coins:2,date_added:todayStr()}).then().catch(()=>{});
+}
+
+// ════════════════════════════════════════════
+// JOURNAL SHEET
+// ════════════════════════════════════════════
+const MOODS = [
+  { emoji: '😞', label: 'Hard day', color: '#9E9E9E' },
+  { emoji: '😐', label: 'So-so',    color: '#78909C' },
+  { emoji: '🙂', label: 'Pretty good', color: '#66BB6A' },
+  { emoji: '😊', label: 'Great!',   color: '#42A5F5' },
+  { emoji: '🔥', label: 'On fire!', color: '#EF5350' },
+];
+let selectedMood = null;
+let speechRecognition = null;
+let isListening = false;
+
+function openJournal() {
+  selectedMood = null;
+  document.getElementById('journalText').value = '';
+  // Build mood row
+  const row = document.getElementById('moodRow');
+  row.innerHTML = MOODS.map((m, i) =>
+    `<div class="mood-btn" onclick="selectMood(${i})">
+      <div class="mood-emoji">${m.emoji}</div>
+      <div class="mood-label">${m.label}</div>
+    </div>`
+  ).join('');
+  // Voice button
+  const voiceBtn = document.getElementById('voiceBtn');
+  const voiceHint = document.getElementById('voiceHint');
+  const speechSupported = ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+  if (!speechSupported) {
+    voiceBtn.textContent = '🎙️ Not available';
+    voiceBtn.disabled = true;
+    if (voiceHint) voiceHint.textContent = 'Voice not supported on this browser — just type!';
+  } else {
+    voiceBtn.innerHTML = '🎙️ Speak it!';
+    voiceBtn.disabled = false;
+    if (voiceHint) voiceHint.textContent = 'Tap to dictate your journal entry';
+  }
+  openSheet('journalSheet');
+}
+
+function selectMood(i) {
+  selectedMood = i;
+  document.querySelectorAll('.mood-btn').forEach((el, idx) => el.classList.toggle('selected', idx === i));
+}
+
+function toggleVoice() {
+  if (isListening) { stopVoice(); return; }
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) return;
+  speechRecognition = new SpeechRec();
+  speechRecognition.continuous = true;
+  speechRecognition.interimResults = true;
+  speechRecognition.lang = 'en-US';
+
+  const btn = document.getElementById('voiceBtn');
+  const hint = document.getElementById('voiceHint');
+  let finalTranscript = document.getElementById('journalText').value;
+
+  speechRecognition.onstart = () => {
+    isListening = true;
+    btn.innerHTML = '⏹️ Stop listening';
+    btn.classList.add('listening');
+    if (hint) hint.textContent = 'Listening... tap stop when done.';
+  };
+  speechRecognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalTranscript += t + ' ';
+      else interim = t;
+    }
+    document.getElementById('journalText').value = finalTranscript + interim;
+  };
+  speechRecognition.onerror = () => { stopVoice(); };
+  speechRecognition.onend = () => { stopVoice(); };
+  speechRecognition.start();
+}
+
+function stopVoice() {
+  isListening = false;
+  if (speechRecognition) { try { speechRecognition.stop(); } catch(e) {} }
+  const btn = document.getElementById('voiceBtn');
+  const hint = document.getElementById('voiceHint');
+  if (btn) { btn.innerHTML = '🎙️ Speak it!'; btn.classList.remove('listening'); }
+  if (hint) hint.textContent = 'Tap to dictate your journal entry';
+}
+
+function saveJournalEntry() {
+  const text = document.getElementById('journalText').value.trim();
+  if (selectedMood === null && !text) {
+    alert('Pick how you feel or write something first! 💕');
+    return;
+  }
+  if (!state.journal) state.journal = [];
+  const mood = selectedMood !== null ? MOODS[selectedMood] : MOODS[2];
+  const d = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  state.journal.push({
+    date: todayStr(),
+    dateDisplay: `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`,
+    mood: mood.label,
+    moodEmoji: mood.emoji,
+    text
+  });
+  if (isListening) stopVoice();
+  saveState();
+  closeSheet('journalSheet');
+  render();
+  // Save to Supabase journal table (upsert so re-saving today is safe)
+  if (isOnline) {
+    db.from('meleah_journal').upsert({
+      user_id:USER_ID, entry_date:entry.date, date_display:entry.dateDisplay,
+      mood:entry.mood, mood_emoji:entry.moodEmoji, entry_text:entry.text
+    }, { onConflict:'user_id,entry_date' }).then().catch(()=>{});
+  }
+  setTimeout(() => celebrate('💭', 'Journal saved!', 'Thank you for sharing how you feel, Meleah. 💕'), 300);
+}
+
+// ════════════════════════════════════════════
+// MELISSA ACTIONS
+// ════════════════════════════════════════════
+function addTask() {
+  const emoji = document.getElementById('newTaskEmoji').value.trim() || '✅';
+  const name = document.getElementById('newTaskName').value.trim();
+  const coins = parseInt(document.getElementById('newTaskCoins').value) || 5;
+  if (!name) return;
+  const newId = genId();
+  const sortOrder = state.tasks.length;
+  state.tasks.push({ id: newId, emoji, name, coins, done: false });
+  document.getElementById('newTaskEmoji').value = '';
+  document.getElementById('newTaskName').value = '';
+  document.getElementById('newTaskCoins').value = '';
+  saveState(); render();
+  if (isOnline) db.from('meleah_tasks').insert({id:newId,user_id:USER_ID,emoji,name,coins,done:false,sort_order:sortOrder}).then().catch(()=>{});
+}
+function removeTask(id) {
+  state.tasks = state.tasks.filter(t => t.id != id);
+  saveState(); render();
+  if (isOnline) db.from('meleah_tasks').delete().eq('id',id).then().catch(()=>{});
+}
+function resetTasks() {
+  if (!confirm('Reset all checkmarks for today? (Coins are kept)')) return;
+  state.tasks.forEach(t => t.done = false);
+  state.tracks.reading.done = false;
+  state.tracks.story.done = false;
+  state.tracks.plan.done = false;
+  state.myTodos = (state.myTodos || []).map(t => ({ ...t, done: false }));
+  saveState(); render();
+  if (isOnline) {
+    db.from('meleah_tasks').update({done:false}).eq('user_id',USER_ID).then().catch(()=>{});
+    db.from('meleah_tracks').update({done:false}).eq('user_id',USER_ID).then().catch(()=>{});
+    db.from('meleah_todos').update({done:false}).eq('user_id',USER_ID).then().catch(()=>{});
+  }
+}
+function saveGoals() {
+  const qn = document.getElementById('quickGoalNameInput').value.trim();
+  const qt = parseInt(document.getElementById('quickGoalTargetInput').value);
+  const dn = document.getElementById('dreamGoalNameInput').value.trim();
+  const dt = parseInt(document.getElementById('dreamGoalTargetInput').value);
+  if (qn) state.goals.quick.name = qn;
+  if (qt > 0) state.goals.quick.target = qt;
+  if (dn) state.goals.dream.name = dn;
+  if (dt > 0) state.goals.dream.target = dt;
+  saveState(); render(); alert('Goals saved! ✅');
+}
+function saveTrackCoins() {
+  const rc = parseInt(document.getElementById('readingCoinsInput').value);
+  const sc = parseInt(document.getElementById('storyCoinsInput').value);
+  const pc = parseInt(document.getElementById('planCoinsInput').value);
+  if (rc > 0) state.tracks.reading.coins = rc;
+  if (sc > 0) state.tracks.story.coins = sc;
+  if (pc > 0) state.tracks.plan.coins = pc;
+  saveState(); render(); alert('Coin values saved! ✅');
+  if (isOnline) {
+    const trks = [{user_id:USER_ID,track_key:'reading',done:state.tracks.reading.done,streak:state.tracks.reading.streak,coins:state.tracks.reading.coins},{user_id:USER_ID,track_key:'story',done:state.tracks.story.done,streak:state.tracks.story.streak,coins:state.tracks.story.coins},{user_id:USER_ID,track_key:'plan',done:state.tracks.plan.done,streak:state.tracks.plan.streak,coins:state.tracks.plan.coins}];
+    db.from('meleah_tracks').upsert(trks,{onConflict:'user_id,track_key'}).then().catch(()=>{});
+  }
+}
+function showCashout() {
+  const cv = parseFloat(document.getElementById('coinValueInput').value) || 0.05;
+  state.coinValue = cv; saveState();
+  const total = state.coins.total;
+  const cash = (total * cv).toFixed(2);
+  const info = document.getElementById('cashoutInfo');
+  document.getElementById('cashoutText').innerHTML =
+    `Meleah has <strong>${total} coins</strong> 🪙<br>At $${cv.toFixed(2)} per coin = <strong style="font-size:22px;color:var(--green)">$${cash}</strong><br><br>Send via <strong>Apple Cash</strong> or add to her <strong>Greenlight card</strong>.`;
+  info.classList.add('visible');
+}
+function redeemReward() {
+  if (!confirm('Mark quick goal as redeemed and reset it?')) return;
+  state.goals.quick.earned = 0;
+  document.getElementById('cashoutInfo').classList.remove('visible');
+  saveState(); render(); alert('Quick goal reset! Set a new reward. 🎉');
+}
+async function confirmReset() {
+  if (!confirm('⚠️ Delete ALL data including coins, streaks, and journal? Cannot undo.')) return;
+  if (!confirm('Are you 100% sure?')) return;
+  localStorage.removeItem('meleahWorld_v3');
+  localStorage.removeItem('meleahWorld_v2');
+  localStorage.removeItem('calEvents_v1');
+  state = JSON.parse(JSON.stringify(DEFAULT));
+  state.lastDate = todayStr();
+  calendarEvents = [];
+  if (isOnline) {
+    try {
+      await Promise.all([
+        db.from('meleah_tasks').delete().eq('user_id',USER_ID),
+        db.from('meleah_todos').delete().eq('user_id',USER_ID),
+        db.from('meleah_journal').delete().eq('user_id',USER_ID),
+        db.from('meleah_coin_history').delete().eq('user_id',USER_ID),
+        db.from('meleah_calendar_events').delete().eq('user_id',USER_ID),
+        db.from('meleah_state').delete().eq('user_id',USER_ID),
+      ]);
+      await db.from('meleah_tracks').upsert([
+        {user_id:USER_ID,track_key:'reading',done:false,streak:0,coins:10},
+        {user_id:USER_ID,track_key:'story',done:false,streak:0,coins:10},
+        {user_id:USER_ID,track_key:'plan',done:false,streak:0,coins:5},
+      ],{onConflict:'user_id,track_key'});
+    } catch(e) {}
+  }
+  saveState(); render(); renderCalendar();
+  alert('Reset complete. Starting fresh! 🌱');
+}
+
+// ════════════════════════════════════════════
+// UI UTILITIES
+// ════════════════════════════════════════════
+function showPanel(name) {
+  ['home','week','rewards','progress','journalView','melissa','calendar'].forEach(p => {
+    document.getElementById(`panel-${p}`)?.classList.toggle('active', p === name);
+    const nav = document.getElementById(`nav-${p}`);
+    if (nav) nav.classList.toggle('active', p === name);
+  });
+  if (name === 'melissa') {
+    if (!adminUnlocked) {
+      document.getElementById('adminLockScreen').style.display = 'block';
+      document.getElementById('adminContent').style.display = 'none';
+    } else {
+      renderMelissaPanel();
+    }
+  }
+  if (name === 'calendar') renderCalendar();
+  if (name === 'week') renderWeekPanel();
+}
+function openSheet(id) { document.getElementById(id).classList.add('visible'); }
+function closeSheet(id) { document.getElementById(id).classList.remove('visible'); }
+function closeSheetIfBg(e, id) { if (e.target === e.currentTarget) closeSheet(id); }
+
+// ─── Week Panel ───────────────────────────────────
+async function renderWeekPanel() {
+  const el = document.getElementById('weekPanelInner');
+  if (!el) return;
+
+  // Find this week's Monday
+  const now = new Date();
+  const dow = now.getDay();
+  const diffToMon = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMon);
+  const weekId = monday.toISOString().slice(0, 10);
+
+  el.innerHTML = '<p style="text-align:center;padding:30px;color:var(--muted)">⏳ Loading…</p>';
+
+  if (!isOnline) {
+    el.innerHTML = '<p style="text-align:center;padding:30px;color:var(--muted)">📡 Need internet to load the week plan</p>';
+    return;
+  }
+
+  const [{ data: plan }, { data: assignments }] = await Promise.all([
+    db.from('meleah_weekly_plans').select('*').eq('id', weekId).single(),
+    db.from('meleah_daily_assignments').select('*').eq('week_id', weekId),
+  ]);
+
+  if (!plan) {
+    el.innerHTML = `<div style="text-align:center;padding:48px 24px">
+      <div style="font-size:52px;margin-bottom:12px">📋</div>
+      <div style="font-size:17px;font-weight:900;color:var(--purple)">No plan yet this week</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:8px">Melissa will set it up soon! 💜</div>
+    </div>`;
+    return;
+  }
+
+  // Build a lookup: assnMap[day][track] = assignment row
+  const assnMap = {};
+  (assignments || []).forEach(a => {
+    if (!assnMap[a.day]) assnMap[a.day] = {};
+    assnMap[a.day][a.track] = a;
+  });
+
+  const todayName = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];
+  const IPAD_DAYS  = ['monday','wednesday'];
+  const baseUrl    = state.assignmentsBaseUrl || '';
+  const shareUrl   = baseUrl ? `${baseUrl}/WeeklyPlan.html?week=${weekId}` : '';
+
+  let html = `<div style="padding:16px 16px 90px">`;
+
+  // ── Header ──
+  html += `<div style="margin-bottom:14px">
+    <div style="font-size:20px;font-weight:900;color:var(--purple)">📋 This Week's Plan</div>
+    <div style="font-size:13px;color:#555;margin-top:3px">
+      ${plan.fcl_concept ? `FCL Concept ${plan.fcl_concept}` : ''}${plan.concept_name ? ` — ${plan.concept_name}` : ''}
+    </div>
+    ${plan.status === 'published' ? `<span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:2px 8px;border-radius:8px;font-weight:700;display:inline-block;margin-top:4px">Published ✓</span>` : ''}
+  </div>`;
+
+  // ── Share button ──
+  if (shareUrl) {
+    html += `<button class="action-btn secondary" style="width:100%;margin-bottom:14px;font-size:13px"
+      onclick="(async()=>{try{await navigator.clipboard.writeText('${shareUrl}');showToast('📋 Link copied! Send to Dad & Aunt')}catch(e){window.open('${shareUrl}','_blank')}})()">
+      🔗 Copy Share Link for Dad &amp; Aunt
+    </button>`;
+  }
+
+  // ── Story Studio (Aunt's section) ──
+  const story = assnMap['week']?.['story'];
+  if (story) {
+    const storyText = story.topic || story.activity_content || story.prompts || '';
+    if (storyText) {
+      html += `<div style="background:#f3e8ff;border:2px solid #c084fc;border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="font-weight:900;color:var(--purple);font-size:14px;margin-bottom:6px">📝 Story Studio — Aunt (FaceTime)</div>
+        ${story.topic    ? `<div style="font-size:13px;margin-bottom:4px"><b>Topic:</b> ${story.topic}</div>` : ''}
+        ${story.prompts  ? `<div style="font-size:13px;margin-bottom:4px"><b>Prompts:</b> ${story.prompts}</div>` : ''}
+        ${story.activity_content && !story.topic ? `<div style="font-size:13px;color:#555">${story.activity_content}</div>` : ''}
+      </div>`;
+    }
+  }
+
+  // ── Day cards ──
+  ['monday','tuesday','wednesday','thursday','friday'].forEach(day => {
+    const isToday = day === todayName;
+    const isIPad  = IPAD_DAYS.includes(day);
+    const reading = assnMap[day]?.['reading'];
+    const label   = day.charAt(0).toUpperCase() + day.slice(1);
+
+    const words  = (reading?.word_list || reading?.words || '').trim();
+    const actUrl = reading?.activity_url || '';
+
+    html += `<div style="
+      background:${isToday ? '#fffde7' : 'white'};
+      border:2px solid ${isToday ? '#f5c800' : '#e5e7eb'};
+      border-radius:14px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${words ? '8px' : '0'}">
+        <span style="font-weight:900;font-size:15px">${label}</span>
+        ${isToday ? `<span style="background:#f5c800;color:#333;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700">TODAY ⭐</span>` : ''}
+        <span style="margin-left:auto;font-size:12px;color:var(--muted)">${isIPad ? '📱 iPad' : '📝 Paper'}</span>
+      </div>
+      ${words ? `<div style="font-size:12px;color:#555;margin-bottom:8px">
+        <b>Words:</b> ${words.split(/[\n,]+/).slice(0,8).map(w=>w.trim()).filter(Boolean).join(' · ')}
+      </div>` : ''}
+      ${isIPad && actUrl  ? `<a href="${actUrl}" style="display:block;background:var(--purple);color:white;text-align:center;padding:8px 12px;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px">▶ Start Activity</a>` : ''}
+      ${isIPad && !actUrl ? `<div style="font-size:12px;color:var(--muted)">📱 iPad activity day — ask Melissa for the link</div>` : ''}
+      ${!isIPad           ? `<div style="font-size:12px;color:var(--muted)">📄 Paper worksheet today</div>` : ''}
+    </div>`;
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ─── Week Panel ───────────────────────────────────
+async function renderWeekPanel() {
+  const el = document.getElementById('weekPanelInner');
+  if (!el) return;
+
+  // Find this week's Monday
+  const now = new Date();
+  const dow = now.getDay();
+  const diffToMon = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMon);
+  const weekId = monday.toISOString().slice(0, 10);
+
+  el.innerHTML = '<p style="text-align:center;padding:30px;color:var(--muted)">⏳ Loading…</p>';
+
+  if (!isOnline) {
+    el.innerHTML = '<p style="text-align:center;padding:30px;color:var(--muted)">📡 Need internet to load the week plan</p>';
+    return;
+  }
+
+  const [{ data: plan }, { data: assignments }] = await Promise.all([
+    db.from('meleah_weekly_plans').select('*').eq('id', weekId).single(),
+    db.from('meleah_daily_assignments').select('*').eq('week_id', weekId),
+  ]);
+
+  if (!plan) {
+    el.innerHTML = `<div style="text-align:center;padding:48px 24px">
+      <div style="font-size:52px;margin-bottom:12px">📋</div>
+      <div style="font-size:17px;font-weight:900;color:var(--purple)">No plan yet this week</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:8px">Melissa will set it up soon! 💜</div>
+    </div>`;
+    return;
+  }
+
+  // Build a lookup: assnMap[day][track] = assignment row
+  const assnMap = {};
+  (assignments || []).forEach(a => {
+    if (!assnMap[a.day]) assnMap[a.day] = {};
+    assnMap[a.day][a.track] = a;
+  });
+
+  const todayName = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];
+  const IPAD_DAYS  = ['monday','wednesday'];
+  const baseUrl    = state.assignmentsBaseUrl || '';
+  const shareUrl   = baseUrl ? `${baseUrl}/WeeklyPlan.html?week=${weekId}` : '';
+
+  let html = `<div style="padding:16px 16px 90px">`;
+
+  // ── Header ──
+  html += `<div style="margin-bottom:14px">
+    <div style="font-size:20px;font-weight:900;color:var(--purple)">📋 This Week's Plan</div>
+    <div style="font-size:13px;color:#555;margin-top:3px">
+      ${plan.fcl_concept ? `FCL Concept ${plan.fcl_concept}` : ''}${plan.concept_name ? ` — ${plan.concept_name}` : ''}
+    </div>
+    ${plan.status === 'published' ? `<span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:2px 8px;border-radius:8px;font-weight:700;display:inline-block;margin-top:4px">Published ✓</span>` : ''}
+  </div>`;
+
+  // ── Share button ──
+  if (shareUrl) {
+    html += `<button class="action-btn secondary" style="width:100%;margin-bottom:14px;font-size:13px"
+      onclick="(async()=>{try{await navigator.clipboard.writeText('${shareUrl}');showToast('📋 Link copied! Send to Dad & Aunt')}catch(e){window.open('${shareUrl}','_blank')}})()">
+      🔗 Copy Share Link for Dad &amp; Aunt
+    </button>`;
+  }
+
+  // ── Story Studio (Aunt's section) ──
+  const story = assnMap['week']?.['story'];
+  if (story) {
+    const storyText = story.topic || story.activity_content || story.prompts || '';
+    if (storyText) {
+      html += `<div style="background:#f3e8ff;border:2px solid #c084fc;border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="font-weight:900;color:var(--purple);font-size:14px;margin-bottom:6px">📝 Story Studio — Aunt (FaceTime)</div>
+        ${story.topic    ? `<div style="font-size:13px;margin-bottom:4px"><b>Topic:</b> ${story.topic}</div>` : ''}
+        ${story.prompts  ? `<div style="font-size:13px;margin-bottom:4px"><b>Prompts:</b> ${story.prompts}</div>` : ''}
+        ${story.activity_content && !story.topic ? `<div style="font-size:13px;color:#555">${story.activity_content}</div>` : ''}
+      </div>`;
+    }
+  }
+
+  // ── Day cards ──
+  ['monday','tuesday','wednesday','thursday','friday'].forEach(day => {
+    const isToday = day === todayName;
+    const isIPad  = IPAD_DAYS.includes(day);
+    const reading = assnMap[day]?.['reading'];
+    const label   = day.charAt(0).toUpperCase() + day.slice(1);
+
+    const words  = (reading?.word_list || reading?.words || '').trim();
+    const actUrl = reading?.activity_url || '';
+
+    html += `<div style="
+      background:${isToday ? '#fffde7' : 'white'};
+      border:2px solid ${isToday ? '#f5c800' : '#e5e7eb'};
+      border-radius:14px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${words ? '8px' : '0'}">
+        <span style="font-weight:900;font-size:15px">${label}</span>
+        ${isToday ? `<span style="background:#f5c800;color:#333;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700">TODAY ⭐</span>` : ''}
+        <span style="margin-left:auto;font-size:12px;color:var(--muted)">${isIPad ? '📱 iPad' : '📝 Paper'}</span>
+      </div>
+      ${words ? `<div style="font-size:12px;color:#555;margin-bottom:8px">
+        <b>Words:</b> ${words.split(/[\n,]+/).slice(0,8).map(w=>w.trim()).filter(Boolean).join(' · ')}
+      </div>` : ''}
+      ${isIPad && actUrl  ? `<a href="${actUrl}" style="display:block;background:var(--purple);color:white;text-align:center;padding:8px 12px;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px">▶ Start Activity</a>` : ''}
+      ${isIPad && !actUrl ? `<div style="font-size:12px;color:var(--muted)">📱 iPad activity day — ask Melissa for the link</div>` : ''}
+      ${!isIPad           ? `<div style="font-size:12px;color:var(--muted)">📄 Paper worksheet today</div>` : ''}
+    </div>`;
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
+function celebrate(emoji, title, msg) {
+  document.getElementById('celebEmoji').textContent = emoji;
+  document.getElementById('celebTitle').textContent = title;
+  document.getElementById('celebMsg').textContent = msg;
+  document.getElementById('celebration').classList.add('visible');
+}
+function hideCelebration() { document.getElementById('celebration').classList.remove('visible'); }
+function flyCoins(amount) {
+  const n = Math.min(amount, 8);
+  for (let i = 0; i < n; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'coin-fly';
+      el.textContent = '🪙';
+      el.style.left = (25 + Math.random() * 50) + '%';
+      el.style.top = (35 + Math.random() * 30) + '%';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1300);
+    }, i * 110);
+  }
+}
+
+// ════════════════════════════════════════════
+// WEEKLY PLANS SYSTEM
+// ════════════════════════════════════════════
+
+// Mon=interactive, Wed=interactive, others=paper
+const WP_INTERACTIVE_DAYS = ['monday', 'wednesday'];
+const WP_DAYS = ['monday','tuesday','wednesday','thursday','friday'];
+
+// ─── FCL concept auto-fill ────────────────────
+function wpFclAutoFill() {
+  const numEl  = document.getElementById('wpFclNumber');
+  const nameEl = document.getElementById('wpConceptName');
+  if (!numEl || !nameEl) return;
+  const lookup = FCL_CONCEPTS[parseInt(numEl.value)];
+  if (!lookup) return;
+  const cur = nameEl.value.trim();
+  if (cur === '' || Object.values(FCL_CONCEPTS).includes(cur)) {
+    nameEl.value = lookup;
+  }
+}
+
+// ─── Load prior week context for AI ──────────
+async function wpGetPrevWeekContext(weekId) {
+  if (!isOnline) return null;
+  try {
+    const d = new Date(weekId + 'T12:00:00');
+    d.setDate(d.getDate() - 7);
+    const prevWeekId = d.toISOString().split('T')[0];
+
+    const [planRes, assignRes, storyRes] = await Promise.all([
+      db.from('meleah_weekly_plans')
+        .select('fcl_concept, concept_name')
+        .eq('id', prevWeekId)
+        .maybeSingle(),
+      db.from('meleah_daily_assignments')
+        .select('day_of_week, word_list')
+        .eq('week_id', prevWeekId)
+        .eq('track', 'reading'),
+      db.from('meleah_daily_assignments')
+        .select('activity_name')
+        .eq('week_id', prevWeekId)
+        .eq('track', 'story')
+        .maybeSingle(),
+    ]);
+
+    if (!planRes.data) return null;
+
+    const wordLists = {};
+    (assignRes.data || []).forEach(row => {
+      if (row.word_list) wordLists[row.day_of_week] = row.word_list;
+    });
+
+    const conceptLabel = planRes.data.fcl_concept
+      ? `FCL ${planRes.data.fcl_concept}${planRes.data.concept_name ? ' — ' + planRes.data.concept_name : ''}`
+      : (planRes.data.concept_name || 'unknown concept');
+
+    return {
+      concept:    conceptLabel,
+      wordLists:  wordLists,
+      storyTopic: storyRes.data?.activity_name || null,
+    };
+  } catch (e) {
+    console.warn('wpGetPrevWeekContext error', e);
+    return null;
+  }
+}
+
+// Working state for the weekly plan builder
+let wpState = {
+  weekId: null,         // '2026-03-02'
+  currentDay: 'monday',
+  plan: null,           // row from meleah_weekly_plans
+  assignments: {},      // keyed by day → reading/story/plan data
+  baseUrl: '',
+  dirty: false,
+};
+
+// ─── Date helpers ────────────────────────────
+function wpGetMonday(date) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Sun
+  const diff = (day === 0) ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+function wpFormatWeekLabel(weekId) {
+  const d = new Date(weekId + 'T12:00:00');
+  return 'Week of ' + d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+// ─── Init: called by renderMelissaPanel ──────
+async function wpInit() {
+  if (!wpState.weekId) {
+    wpState.weekId = wpGetMonday(new Date());
+  }
+  // Load saved base URL
+  if (state.assignmentsBaseUrl) {
+    wpState.baseUrl = state.assignmentsBaseUrl;
+    const urlEl = document.getElementById('wpBaseUrl');
+    if (urlEl && !urlEl.value) urlEl.value = wpState.baseUrl;
+  }
+  await wpLoadWeek(wpState.weekId);
+  wpRenderWeekHeader();
+  wpRenderDay();
+  wpRenderStoryStudio();
+}
+
+// ─── Load plan + assignments from Supabase ───
+async function wpLoadWeek(weekId) {
+  if (!isOnline) return;
+  try {
+    const [planRes, assignRes] = await Promise.all([
+      db.from('meleah_weekly_plans').select('*').eq('id', weekId).maybeSingle(),
+      db.from('meleah_daily_assignments').select('*').eq('week_id', weekId),
+    ]);
+    wpState.plan = planRes.data || null;
+    // Build assignments map: { monday: {reading: row, story: row, plan: row}, ... }
+    wpState.assignments = {};
+    (assignRes.data || []).forEach(row => {
+      if (!wpState.assignments[row.day_of_week]) wpState.assignments[row.day_of_week] = {};
+      wpState.assignments[row.day_of_week][row.track] = row;
+    });
+  } catch(e) {
+    console.warn('wpLoadWeek error', e);
+  }
+}
+
+// ─── Render week header ───────────────────────
+function wpRenderWeekHeader() {
+  const label = document.getElementById('wpWeekLabel');
+  const badge = document.getElementById('wpStatusBadge');
+  const fclNum = document.getElementById('wpFclNumber');
+  const fclName = document.getElementById('wpConceptName');
+  if (label) label.textContent = wpFormatWeekLabel(wpState.weekId);
+  if (badge) {
+    const status = wpState.plan?.status || 'draft';
+    badge.textContent = status === 'published' ? 'Published ✓' : 'Draft';
+    badge.className = 'wp-status-badge ' + status;
+  }
+  if (fclNum && wpState.plan?.fcl_concept) fclNum.value = wpState.plan.fcl_concept;
+  if (fclName && wpState.plan?.concept_name) fclName.value = wpState.plan.concept_name;
+  // Show teacher notes if we have them
+  if (wpState.plan?.teacher_notes) {
+    const notesGroup = document.getElementById('wpNotesGroup');
+    const notesEl = document.getElementById('wpTeacherNotes');
+    if (notesGroup) notesGroup.style.display = 'block';
+    if (notesEl) notesEl.value = wpState.plan.teacher_notes;
+  }
+}
+
+// ─── Render the day editor ────────────────────
+function wpRenderDay() {
+  // Update tab highlights
+  WP_DAYS.forEach(d => {
+    const tab = document.getElementById('wptab-' + d);
+    if (tab) tab.classList.toggle('active', d === wpState.currentDay);
+  });
+
+  const day = wpState.currentDay;
+  const isInteractive = WP_INTERACTIVE_DAYS.includes(day);
+  const sessionBadge = isInteractive
+    ? '<span class="wp-session-badge interactive">🖥️ Interactive iPad Day</span>'
+    : '<span class="wp-session-badge paper">🖨️ Paper Day</span>';
+
+  const rdg = wpState.assignments[day]?.reading || {};
+  const pln = wpState.assignments[day]?.plan || {};
+
+  const editor = document.getElementById('wpDayEditor');
+  if (!editor) return;
+  editor.innerHTML = `
+    <!-- Reading Studio for this day -->
+    <div class="wp-track-box reading">
+      <div class="wp-track-label reading">📚 Reading Studio — Grandma & Dad &nbsp;${sessionBadge}</div>
+      ${isInteractive ? `<p style="font-size:12px;color:#5A3D9E;font-weight:700;margin-bottom:10px">Meleah will do an interactive iPad activity for this session. Describe what she should practice (the word list below powers the activity).</p>` : ''}
+      <div class="input-group">
+        <label class="input-label">Activity Name</label>
+        <input class="input-field" id="wpRdgActivity" placeholder="e.g. Word Card Game" value="${esc(rdg.activity_name||'')}">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Instructions (step by step for Grandma/Dad)</label>
+        <textarea class="input-field" id="wpRdgInstructions" rows="5" placeholder="Step 1: ...&#10;Step 2: ...">${esc(rdg.instructions||'')}</textarea>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Word List (comma-separated)</label>
+        <input class="input-field" id="wpRdgWords" placeholder="trip, drop, grip, crab, frog" value="${esc(rdg.word_list||'')}">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Coach Tips</label>
+        <textarea class="input-field" id="wpRdgTips" rows="2" placeholder="Helpful hints for the coach...">${esc(rdg.coach_tips||'')}</textarea>
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label class="input-label">Duration (minutes)</label>
+        <input class="input-field" id="wpRdgDuration" type="number" placeholder="15" value="${rdg.duration_min||''}" style="max-width:100px">
+      </div>
+    </div>
+
+    <!-- My Plan for this day -->
+    <div class="wp-track-box plan">
+      <div class="wp-track-label plan">🗓️ My Plan — Morning & Evening</div>
+      <div class="input-group">
+        <label class="input-label">Morning Prompt</label>
+        <input class="input-field" id="wpPlanMorning" placeholder="What are your 3 things today?" value="${esc(pln.activity_name||'')}">
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label class="input-label">Evening Reflection</label>
+        <input class="input-field" id="wpPlanEvening" placeholder="Which ones did you do?" value="${esc(pln.instructions||'')}">
+      </div>
+    </div>
+
+    <button class="action-btn" style="width:100%;padding:14px" onclick="wpSaveDay()">💾 Save ${day.charAt(0).toUpperCase()+day.slice(1)}</button>
+    <div id="wpSaveConfirm" style="text-align:center;font-size:13px;font-weight:800;color:var(--green);margin-top:8px;display:none">Saved ✓</div>
+  `;
+}
+
+// Helper: escape HTML in template literals
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── Render Story Studio ─────────────────────
+function wpRenderStoryStudio() {
+  const story = wpState.assignments['week']?.story || {};
+  // Parse the JSON blob that holds the new session fields
+  let vocabData = {};
+  try { vocabData = JSON.parse(story.vocab_cards_json || '{}'); } catch(e) {}
+
+  const el = id => document.getElementById(id);
+  if (el('wpStoryTopic')      && story.activity_name) el('wpStoryTopic').value      = story.activity_name;
+  if (el('wpStoryAuntText')   && story.instructions)  el('wpStoryAuntText').value   = story.instructions;
+  if (el('wpStoryDiscussion') && vocabData.discussion) el('wpStoryDiscussion').value = vocabData.discussion;
+  if (el('wpStoryPrompts')    && vocabData.prompts)    el('wpStoryPrompts').value    = vocabData.prompts;
+  if (el('wpStoryTextMsg')    && story.coach_tips)     el('wpStoryTextMsg').value    = story.coach_tips;
+  if (el('wpStoryVocab')      && story.word_list)      el('wpStoryVocab').value      = story.word_list;
+  if (el('wpStoryVocabWords') && vocabData.vocab_raw)  el('wpStoryVocabWords').value = vocabData.vocab_raw;
+}
+
+// ─── Open Vocab Cards page ────────────────────
+function wpOpenVocabCards() {
+  if (!wpState.weekId) { showToast('Save the week first'); return; }
+  const base = (wpState.baseUrl || '').replace(/\/$/, '');
+  if (!base) { showToast('Set your Vercel URL first (above)'); return; }
+  window.open(`${base}/activities/vocab-cards.html?week=${wpState.weekId}`, '_blank');
+}
+
+// ─── Week navigation ──────────────────────────
+async function wpPrevWeek() {
+  await wpAutoSavePlan();
+  const d = new Date(wpState.weekId + 'T12:00:00');
+  d.setDate(d.getDate() - 7);
+  wpState.weekId = d.toISOString().split('T')[0];
+  wpState.currentDay = 'monday';
+  await wpLoadWeek(wpState.weekId);
+  wpRenderWeekHeader();
+  wpRenderDay();
+  wpRenderStoryStudio();
+  document.getElementById('wpShareBox')?.classList.remove('visible');
+}
+
+async function wpNextWeek() {
+  await wpAutoSavePlan();
+  const d = new Date(wpState.weekId + 'T12:00:00');
+  d.setDate(d.getDate() + 7);
+  wpState.weekId = d.toISOString().split('T')[0];
+  wpState.currentDay = 'monday';
+  await wpLoadWeek(wpState.weekId);
+  wpRenderWeekHeader();
+  wpRenderDay();
+  wpRenderStoryStudio();
+  document.getElementById('wpShareBox')?.classList.remove('visible');
+}
+
+// ─── Day tab selection ────────────────────────
+function wpSelectDay(day) {
+  wpState.currentDay = day;
+  wpRenderDay();
+}
+
+// ─── Save base URL ────────────────────────────
+async function wpSaveBaseUrl() {
+  const url = (document.getElementById('wpBaseUrl')?.value || '').trim().replace(/\/$/, '');
+  if (!url) return;
+  wpState.baseUrl = url;
+  // Store in meleah_state
+  if (isOnline) {
+    await db.from('meleah_state').update({ assignments_base_url: url }).eq('user_id', USER_ID).then().catch(()=>{});
+  }
+  state.assignmentsBaseUrl = url;
+  showToast('URL saved! ✓');
+}
+
+function showToast(msg) {
+  let t = document.getElementById('wpToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'wpToast';
+    t.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:800;z-index:999;transition:opacity 0.3s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 2000);
+}
+
+// ─── Teacher doc upload ───────────────────────
+async function wpUploadDoc(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('wpUploadStatus');
+  if (status) { status.style.display = 'block'; status.textContent = '⏳ Reading file...'; }
+
+  let extractedText = '';
+  try {
+    if (file.name.endsWith('.docx')) {
+      const ab = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer: ab });
+      extractedText = result.value;
+    } else if (file.name.endsWith('.pdf')) {
+      // PDF: prompt user to paste text (pdf.js not loaded by default to keep file small)
+      extractedText = '[PDF uploaded: ' + file.name + ']\n\nNote: To extract PDF text automatically, please copy the text from the PDF and paste it into a notes app, then re-save it as a .docx file. Or you can manually type the key details in the fields below.';
+    } else {
+      throw new Error('Unsupported file type');
+    }
+
+    // Show notes
+    const notesGroup = document.getElementById('wpNotesGroup');
+    const notesEl = document.getElementById('wpTeacherNotes');
+    if (notesGroup) notesGroup.style.display = 'block';
+    if (notesEl) notesEl.value = extractedText;
+
+    // Save to Supabase
+    await wpAutoSavePlan(extractedText);
+    if (status) status.textContent = '✅ File read successfully! Notes appear above for reference.';
+  } catch(e) {
+    if (status) status.textContent = '❌ Could not read file. Try a .docx file.';
+    console.warn('wpUploadDoc error', e);
+  }
+  input.value = ''; // reset so same file can be re-uploaded
+}
+
+// ─── Auto-save plan metadata ──────────────────
+async function wpAutoSavePlan(teacherNotes) {
+  if (!isOnline) return;
+  const fclNum = parseInt(document.getElementById('wpFclNumber')?.value) || null;
+  const conceptName = document.getElementById('wpConceptName')?.value || '';
+  const payload = {
+    id: wpState.weekId,
+    week_start: wpState.weekId,
+    fcl_concept: fclNum,
+    concept_name: conceptName,
+    status: wpState.plan?.status || 'draft',
+    updated_at: new Date().toISOString(),
+  };
+  if (teacherNotes !== undefined) payload.teacher_notes = teacherNotes;
+  const { data } = await db.from('meleah_weekly_plans').upsert(payload).select().single();
+  if (data) wpState.plan = data;
+}
+
+// ─── Save current day's assignments ──────────
+async function wpSaveDay() {
+  if (!isOnline) { showToast('You\'re offline — connect to save'); return; }
+  await wpAutoSavePlan();
+
+  const day = wpState.currentDay;
+  const isInteractive = WP_INTERACTIVE_DAYS.includes(day);
+
+  const rdgRow = {
+    id: (wpState.assignments[day]?.reading?.id) || genId(),
+    week_id: wpState.weekId,
+    day_of_week: day,
+    track: 'reading',
+    session_type: isInteractive ? 'interactive' : 'paper',
+    activity_name: document.getElementById('wpRdgActivity')?.value || '',
+    instructions: document.getElementById('wpRdgInstructions')?.value || '',
+    word_list: document.getElementById('wpRdgWords')?.value || '',
+    coach_tips: document.getElementById('wpRdgTips')?.value || '',
+    duration_min: parseInt(document.getElementById('wpRdgDuration')?.value) || null,
+    sort_order: 0,
+  };
+  const planRow = {
+    id: (wpState.assignments[day]?.plan?.id) || genId(),
+    week_id: wpState.weekId,
+    day_of_week: day,
+    track: 'plan',
+    session_type: 'paper',
+    activity_name: document.getElementById('wpPlanMorning')?.value || '',
+    instructions: document.getElementById('wpPlanEvening')?.value || '',
+    word_list: '',
+    coach_tips: '',
+    duration_min: 5,
+    sort_order: 1,
+  };
+  // Save story studio (stored under day='week')
+  // Pack the new session fields into vocab_cards_json to avoid a schema change
+  const vocabCardsJson = JSON.stringify({
+    cards:      wpState._vocabCards || [],
+    discussion: document.getElementById('wpStoryDiscussion')?.value  || '',
+    prompts:    document.getElementById('wpStoryPrompts')?.value     || '',
+    vocab_raw:  document.getElementById('wpStoryVocabWords')?.value  || '',
+  });
+  const storyRow = {
+    id: (wpState.assignments['week']?.story?.id) || genId(),
+    week_id: wpState.weekId,
+    day_of_week: 'week',
+    track: 'story',
+    session_type: 'facetime',
+    activity_name:    document.getElementById('wpStoryTopic')?.value    || '',
+    instructions:     document.getElementById('wpStoryAuntText')?.value || '',  // Aunt's story script
+    coach_tips:       document.getElementById('wpStoryTextMsg')?.value  || '',
+    word_list:        document.getElementById('wpStoryVocab')?.value    || '',
+    vocab_cards_json: vocabCardsJson,
+    duration_min: null,
+    sort_order: 0,
+  };
+
+  await Promise.all([
+    db.from('meleah_daily_assignments').upsert(rdgRow),
+    db.from('meleah_daily_assignments').upsert(planRow),
+    db.from('meleah_daily_assignments').upsert(storyRow),
+  ]);
+
+  // Update local state
+  if (!wpState.assignments[day]) wpState.assignments[day] = {};
+  wpState.assignments[day].reading = rdgRow;
+  wpState.assignments[day].plan = planRow;
+  if (!wpState.assignments['week']) wpState.assignments['week'] = {};
+  wpState.assignments['week'].story = storyRow;
+
+  const confirm = document.getElementById('wpSaveConfirm');
+  if (confirm) { confirm.style.display = 'block'; setTimeout(() => { confirm.style.display = 'none'; }, 2000); }
+}
+
+// ─── Publish & share ──────────────────────────
+async function wpPublish() {
+  if (!isOnline) { showToast('Connect to publish'); return; }
+  await wpSaveDay();
+
+  // Mark as published
+  const { data } = await db.from('meleah_weekly_plans')
+    .update({ status: 'published', updated_at: new Date().toISOString() })
+    .eq('id', wpState.weekId)
+    .select().single();
+  if (data) wpState.plan = data;
+
+  const badge = document.getElementById('wpStatusBadge');
+  if (badge) { badge.textContent = 'Published ✓'; badge.className = 'wp-status-badge published'; }
+
+  // Build share URL & message
+  const baseUrl = wpState.baseUrl || '[set your Vercel URL above first]';
+  const shareUrl = `${baseUrl}/WeeklyPlan.html?week=${wpState.weekId}`;
+  const weekLabel = wpFormatWeekLabel(wpState.weekId);
+  const conceptName = wpState.plan?.concept_name || '';
+  const fclNum = wpState.plan?.fcl_concept || '';
+  const conceptLine = conceptName ? `📚 This week: FCL Concept ${fclNum} — ${conceptName}` : '';
+
+  const shareMsg = `Here's Meleah's plan for the ${weekLabel}! 🌟\n${conceptLine}\n\n🔗 ${shareUrl}\n\nGrandma & Dad: Reading Studio and My Plan are in there — Mon & Wed are iPad activity days, other days print the worksheet.\nAunt: Scroll to the Story Studio section — that's yours! 💜\n\nEach iPad activity earns Meleah coins! 🪙`;
+
+  const shareText = document.getElementById('wpShareText');
+  const shareBox = document.getElementById('wpShareBox');
+  if (shareText) shareText.textContent = shareMsg;
+  if (shareBox) shareBox.classList.add('visible');
+  shareBox?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Store on state object for later
+  wpState._shareUrl = shareUrl;
+  wpState._shareMsg = shareMsg;
+}
+
+// ─── Copy helpers ─────────────────────────────
+function wpCopyMessage() {
+  wpCopyToClipboard(wpState._shareMsg || '');
+}
+function wpCopyLink() {
+  wpCopyToClipboard(wpState._shareUrl || '');
+}
+function wpCopyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const el = document.getElementById('wpCopyConfirm');
+    if (el) { el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    const el = document.getElementById('wpCopyConfirm');
+    if (el) { el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
+  });
+}
+
+// ─── AI Instructions (student profile) ───────
+function wpToggleInstructions() {
+  const panel = document.getElementById('wpInstrPanel');
+  const toggle = document.getElementById('wpInstrToggle');
+  if (!panel) return;
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  if (toggle) toggle.textContent = open ? '▲ hide' : '▼ show';
+  // Populate textarea with saved value when opening
+  if (open) {
+    const ta = document.getElementById('wpAiInstructions');
+    if (ta && state.aiInstructions) ta.value = state.aiInstructions;
+  }
+}
+
+async function wpSaveAiInstructions() {
+  const val = document.getElementById('wpAiInstructions')?.value || '';
+  state.aiInstructions = val;
+  saveState();
+  if (isOnline) {
+    await db.from('meleah_state')
+      .update({ ai_instructions: val })
+      .eq('user_id', USER_ID)
+      .then().catch(() => {});
+  }
+  const saved = document.getElementById('wpInstrSaved');
+  if (saved) { saved.style.display = 'block'; setTimeout(() => { saved.style.display = 'none'; }, 2000); }
+}
+
+// ─── Journal PDF Download ─────────────────────
+function populateJournalWeekSelect() {
+  const sel = document.getElementById('journalWeekSelect');
+  if (!sel || !state.journal?.length) return;
+
+  // Group entries by Monday of their week
+  const weekMap = {};
+  state.journal.forEach(e => {
+    const d = new Date(e.date + 'T12:00:00');
+    const day = d.getDay(); // 0=Sun, 1=Mon...
+    const offset = day === 0 ? -6 : 1 - day; // shift to Monday
+    const mon = new Date(d); mon.setDate(d.getDate() + offset);
+    const key = mon.toISOString().slice(0, 10);
+    weekMap[key] = (weekMap[key] || 0) + 1;
+  });
+
+  const weeks = Object.keys(weekMap).sort().reverse(); // newest first
+  sel.innerHTML = '<option value="">Select a week to download...</option>';
+  weeks.forEach(monDate => {
+    const d = new Date(monDate + 'T12:00:00');
+    const label = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const count = weekMap[monDate];
+    const opt = document.createElement('option');
+    opt.value = monDate;
+    opt.textContent = `Week of ${label} (${count} entr${count === 1 ? 'y' : 'ies'})`;
+    sel.appendChild(opt);
+  });
+}
+
+function downloadJournalPDF() {
+  const sel = document.getElementById('journalWeekSelect');
+  const weekStart = sel?.value;
+  if (!weekStart) { showToast('Pick a week from the dropdown first'); return; }
+
+  const monDate = new Date(weekStart + 'T12:00:00');
+  const sunDate = new Date(monDate); sunDate.setDate(monDate.getDate() + 6);
+
+  const entries = (state.journal || []).filter(e => {
+    const d = e.date;
+    return d >= weekStart && d <= sunDate.toISOString().slice(0, 10);
+  }).sort((a, b) => a.date.localeCompare(b.date));
+
+  if (!entries.length) { showToast('No journal entries for that week'); return; }
+
+  const weekLabel = monDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const rows = entries.map(e => `
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-date">${e.dateDisplay || e.date}</span>
+        <span class="entry-mood">${e.moodEmoji || ''} ${e.mood || ''}</span>
+      </div>
+      <div class="entry-text">${(e.text || '(no text)').replace(/\n/g, '<br>')}</div>
+    </div>`).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Meleah's Journal — Week of ${weekLabel}</title>
+<style>
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 680px; margin: 40px auto; color: #222; }
+  h1 { font-size: 22px; color: #7C5CBF; border-bottom: 3px solid #7C5CBF; padding-bottom: 10px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 28px; }
+  .entry { margin-bottom: 24px; border-left: 4px solid #E8D5FF; padding-left: 16px; }
+  .entry-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .entry-date { font-size: 14px; font-weight: 700; color: #5A3D9E; }
+  .entry-mood { font-size: 14px; color: #555; }
+  .entry-text { font-size: 15px; line-height: 1.7; color: #333; }
+  @media print { body { margin: 20px; } }
+</style></head><body>
+<h1>💭 Meleah's Journal</h1>
+<div class="subtitle">Week of ${weekLabel} &nbsp;·&nbsp; ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}</div>
+${rows}
+<script>window.onload = function(){ window.print(); }<\/script>
+</body></html>`);
+  win.document.close();
+}
+
+// ─── AI Instructions (student profile) ───────
+function wpToggleInstructions() {
+  const panel = document.getElementById('wpInstrPanel');
+  const toggle = document.getElementById('wpInstrToggle');
+  if (!panel) return;
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  if (toggle) toggle.textContent = open ? '▲ hide' : '▼ show';
+  // Populate textarea with saved value when opening
+  if (open) {
+    const ta = document.getElementById('wpAiInstructions');
+    if (ta && state.aiInstructions) ta.value = state.aiInstructions;
+  }
+}
+
+async function wpSaveAiInstructions() {
+  const val = document.getElementById('wpAiInstructions')?.value || '';
+  state.aiInstructions = val;
+  saveState();
+  if (isOnline) {
+    await db.from('meleah_state')
+      .update({ ai_instructions: val })
+      .eq('user_id', USER_ID)
+      .then().catch(() => {});
+  }
+  const saved = document.getElementById('wpInstrSaved');
+  if (saved) { saved.style.display = 'block'; setTimeout(() => { saved.style.display = 'none'; }, 2000); }
+}
+
+// ─── Journal PDF Download ─────────────────────
+function populateJournalWeekSelect() {
+  const sel = document.getElementById('journalWeekSelect');
+  if (!sel || !state.journal?.length) return;
+
+  // Group entries by Monday of their week
+  const weekMap = {};
+  state.journal.forEach(e => {
+    const d = new Date(e.date + 'T12:00:00');
+    const day = d.getDay(); // 0=Sun, 1=Mon...
+    const offset = day === 0 ? -6 : 1 - day; // shift to Monday
+    const mon = new Date(d); mon.setDate(d.getDate() + offset);
+    const key = mon.toISOString().slice(0, 10);
+    weekMap[key] = (weekMap[key] || 0) + 1;
+  });
+
+  const weeks = Object.keys(weekMap).sort().reverse(); // newest first
+  sel.innerHTML = '<option value="">Select a week to download...</option>';
+  weeks.forEach(monDate => {
+    const d = new Date(monDate + 'T12:00:00');
+    const label = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const count = weekMap[monDate];
+    const opt = document.createElement('option');
+    opt.value = monDate;
+    opt.textContent = `Week of ${label} (${count} entr${count === 1 ? 'y' : 'ies'})`;
+    sel.appendChild(opt);
+  });
+}
+
+function downloadJournalPDF() {
+  const sel = document.getElementById('journalWeekSelect');
+  const weekStart = sel?.value;
+  if (!weekStart) { showToast('Pick a week from the dropdown first'); return; }
+
+  const monDate = new Date(weekStart + 'T12:00:00');
+  const sunDate = new Date(monDate); sunDate.setDate(monDate.getDate() + 6);
+
+  const entries = (state.journal || []).filter(e => {
+    const d = e.date;
+    return d >= weekStart && d <= sunDate.toISOString().slice(0, 10);
+  }).sort((a, b) => a.date.localeCompare(b.date));
+
+  if (!entries.length) { showToast('No journal entries for that week'); return; }
+
+  const weekLabel = monDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const rows = entries.map(e => `
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-date">${e.dateDisplay || e.date}</span>
+        <span class="entry-mood">${e.moodEmoji || ''} ${e.mood || ''}</span>
+      </div>
+      <div class="entry-text">${(e.text || '(no text)').replace(/\n/g, '<br>')}</div>
+    </div>`).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Meleah's Journal — Week of ${weekLabel}</title>
+<style>
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 680px; margin: 40px auto; color: #222; }
+  h1 { font-size: 22px; color: #7C5CBF; border-bottom: 3px solid #7C5CBF; padding-bottom: 10px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 28px; }
+  .entry { margin-bottom: 24px; border-left: 4px solid #E8D5FF; padding-left: 16px; }
+  .entry-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .entry-date { font-size: 14px; font-weight: 700; color: #5A3D9E; }
+  .entry-mood { font-size: 14px; color: #555; }
+  .entry-text { font-size: 15px; line-height: 1.7; color: #333; }
+  @media print { body { margin: 20px; } }
+</style></head><body>
+<h1>💭 Meleah's Journal</h1>
+<div class="subtitle">Week of ${weekLabel} &nbsp;·&nbsp; ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}</div>
+${rows}
+<script>window.onload = function(){ window.print(); }<\/script>
+</body></html>`);
+  win.document.close();
+}
+
+// ─── AI Auto-Generate Weekly Plan ────────────
+async function wpGenerateWithAI(twoWeeks) {
+  const fclNum          = document.getElementById('wpFclNumber')?.value      || '';
+  const conceptName     = document.getElementById('wpConceptName')?.value    || '';
+  const teacherNotes    = document.getElementById('wpTeacherNotes')?.value   || '';
+  const additionalNotes = document.getElementById('wpAdditionalNotes')?.value || '';
+  if (!fclNum && !conceptName) {
+    showToast('Enter the FCL Concept number and name first');
+    return;
+  }
+  const statusEl = document.getElementById('wpAiStatus');
+
+  try {
+    // Load prior week context to prevent repeating words and story themes
+    if (statusEl) { statusEl.textContent = '⏳ Loading last week\'s context…'; statusEl.style.color = 'var(--purple)'; }
+    const prevContext = await wpGetPrevWeekContext(wpState.weekId);
+    const freshNote = prevContext ? '' : ' (no prior week — starting fresh)';
+    if (statusEl) { statusEl.textContent = `🤖 Generating plan…${freshNote} (10–20 seconds)`; statusEl.style.color = 'var(--purple)'; }
+
+    // Generate week 1
+    const data = await wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, wpState.weekId, prevContext, null);
+    await wpFillFromAI(data);
+    if (statusEl) { statusEl.textContent = '✅ Plan generated! Review each day, then click Publish when ready.'; statusEl.style.color = 'var(--green)'; }
+
+    if (twoWeeks) {
+      // Build week 1 context (word lists + story theme) to ensure week 2 is different
+      const days = ['monday','tuesday','wednesday','thursday','friday'];
+      const wordLines = days
+        .map(d => data[d]?.word_list ? `  ${d}: ${data[d].word_list}` : null)
+        .filter(Boolean).join('\n');
+      const week1StoryTopic = data.story?.topic || null;
+      const week1Context = [
+        wordLines,
+        week1StoryTopic ? `Week 1 story theme: "${week1StoryTopic}" — week 2 must use a DIFFERENT story theme.` : null,
+      ].filter(Boolean).join('\n') || null;
+
+      if (statusEl) { statusEl.textContent = '🤖 Generating week 2…'; statusEl.style.color = 'var(--purple)'; }
+      await wpNextWeek();
+      await new Promise(r => setTimeout(r, 800));
+      const data2 = await wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, wpState.weekId, prevContext, week1Context);
+      await wpFillFromAI(data2);
+      if (statusEl) { statusEl.textContent = '✅ 2 weeks generated! Review each week and publish separately.'; statusEl.style.color = 'var(--green)'; }
+    }
+  } catch (e) {
+    console.error('wpGenerateWithAI error', e);
+    if (statusEl) { statusEl.textContent = '❌ ' + (e.message || 'Something went wrong. Check your API key.'); statusEl.style.color = '#E53935'; }
+  }
+}
+
+async function wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, weekId, prevContext, week1Context) {
+  const weekDate = new Date(weekId + 'T12:00:00');
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri'];
+  const dates = dayNames.map((d, i) => {
+    const dd = new Date(weekDate); dd.setDate(dd.getDate() + i);
+    return `${d} ${dd.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+  });
+  const instrSnippet  = state.aiInstructions ? `\nAbout Meleah:\n${state.aiInstructions}\n` : '';
+  const notesSnippet  = teacherNotes    ? `\nTeacher Notes:\n${teacherNotes.slice(0,1500)}\n`    : '';
+  const addlSnippet   = additionalNotes ? `\nAdditional Notes for This Week:\n${additionalNotes}\n` : '';
+
+  let prevSnippet = '';
+  if (prevContext) {
+    const listLines = Object.entries(prevContext.wordLists)
+      .map(([day, words]) => `  ${day}: ${words}`)
+      .join('\n');
+    const storyLine = prevContext.storyTopic
+      ? `Last week's story theme: "${prevContext.storyTopic}" — pick a completely DIFFERENT theme.\n`
+      : '';
+    prevSnippet = `\nPRIOR WEEK CONTEXT — do NOT repeat these:
+Last week covered ${prevContext.concept}.
+${storyLine}Words already practiced:
+${listLines || '  (none recorded)'}
+Choose DIFFERENT words and a DIFFERENT story theme this week.\n`;
+  }
+
+  let week1Snippet = '';
+  if (week1Context) {
+    week1Snippet = `\nWEEK 2 OF 2 — build on week 1, not a repeat:
+${week1Context}
+Use DIFFERENT, slightly more challenging words. Story Studio theme must be completely fresh.\n`;
+  }
+
+  const prompt = `You are a dyslexia reading tutor assistant. Generate a structured weekly reading plan for Meleah, a child learning with the Orton-Gillingham / FCL approach.
+${instrSnippet}
+FCL Concept #${fclNum}${conceptName ? ` — "${conceptName}"` : ''}
+Week of: ${dates.join(', ')}${notesSnippet}${addlSnippet}${prevSnippet}${week1Snippet}
+RULES:
+- Monday and Wednesday are interactive iPad days (fun, engaging digital practice)
+- Tuesday, Thursday, Friday are paper days (worksheets done with Grandma or Dad in-person)
+- Word lists: 8–10 words focused on the FCL concept pattern
+- Instructions: numbered steps, simple and encouraging, written for a parent coach
+- Coach tips: 1–2 sentences of expert advice for the adult helper
+- Story Studio is for Aunt Kariss via FaceTime from LA — 3 structured sessions per week, NOT phonics drills:
+  * Session 1: Aunt teaches 4–6 vocabulary words using visual cards on her phone (word + emoji + kid-friendly definition + synonyms + example)
+  * Session 2: Aunt reads a short story aloud (6–8 simple sentences, uses 2–3 vocab words); Meleah identifies Character, Setting, Problem, Action, Ending
+  * Session 3: Meleah retells something from her own week using Who/What/Where/When framework (she struggles with this — Aunt scaffolds gently); bonus coins for using vocab words
+- Vocabulary cards: age-appropriate for a 9-year-old, fun emojis, connected to the story theme
+- Aunt's story: 6–8 simple sentences, clear story arc, uses 2–3 vocab words naturally
+- Retelling prompts: warm, encouraging scaffolding for when Meleah gets stuck
+
+Return ONLY valid JSON, no markdown, no extra text:
+{
+  "monday":    {"activity_name":"","instructions":"Step 1: ...\\nStep 2: ...","word_list":"word1, word2, word3, word4, word5, word6, word7, word8","coach_tips":"","duration_min":15},
+  "tuesday":   {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "wednesday": {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "thursday":  {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "friday":    {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "story": {
+    "topic": "one-line theme like 'A rainy day adventure'",
+    "aunt_story": "6-8 sentence story Aunt reads aloud. Use 2-3 vocab words. Simple sentences for a 9-year-old.",
+    "discussion": "Character: Who was in the story?\\nSetting: Where did the story take place?\\nProblem: What went wrong or was hard?\\nAction: What did the character do about it?\\nEnding: How did the story end?",
+    "retelling_prompts": "Tell me about something that happened this week!\\nIf stuck: Who was there with you?\\nIf stuck: Where were you?\\nIf stuck: What happened first? Then what?\\nBonus coins: Can you use one of our vocabulary words?",
+    "text_msg": "Hey Meleah! 🌟 [warm message about this week's theme]",
+    "vocab": "word1, word2, word3, word4",
+    "vocab_cards": [
+      {"word":"example","emoji":"🌟","definition":"A kid-friendly explanation in one sentence","synonyms":["synonym1","synonym2","synonym3"],"example":"A sentence using the word that relates to Meleah's life"}
+    ]
+  }
+}`;
+
+  // Call via Vercel function (avoids CORS, keeps API key secure)
+  const res = await fetch('/api/generate-plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Server error ${res.status}`);
+  }
+  const result = await res.json();
+  const text = (result.content?.[0]?.text || '').replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
+  return JSON.parse(text);
+}
+
+async function wpFillFromAI(data) {
+  const days = ['monday','tuesday','wednesday','thursday','friday'];
+
+  // Fill Story Studio fields (always visible)
+  if (data.story) {
+    const s = data.story;
+    const el = id => document.getElementById(id);
+    if (el('wpStoryTopic'))      el('wpStoryTopic').value      = s.topic             || '';
+    if (el('wpStoryAuntText'))   el('wpStoryAuntText').value   = s.aunt_story        || '';
+    if (el('wpStoryDiscussion')) el('wpStoryDiscussion').value = s.discussion        || '';
+    if (el('wpStoryPrompts'))    el('wpStoryPrompts').value    = s.retelling_prompts || '';
+    if (el('wpStoryTextMsg'))    el('wpStoryTextMsg').value    = s.text_msg          || '';
+    if (el('wpStoryVocab'))      el('wpStoryVocab').value      = s.vocab             || '';
+    // Store vocab card objects for wpSaveDay()
+    wpState._vocabCards = Array.isArray(s.vocab_cards) ? s.vocab_cards : [];
+    // Build human-readable vocab textarea
+    if (el('wpStoryVocabWords') && wpState._vocabCards.length) {
+      el('wpStoryVocabWords').value = wpState._vocabCards.map(c =>
+        `${c.word} ${c.emoji || ''} | ${c.definition || ''} | ${(c.synonyms || []).join(', ')} | ${c.example || ''}`
+      ).join('\n');
+    }
+  }
+
+  // Fill each day by switching the tab, letting wpRenderDay populate from state, then saving
+  const originalDay = wpState.currentDay;
+  for (const day of days) {
+    const d = data[day]; if (!d) continue;
+    if (!wpState.assignments[day]) wpState.assignments[day] = {};
+    wpState.assignments[day].reading = {
+      ...(wpState.assignments[day].reading || {}),
+      activity_name: d.activity_name || '',
+      instructions:  d.instructions  || '',
+      word_list:     d.word_list      || '',
+      coach_tips:    d.coach_tips     || '',
+      duration_min:  d.duration_min   || 15,
+    };
+    wpState.currentDay = day;
+    wpRenderDay();
+    await wpSaveDay();
+  }
+  wpState.currentDay = originalDay;
+  wpRenderDay();
+}
+
+// ════════════════════════════════════════════
+// WEEKLY PLANS SYSTEM
+// ════════════════════════════════════════════
+
+// Mon=interactive, Wed=interactive, others=paper
+const WP_INTERACTIVE_DAYS = ['monday', 'wednesday'];
+const WP_DAYS = ['monday','tuesday','wednesday','thursday','friday'];
+
+// Working state for the weekly plan builder
+let wpState = {
+  weekId: null,         // '2026-03-02'
+  currentDay: 'monday',
+  plan: null,           // row from meleah_weekly_plans
+  assignments: {},      // keyed by day → reading/story/plan data
+  baseUrl: '',
+  dirty: false,
+};
+
+// ─── Date helpers ────────────────────────────
+function wpGetMonday(date) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Sun
+  const diff = (day === 0) ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+function wpFormatWeekLabel(weekId) {
+  const d = new Date(weekId + 'T12:00:00');
+  return 'Week of ' + d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+// ─── Init: called by renderMelissaPanel ──────
+async function wpInit() {
+  if (!wpState.weekId) {
+    wpState.weekId = wpGetMonday(new Date());
+  }
+  // Load saved base URL
+  if (state.assignmentsBaseUrl) {
+    wpState.baseUrl = state.assignmentsBaseUrl;
+    const urlEl = document.getElementById('wpBaseUrl');
+    if (urlEl && !urlEl.value) urlEl.value = wpState.baseUrl;
+  }
+  await wpLoadWeek(wpState.weekId);
+  wpRenderWeekHeader();
+  wpRenderDay();
+  wpRenderStoryStudio();
+}
+
+// ─── Load plan + assignments from Supabase ───
+async function wpLoadWeek(weekId) {
+  if (!isOnline) return;
+  try {
+    const [planRes, assignRes] = await Promise.all([
+      db.from('meleah_weekly_plans').select('*').eq('id', weekId).maybeSingle(),
+      db.from('meleah_daily_assignments').select('*').eq('week_id', weekId),
+    ]);
+    wpState.plan = planRes.data || null;
+    // Build assignments map: { monday: {reading: row, story: row, plan: row}, ... }
+    wpState.assignments = {};
+    (assignRes.data || []).forEach(row => {
+      if (!wpState.assignments[row.day_of_week]) wpState.assignments[row.day_of_week] = {};
+      wpState.assignments[row.day_of_week][row.track] = row;
+    });
+  } catch(e) {
+    console.warn('wpLoadWeek error', e);
+  }
+}
+
+// ─── Render week header ───────────────────────
+function wpRenderWeekHeader() {
+  const label = document.getElementById('wpWeekLabel');
+  const badge = document.getElementById('wpStatusBadge');
+  const fclNum = document.getElementById('wpFclNumber');
+  const fclName = document.getElementById('wpConceptName');
+  if (label) label.textContent = wpFormatWeekLabel(wpState.weekId);
+  if (badge) {
+    const status = wpState.plan?.status || 'draft';
+    badge.textContent = status === 'published' ? 'Published ✓' : 'Draft';
+    badge.className = 'wp-status-badge ' + status;
+  }
+  if (fclNum && wpState.plan?.fcl_concept) fclNum.value = wpState.plan.fcl_concept;
+  if (fclName && wpState.plan?.concept_name) fclName.value = wpState.plan.concept_name;
+  // Show teacher notes if we have them
+  if (wpState.plan?.teacher_notes) {
+    const notesGroup = document.getElementById('wpNotesGroup');
+    const notesEl = document.getElementById('wpTeacherNotes');
+    if (notesGroup) notesGroup.style.display = 'block';
+    if (notesEl) notesEl.value = wpState.plan.teacher_notes;
+  }
+}
+
+// ─── Render the day editor ────────────────────
+function wpRenderDay() {
+  // Update tab highlights
+  WP_DAYS.forEach(d => {
+    const tab = document.getElementById('wptab-' + d);
+    if (tab) tab.classList.toggle('active', d === wpState.currentDay);
+  });
+
+  const day = wpState.currentDay;
+  const isInteractive = WP_INTERACTIVE_DAYS.includes(day);
+  const sessionBadge = isInteractive
+    ? '<span class="wp-session-badge interactive">🖥️ Interactive iPad Day</span>'
+    : '<span class="wp-session-badge paper">🖨️ Paper Day</span>';
+
+  const rdg = wpState.assignments[day]?.reading || {};
+  const pln = wpState.assignments[day]?.plan || {};
+
+  const editor = document.getElementById('wpDayEditor');
+  if (!editor) return;
+  editor.innerHTML = `
+    <!-- Reading Studio for this day -->
+    <div class="wp-track-box reading">
+      <div class="wp-track-label reading">📚 Reading Studio — Grandma & Dad &nbsp;${sessionBadge}</div>
+      ${isInteractive ? `<p style="font-size:12px;color:#5A3D9E;font-weight:700;margin-bottom:10px">Meleah will do an interactive iPad activity for this session. Describe what she should practice (the word list below powers the activity).</p>` : ''}
+      <div class="input-group">
+        <label class="input-label">Activity Name</label>
+        <input class="input-field" id="wpRdgActivity" placeholder="e.g. Word Card Game" value="${esc(rdg.activity_name||'')}">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Instructions (step by step for Grandma/Dad)</label>
+        <textarea class="input-field" id="wpRdgInstructions" rows="5" placeholder="Step 1: ...&#10;Step 2: ...">${esc(rdg.instructions||'')}</textarea>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Word List (comma-separated)</label>
+        <input class="input-field" id="wpRdgWords" placeholder="trip, drop, grip, crab, frog" value="${esc(rdg.word_list||'')}">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Coach Tips</label>
+        <textarea class="input-field" id="wpRdgTips" rows="2" placeholder="Helpful hints for the coach...">${esc(rdg.coach_tips||'')}</textarea>
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label class="input-label">Duration (minutes)</label>
+        <input class="input-field" id="wpRdgDuration" type="number" placeholder="15" value="${rdg.duration_min||''}" style="max-width:100px">
+      </div>
+    </div>
+
+    <!-- My Plan for this day -->
+    <div class="wp-track-box plan">
+      <div class="wp-track-label plan">🗓️ My Plan — Morning & Evening</div>
+      <div class="input-group">
+        <label class="input-label">Morning Prompt</label>
+        <input class="input-field" id="wpPlanMorning" placeholder="What are your 3 things today?" value="${esc(pln.activity_name||'')}">
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label class="input-label">Evening Reflection</label>
+        <input class="input-field" id="wpPlanEvening" placeholder="Which ones did you do?" value="${esc(pln.instructions||'')}">
+      </div>
+    </div>
+
+    <button class="action-btn" style="width:100%;padding:14px" onclick="wpSaveDay()">💾 Save ${day.charAt(0).toUpperCase()+day.slice(1)}</button>
+    <div id="wpSaveConfirm" style="text-align:center;font-size:13px;font-weight:800;color:var(--green);margin-top:8px;display:none">Saved ✓</div>
+  `;
+}
+
+// Helper: escape HTML in template literals
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── Render Story Studio ─────────────────────
+function wpRenderStoryStudio() {
+  // Find the story-level assignment (stored under day 'week', track 'story')
+  const story = wpState.assignments['week']?.story || {};
+  const topicEl = document.getElementById('wpStoryTopic');
+  const promptsEl = document.getElementById('wpStoryPrompts');
+  const textMsgEl = document.getElementById('wpStoryTextMsg');
+  const vocabEl = document.getElementById('wpStoryVocab');
+  if (topicEl && story.activity_name) topicEl.value = story.activity_name;
+  if (promptsEl && story.instructions) promptsEl.value = story.instructions;
+  if (textMsgEl && story.coach_tips) textMsgEl.value = story.coach_tips;
+  if (vocabEl && story.word_list) vocabEl.value = story.word_list;
+}
+
+// ─── Week navigation ──────────────────────────
+async function wpPrevWeek() {
+  await wpAutoSavePlan();
+  const d = new Date(wpState.weekId + 'T12:00:00');
+  d.setDate(d.getDate() - 7);
+  wpState.weekId = d.toISOString().split('T')[0];
+  wpState.currentDay = 'monday';
+  await wpLoadWeek(wpState.weekId);
+  wpRenderWeekHeader();
+  wpRenderDay();
+  wpRenderStoryStudio();
+  document.getElementById('wpShareBox')?.classList.remove('visible');
+}
+
+async function wpNextWeek() {
+  await wpAutoSavePlan();
+  const d = new Date(wpState.weekId + 'T12:00:00');
+  d.setDate(d.getDate() + 7);
+  wpState.weekId = d.toISOString().split('T')[0];
+  wpState.currentDay = 'monday';
+  await wpLoadWeek(wpState.weekId);
+  wpRenderWeekHeader();
+  wpRenderDay();
+  wpRenderStoryStudio();
+  document.getElementById('wpShareBox')?.classList.remove('visible');
+}
+
+// ─── Day tab selection ────────────────────────
+function wpSelectDay(day) {
+  wpState.currentDay = day;
+  wpRenderDay();
+}
+
+// ─── Save base URL ────────────────────────────
+async function wpSaveBaseUrl() {
+  const url = (document.getElementById('wpBaseUrl')?.value || '').trim().replace(/\/$/, '');
+  if (!url) return;
+  wpState.baseUrl = url;
+  // Store in meleah_state
+  if (isOnline) {
+    await db.from('meleah_state').update({ assignments_base_url: url }).eq('user_id', USER_ID).then().catch(()=>{});
+  }
+  state.assignmentsBaseUrl = url;
+  showToast('URL saved! ✓');
+}
+
+function showToast(msg) {
+  let t = document.getElementById('wpToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'wpToast';
+    t.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:800;z-index:999;transition:opacity 0.3s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 2000);
+}
+
+// ─── Teacher doc upload ───────────────────────
+async function wpUploadDoc(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('wpUploadStatus');
+  if (status) { status.style.display = 'block'; status.textContent = '⏳ Reading file...'; }
+
+  let extractedText = '';
+  try {
+    if (file.name.endsWith('.docx')) {
+      const ab = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer: ab });
+      extractedText = result.value;
+    } else if (file.name.endsWith('.pdf')) {
+      // PDF: prompt user to paste text (pdf.js not loaded by default to keep file small)
+      extractedText = '[PDF uploaded: ' + file.name + ']\n\nNote: To extract PDF text automatically, please copy the text from the PDF and paste it into a notes app, then re-save it as a .docx file. Or you can manually type the key details in the fields below.';
+    } else {
+      throw new Error('Unsupported file type');
+    }
+
+    // Show notes
+    const notesGroup = document.getElementById('wpNotesGroup');
+    const notesEl = document.getElementById('wpTeacherNotes');
+    if (notesGroup) notesGroup.style.display = 'block';
+    if (notesEl) notesEl.value = extractedText;
+
+    // Save to Supabase
+    await wpAutoSavePlan(extractedText);
+    if (status) status.textContent = '✅ File read successfully! Notes appear above for reference.';
+  } catch(e) {
+    if (status) status.textContent = '❌ Could not read file. Try a .docx file.';
+    console.warn('wpUploadDoc error', e);
+  }
+  input.value = ''; // reset so same file can be re-uploaded
+}
+
+// ─── Auto-save plan metadata ──────────────────
+async function wpAutoSavePlan(teacherNotes) {
+  if (!isOnline) return;
+  const fclNum = parseInt(document.getElementById('wpFclNumber')?.value) || null;
+  const conceptName = document.getElementById('wpConceptName')?.value || '';
+  const payload = {
+    id: wpState.weekId,
+    week_start: wpState.weekId,
+    fcl_concept: fclNum,
+    concept_name: conceptName,
+    status: wpState.plan?.status || 'draft',
+    updated_at: new Date().toISOString(),
+  };
+  if (teacherNotes !== undefined) payload.teacher_notes = teacherNotes;
+  const { data } = await db.from('meleah_weekly_plans').upsert(payload).select().single();
+  if (data) wpState.plan = data;
+}
+
+// ─── Save current day's assignments ──────────
+async function wpSaveDay() {
+  if (!isOnline) { showToast('You\'re offline — connect to save'); return; }
+  await wpAutoSavePlan();
+
+  const day = wpState.currentDay;
+  const isInteractive = WP_INTERACTIVE_DAYS.includes(day);
+
+  const rdgRow = {
+    id: (wpState.assignments[day]?.reading?.id) || genId(),
+    week_id: wpState.weekId,
+    day_of_week: day,
+    track: 'reading',
+    session_type: isInteractive ? 'interactive' : 'paper',
+    activity_name: document.getElementById('wpRdgActivity')?.value || '',
+    instructions: document.getElementById('wpRdgInstructions')?.value || '',
+    word_list: document.getElementById('wpRdgWords')?.value || '',
+    coach_tips: document.getElementById('wpRdgTips')?.value || '',
+    duration_min: parseInt(document.getElementById('wpRdgDuration')?.value) || null,
+    sort_order: 0,
+  };
+  const planRow = {
+    id: (wpState.assignments[day]?.plan?.id) || genId(),
+    week_id: wpState.weekId,
+    day_of_week: day,
+    track: 'plan',
+    session_type: 'paper',
+    activity_name: document.getElementById('wpPlanMorning')?.value || '',
+    instructions: document.getElementById('wpPlanEvening')?.value || '',
+    word_list: '',
+    coach_tips: '',
+    duration_min: 5,
+    sort_order: 1,
+  };
+  // Save story studio (stored under day='week')
+  const storyRow = {
+    id: (wpState.assignments['week']?.story?.id) || genId(),
+    week_id: wpState.weekId,
+    day_of_week: 'week',
+    track: 'story',
+    session_type: 'facetime',
+    activity_name: document.getElementById('wpStoryTopic')?.value || '',
+    instructions: document.getElementById('wpStoryPrompts')?.value || '',
+    coach_tips: document.getElementById('wpStoryTextMsg')?.value || '',
+    word_list: document.getElementById('wpStoryVocab')?.value || '',
+    duration_min: null,
+    sort_order: 0,
+  };
+
+  await Promise.all([
+    db.from('meleah_daily_assignments').upsert(rdgRow),
+    db.from('meleah_daily_assignments').upsert(planRow),
+    db.from('meleah_daily_assignments').upsert(storyRow),
+  ]);
+
+  // Update local state
+  if (!wpState.assignments[day]) wpState.assignments[day] = {};
+  wpState.assignments[day].reading = rdgRow;
+  wpState.assignments[day].plan = planRow;
+  if (!wpState.assignments['week']) wpState.assignments['week'] = {};
+  wpState.assignments['week'].story = storyRow;
+
+  const confirm = document.getElementById('wpSaveConfirm');
+  if (confirm) { confirm.style.display = 'block'; setTimeout(() => { confirm.style.display = 'none'; }, 2000); }
+}
+
+// ─── Publish & share ──────────────────────────
+async function wpPublish() {
+  if (!isOnline) { showToast('Connect to publish'); return; }
+  await wpSaveDay();
+
+  // Mark as published
+  const { data } = await db.from('meleah_weekly_plans')
+    .update({ status: 'published', updated_at: new Date().toISOString() })
+    .eq('id', wpState.weekId)
+    .select().single();
+  if (data) wpState.plan = data;
+
+  const badge = document.getElementById('wpStatusBadge');
+  if (badge) { badge.textContent = 'Published ✓'; badge.className = 'wp-status-badge published'; }
+
+  // Build share URL & message
+  const baseUrl = wpState.baseUrl || '[set your Vercel URL above first]';
+  const shareUrl = `${baseUrl}/weeklyplan.html?week=${wpState.weekId}`;
+  const weekLabel = wpFormatWeekLabel(wpState.weekId);
+  const conceptName = wpState.plan?.concept_name || '';
+  const fclNum = wpState.plan?.fcl_concept || '';
+  const conceptLine = conceptName ? `📚 This week: FCL Concept ${fclNum} — ${conceptName}` : '';
+
+  const shareMsg = `Here's Meleah's plan for the ${weekLabel}! 🌟\n${conceptLine}\n\n🔗 ${shareUrl}\n\nGrandma & Dad: Reading Studio and My Plan are in there — Mon & Wed are iPad activity days, other days print the worksheet.\nAunt: Scroll to the Story Studio section — that's yours! 💜\n\nEach iPad activity earns Meleah coins! 🪙`;
+
+  const shareText = document.getElementById('wpShareText');
+  const shareBox = document.getElementById('wpShareBox');
+  if (shareText) shareText.textContent = shareMsg;
+  if (shareBox) shareBox.classList.add('visible');
+  shareBox?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Store on state object for later
+  wpState._shareUrl = shareUrl;
+  wpState._shareMsg = shareMsg;
+}
+
+// ─── Copy helpers ─────────────────────────────
+function wpCopyMessage() {
+  wpCopyToClipboard(wpState._shareMsg || '');
+}
+function wpCopyLink() {
+  wpCopyToClipboard(wpState._shareUrl || '');
+}
+function wpCopyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const el = document.getElementById('wpCopyConfirm');
+    if (el) { el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    const el = document.getElementById('wpCopyConfirm');
+    if (el) { el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
+  });
+}
+
+// ─── AI Auto-Generate Weekly Plan ────────────
+async function wpGenerateWithAI(twoWeeks) {
+  const fclNum = document.getElementById('wpFclNumber')?.value || '';
+  const conceptName = document.getElementById('wpConceptName')?.value || '';
+  const teacherNotes = document.getElementById('wpTeacherNotes')?.value || '';
+  if (!fclNum && !conceptName) {
+    showToast('Enter the FCL Concept number and name first');
+    return;
+  }
+  const statusEl = document.getElementById('wpAiStatus');
+  if (statusEl) { statusEl.textContent = '🤖 Generating plan… (10–20 seconds)'; statusEl.style.color = 'var(--purple)'; }
+
+  try {
+    const data = await wpCallClaude(fclNum, conceptName, teacherNotes, wpState.weekId);
+    await wpFillFromAI(data);
+    if (statusEl) { statusEl.textContent = '✅ Plan generated! Review each day, then click Publish when ready.'; statusEl.style.color = 'var(--green)'; }
+
+    if (twoWeeks) {
+      if (statusEl) statusEl.textContent = '🤖 Generating next week too…';
+      await wpNextWeek();
+      await new Promise(r => setTimeout(r, 800));
+      const nextFcl = (parseInt(fclNum) || 0);  // same concept; Melissa can adjust
+      const data2 = await wpCallClaude(nextFcl, conceptName, teacherNotes, wpState.weekId);
+      await wpFillFromAI(data2);
+      if (statusEl) { statusEl.textContent = '✅ 2 weeks generated! Review each week and publish separately.'; statusEl.style.color = 'var(--green)'; }
+    }
+  } catch (e) {
+    console.error('wpGenerateWithAI error', e);
+    if (statusEl) { statusEl.textContent = '❌ ' + (e.message || 'Something went wrong. Check your API key.'); statusEl.style.color = '#E53935'; }
+  }
+}
+
+async function wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, weekId) {
+  const weekDate = new Date(weekId + 'T12:00:00');
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri'];
+  const dates = dayNames.map((d, i) => {
+    const dd = new Date(weekDate); dd.setDate(dd.getDate() + i);
+    return `${d} ${dd.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+  });
+  const instrSnippet  = state.aiInstructions ? `\nAbout Meleah:\n${state.aiInstructions}\n` : '';
+  const notesSnippet  = teacherNotes    ? `\nTeacher Notes:\n${teacherNotes.slice(0,1500)}\n`    : '';
+  const addlSnippet   = additionalNotes ? `\nAdditional Notes for This Week:\n${additionalNotes}\n` : '';
+
+  const prompt = `You are a dyslexia reading tutor assistant. Generate a structured weekly reading plan for Meleah, a child learning with the Orton-Gillingham / FCL approach.
+${instrSnippet}
+FCL Concept #${fclNum}${conceptName ? ` — "${conceptName}"` : ''}
+Week of: ${dates.join(', ')}${notesSnippet}${addlSnippet}
+RULES:
+- Monday and Wednesday are interactive iPad days (fun, engaging digital practice)
+- Tuesday, Thursday, Friday are paper days (worksheets done with Grandma or Dad in-person)
+- Word lists: 8–10 words focused on the FCL concept pattern
+- Instructions: numbered steps, simple and encouraging, written for a parent coach
+- Coach tips: 1–2 sentences of expert advice for the adult helper
+- Story Studio is for Aunt via FaceTime — creative, imaginative, fun story prompts (not phonics drills)
+
+Return ONLY valid JSON, no markdown, no extra text:
+{
+  "monday":    {"activity_name":"","instructions":"Step 1: ...\\nStep 2: ...","word_list":"word1, word2, word3, word4, word5, word6, word7, word8","coach_tips":"","duration_min":15},
+  "tuesday":   {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "wednesday": {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "thursday":  {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "friday":    {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "story":     {"topic":"","prompts":"Prompt 1\\nPrompt 2\\nPrompt 3","text_msg":"Hey Meleah! 🌟 ...","vocab":"word1, word2, word3"}
+}`;
+
+  // Call via Netlify function (avoids CORS, keeps API key secure)
+  const res = await fetch('/api/generate-plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Server error ${res.status}`);
+  }
+  const result = await res.json();
+  const text = (result.content?.[0]?.text || '').replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
+  return JSON.parse(text);
+}
+
+async function wpFillFromAI(data) {
+  const days = ['monday','tuesday','wednesday','thursday','friday'];
+
+  // Fill Story Studio fields (always visible)
+  if (data.story) {
+    const s = data.story;
+    const el = id => document.getElementById(id);
+    if (el('wpStoryTopic'))   el('wpStoryTopic').value   = s.topic    || '';
+    if (el('wpStoryPrompts')) el('wpStoryPrompts').value = s.prompts  || '';
+    if (el('wpStoryTextMsg')) el('wpStoryTextMsg').value = s.text_msg || '';
+    if (el('wpStoryVocab'))   el('wpStoryVocab').value   = s.vocab    || '';
+  }
+
+  // Fill each day by switching the tab, letting wpRenderDay populate from state, then saving
+  const originalDay = wpState.currentDay;
+  for (const day of days) {
+    const d = data[day]; if (!d) continue;
+    // Inject AI data into wpState so wpRenderDay renders it into the form
+    if (!wpState.assignments[day]) wpState.assignments[day] = {};
+    wpState.assignments[day].reading = {
+      ...(wpState.assignments[day].reading || {}),
+      activity_name: d.activity_name || '',
+      instructions:  d.instructions  || '',
+      word_list:     d.word_list      || '',
+      coach_tips:    d.coach_tips     || '',
+      duration_min:  d.duration_min   || 15,
+    };
+    // Switch to this day — wpRenderDay will populate the form from wpState
+    wpState.currentDay = day;
+    wpRenderDay();
+    // Now save (reads from the freshly rendered DOM fields)
+    await wpSaveDay();
+  }
+  // Restore original day
+  wpState.currentDay = originalDay;
+  wpRenderDay();
+}
+
+// ─── AI Auto-Generate Weekly Plan ────────────
+async function wpGenerateWithAI(twoWeeks) {
+  if (!CLAUDE_API_KEY || CLAUDE_API_KEY === 'YOUR_KEY_HERE') {
+    showToast('⚠️ Paste your Claude API key into the CLAUDE_API_KEY constant first!');
+    return;
+  }
+  const fclNum = document.getElementById('wpFclNumber')?.value || '';
+  const conceptName = document.getElementById('wpConceptName')?.value || '';
+  const teacherNotes = document.getElementById('wpTeacherNotes')?.value || '';
+  if (!fclNum && !conceptName) {
+    showToast('Enter the FCL Concept number and name first');
+    return;
+  }
+  const statusEl = document.getElementById('wpAiStatus');
+  if (statusEl) { statusEl.textContent = '🤖 Generating plan… (10–20 seconds)'; statusEl.style.color = 'var(--purple)'; }
+
+  const additionalNotes = document.getElementById('wpAdditionalNotes')?.value || '';
+  try {
+    const data = await wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, wpState.weekId);
+    await wpFillFromAI(data);
+    if (statusEl) { statusEl.textContent = '✅ Plan generated! Review each day, then click Publish when ready.'; statusEl.style.color = 'var(--green)'; }
+
+    if (twoWeeks) {
+      if (statusEl) statusEl.textContent = '🤖 Generating next week too…';
+      await wpNextWeek();
+      await new Promise(r => setTimeout(r, 800));
+      const data2 = await wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, wpState.weekId);
+      await wpFillFromAI(data2);
+      if (statusEl) { statusEl.textContent = '✅ 2 weeks generated! Review each week and publish separately.'; statusEl.style.color = 'var(--green)'; }
+    }
+  } catch (e) {
+    console.error('wpGenerateWithAI error', e);
+    if (statusEl) { statusEl.textContent = '❌ ' + (e.message || 'Something went wrong. Check your API key.'); statusEl.style.color = '#E53935'; }
+  }
+}
+
+async function wpCallClaude(fclNum, conceptName, teacherNotes, weekId) {
+  const weekDate = new Date(weekId + 'T12:00:00');
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri'];
+  const dates = dayNames.map((d, i) => {
+    const dd = new Date(weekDate); dd.setDate(dd.getDate() + i);
+    return `${d} ${dd.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+  });
+  const notesSnippet = teacherNotes ? `\nTeacher Notes:\n${teacherNotes.slice(0,1500)}\n` : '';
+  const prompt = `You are a dyslexia reading tutor assistant. Generate a structured weekly reading plan for Meleah, age 9, who has dyslexia and is learning with the Orton-Gillingham / FCL approach.
+
+FCL Concept #${fclNum}${conceptName ? ` — "${conceptName}"` : ''}
+Week of: ${dates.join(', ')}${notesSnippet}
+RULES:
+- Monday and Wednesday are interactive iPad days (fun, engaging digital practice)
+- Tuesday, Thursday, Friday are paper days (worksheets done with Grandma or Dad in-person)
+- Word lists: 8–10 words focused on the FCL concept pattern
+- Instructions: numbered steps, simple and encouraging, written for a parent coach
+- Coach tips: 1–2 sentences of expert advice for the adult helper
+- Story Studio is for Aunt via FaceTime — creative, imaginative, fun story prompts (not phonics)
+
+Return ONLY valid JSON, no markdown, no extra text:
+{
+  "monday":    {"activity_name":"","instructions":"Step 1: ...\\nStep 2: ...","word_list":"word1, word2, word3, word4, word5, word6, word7, word8","coach_tips":"","duration_min":15},
+  "tuesday":   {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "wednesday": {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "thursday":  {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "friday":    {"activity_name":"","instructions":"","word_list":"","coach_tips":"","duration_min":15},
+  "story":     {"topic":"","prompts":"Prompt 1\\nPrompt 2\\nPrompt 3","text_msg":"Hey Meleah! 🌟 ...","vocab":"word1, word2, word3"}
+}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': CLAUDE_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-iab': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 1800,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${res.status}`);
+  }
+  const result = await res.json();
+  const text = (result.content?.[0]?.text || '').replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
+  return JSON.parse(text);
+}
+
+async function wpFillFromAI(data) {
+  const days = ['monday','tuesday','wednesday','thursday','friday'];
+
+  // Fill Story Studio fields (always visible)
+  if (data.story) {
+    const s = data.story;
+    const el = id => document.getElementById(id);
+    if (el('wpStoryTopic'))   el('wpStoryTopic').value   = s.topic    || '';
+    if (el('wpStoryPrompts')) el('wpStoryPrompts').value = s.prompts  || '';
+    if (el('wpStoryTextMsg')) el('wpStoryTextMsg').value = s.text_msg || '';
+    if (el('wpStoryVocab'))   el('wpStoryVocab').value   = s.vocab    || '';
+  }
+
+  // Fill each day by switching the tab, letting wpRenderDay populate from state, then saving
+  const originalDay = wpState.currentDay;
+  for (const day of days) {
+    const d = data[day]; if (!d) continue;
+    if (!wpState.assignments[day]) wpState.assignments[day] = {};
+    wpState.assignments[day].reading = {
+      ...(wpState.assignments[day].reading || {}),
+      activity_name: d.activity_name || '',
+      instructions:  d.instructions  || '',
+      word_list:     d.word_list      || '',
+      coach_tips:    d.coach_tips     || '',
+      duration_min:  d.duration_min   || 15,
+    };
+    wpState.currentDay = day;
+    wpRenderDay();
+    await wpSaveDay();
+  }
+  wpState.currentDay = originalDay;
+  wpRenderDay();
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+async function initApp() {
+  state = await loadFromSupabase();
+  calendarEvents = await loadCalendarEvents();
+  await checkDailyReset();
+  render();
+  renderCalendar();
+  setInterval(renderHeader, 60000);
+  if (!isOnline) showOfflineBanner();
+}
+initApp();
+</script>
+</body>
+</html>
