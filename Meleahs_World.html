@@ -588,7 +588,7 @@
   <!-- Weekly Plans -->
   <div class="melissa-section">
     <h3>📋 Weekly Plans</h3>
-    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px">Build and share Meleah's weekly assignment plan every Friday. Mon & Wed are interactive iPad days; Tue, Thu, Fri are paper days.</p>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px">Enter a few details below, hit Generate, and the AI plans Meleah's whole week — Reading Studio each day plus Story Studio for Aunt. Then Publish to share with the family!</p>
 
     <!-- Week navigation -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
@@ -607,49 +607,56 @@
       <button class="action-btn secondary" style="margin-top:8px;width:100%" onclick="wpSaveBaseUrl()">💾 Save URL</button>
     </div>
 
-    <!-- Teacher doc upload -->
-    <div style="margin-bottom:16px">
-      <label class="input-label">📄 Upload Teacher's Lesson Doc (.docx or .pdf)</label>
-      <div class="wp-upload-zone" onclick="document.getElementById('wpFileInput').click()">
-        <div style="font-size:28px;margin-bottom:4px">📤</div>
-        <div style="font-size:14px;font-weight:700;color:var(--purple)">Click to upload teacher doc</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">.docx files work best — PDF works too</div>
+    <!-- Teacher Notes (editable, week-specific) -->
+    <div class="input-group">
+      <label class="input-label">📝 Teacher Notes — type or paste from Purcell</label>
+      <textarea class="input-field" id="wpTeacherNotes" rows="5"
+        placeholder="Paste or type teacher notes here. Saved for this week only — clears on new week."
+        oninput="wpDebounceSavePlan()"></textarea>
+      <button class="action-btn secondary" style="margin-top:6px;width:100%"
+        onclick="document.getElementById('wpTeacherNotes').value='';wpDebounceSavePlan()">
+        🗑️ Clear Teacher Notes
+      </button>
+    </div>
+
+    <!-- FCL Reference Document selector -->
+    <div class="input-group">
+      <label class="input-label">📄 FCL Reference Document (choose from your FCL Concepts folder)</label>
+      <div class="wp-upload-zone" onclick="document.getElementById('wpFclDocInput').click()" style="cursor:pointer">
+        <div style="font-size:26px;margin-bottom:4px">📂</div>
+        <div style="font-size:14px;font-weight:700;color:var(--purple)" id="wpFclDocLabel">Click to choose FCL PDF</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Select a PDF from your FCL Concepts folder — helps the AI plan the right activities</div>
       </div>
-      <input type="file" id="wpFileInput" accept=".docx,.pdf" style="display:none" onchange="wpUploadDoc(this)">
-      <div id="wpUploadStatus" style="font-size:13px;font-weight:700;color:var(--teal);margin-top:8px;display:none"></div>
+      <input type="file" id="wpFclDocInput" accept=".pdf" style="display:none" onchange="wpSelectFclDoc(this)">
+      <div id="wpFclDocStatus" style="font-size:13px;font-weight:700;color:var(--teal);margin-top:8px;display:none"></div>
     </div>
 
-    <!-- Teacher notes preview -->
-    <div class="input-group" id="wpNotesGroup" style="display:none">
-      <label class="input-label">Extracted Teacher Notes (reference while you fill in below)</label>
-      <textarea class="input-field" id="wpTeacherNotes" rows="5" readonly style="font-size:12px;line-height:1.6;background:#F9F9F9;resize:vertical"></textarea>
-    </div>
-
-    <!-- FCL Concept -->
+    <!-- FCL Concept Number -->
     <div class="input-group">
-      <label class="input-label">📚 FCL Concept Number This Week (26–43)</label>
-      <input class="input-field" id="wpFclNumber" type="number" min="26" max="43" placeholder="e.g. 26" style="max-width:100px;display:inline-block" oninput="wpFclAutoFill()">
-    </div>
-    <div class="input-group">
-      <label class="input-label">Concept Name (what are you working on?)</label>
-      <input class="input-field" id="wpConceptName" placeholder="e.g. Beginning Consonant Blends">
+      <label class="input-label">📚 FCL Concept Number This Week (26–45)</label>
+      <input class="input-field" id="wpFclNumber" type="number" min="26" max="45" placeholder="e.g. 38" style="max-width:100px;display:inline-block">
     </div>
 
     <!-- Additional Notes for this week -->
     <div class="input-group">
       <label class="input-label">📝 Additional Notes for This Week (optional)</label>
-      <textarea class="input-field" id="wpAdditionalNotes" rows="3" placeholder="e.g. Meleah had a hard week — keep it gentle. Focus on the 'tr' blend words from Tuesday's lesson."></textarea>
+      <textarea class="input-field" id="wpAdditionalNotes" rows="3"
+        placeholder="e.g. Meleah had a hard week — keep it gentle. Focus on the 'tr' blend words from Tuesday's lesson."
+        oninput="wpDebounceSavePlan()"></textarea>
+      <button class="action-btn secondary" style="margin-top:6px;width:100%"
+        onclick="document.getElementById('wpAdditionalNotes').value=''">
+        🗑️ Clear Additional Notes
+      </button>
     </div>
 
     <!-- AI Auto-Generate -->
     <div class="wp-ai-box">
       <div style="font-size:14px;font-weight:900;color:#5A3D9E;margin-bottom:6px">✨ Auto-Generate with AI</div>
-      <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px">Fill in the FCL concept + notes above, then let Claude build the whole week's plan!</p>
-      <button onclick="wpGenerateWithAI(false)" class="wp-ai-btn">✨ Generate This Week</button>
-      <button onclick="wpGenerateWithAI(true)" class="wp-ai-btn">✨ Generate 2 Weeks</button>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px">Enter the FCL concept + any notes above, then let Claude plan the whole week using Orton-Gillingham methods — Reading Studio each day + Story Studio for Aunt!</p>
+      <button onclick="wpGenerateWithAI()" class="wp-ai-btn">✨ Generate This Week</button>
       <div id="wpAiStatus"></div>
 
-      <!-- AI Instructions (collapsible) -->
+      <!-- AI Instructions / Student Profile (collapsible) -->
       <div style="margin-top:12px;border-top:1px solid #D4BBFF;padding-top:10px">
         <button onclick="wpToggleInstructions()" style="background:none;border:none;font-size:12px;font-weight:800;color:#5A3D9E;cursor:pointer;padding:0;font-family:'Nunito',sans-serif">
           ✏️ Student Profile for AI &nbsp;<span id="wpInstrToggle">▼ show</span>
@@ -663,74 +670,8 @@
       </div>
     </div>
 
-    <!-- Day tabs -->
-    <div style="display:flex;gap:6px;margin-bottom:14px">
-      <button class="wp-day-tab active" id="wptab-monday" onclick="wpSelectDay('monday')">Mon<br><span style="font-size:10px;opacity:0.8">🖥️</span></button>
-      <button class="wp-day-tab" id="wptab-tuesday" onclick="wpSelectDay('tuesday')">Tue<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
-      <button class="wp-day-tab" id="wptab-wednesday" onclick="wpSelectDay('wednesday')">Wed<br><span style="font-size:10px;opacity:0.8">🖥️</span></button>
-      <button class="wp-day-tab" id="wptab-thursday" onclick="wpSelectDay('thursday')">Thu<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
-      <button class="wp-day-tab" id="wptab-friday" onclick="wpSelectDay('friday')">Fri<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
-    </div>
-
-    <!-- Day editor (dynamically rendered) -->
-    <div id="wpDayEditor">
-      <!-- filled by wpRenderDay() -->
-    </div>
-
-    <!-- Story Studio (week-level — for Aunt) -->
-    <div class="wp-track-box story" style="margin-top:8px">
-      <div class="wp-track-label story">📖 Story Studio — Aunt's Section (FaceTime 3×/week) 📱</div>
-      <p style="font-size:12px;color:var(--pink);font-weight:700;margin-bottom:10px">Aunt reads this on her phone before/during FaceTime calls from LA. Three sessions build on each other each week.</p>
-
-      <div class="input-group">
-        <label class="input-label">Story Theme / Topic This Week</label>
-        <input class="input-field" id="wpStoryTopic" placeholder="e.g. A rainy day adventure 🌧️">
-      </div>
-
-      <!-- SESSION 1: Vocabulary -->
-      <div style="background:#FFF0F8;border-left:4px solid var(--pink);border-radius:10px;padding:12px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--pink);margin-bottom:6px">Session 1 — Vocabulary Exploration</div>
-        <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Aunt opens Vocab Cards on her phone &amp; shares screen on FaceTime. Go through each word together.</p>
-        <div class="input-group" style="margin-bottom:8px">
-          <label class="input-label">Vocabulary Words (reference — comma separated)</label>
-          <input class="input-field" id="wpStoryVocab" placeholder="e.g. adventurous, determined, mysterious">
-        </div>
-        <div class="input-group" style="margin-bottom:8px">
-          <label class="input-label">Vocab Card Details (AI fills this — one word per line: word | emoji | definition | synonyms | example)</label>
-          <textarea class="input-field" id="wpStoryVocabWords" rows="5" placeholder="adventurous | 🗺️ | Someone who likes trying new exciting things | brave, daring, bold | Meleah is adventurous when she tries new foods!"></textarea>
-        </div>
-        <button onclick="wpOpenVocabCards()" style="background:var(--pink);color:white;border:none;border-radius:12px;padding:10px 18px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;width:100%">🃏 Open Vocab Cards Page (share on FaceTime)</button>
-      </div>
-
-      <!-- SESSION 2: Aunt Tells a Story -->
-      <div style="background:#F0F4FF;border-left:4px solid var(--purple);border-radius:10px;padding:12px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--purple);margin-bottom:6px">Session 2 — Aunt Tells a Story</div>
-        <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Aunt reads this short story aloud. Meleah listens and identifies story elements.</p>
-        <div class="input-group" style="margin-bottom:8px">
-          <label class="input-label">Aunt's Story Script (read aloud on FaceTime)</label>
-          <textarea class="input-field" id="wpStoryAuntText" rows="7" placeholder="Once upon a time, there was a brave girl named Lily who loved exploring..."></textarea>
-        </div>
-        <div class="input-group" style="margin-bottom:0">
-          <label class="input-label">Story Element Discussion Prompts (after Aunt reads)</label>
-          <textarea class="input-field" id="wpStoryDiscussion" rows="5" placeholder="Character: Who was in the story?&#10;Setting: Where did it happen?&#10;Problem: What went wrong?&#10;Action: What did the character do?&#10;Ending: How did the story end?"></textarea>
-        </div>
-      </div>
-
-      <!-- SESSION 3: Meleah Tells Her Story -->
-      <div style="background:#F0FFF4;border-left:4px solid var(--green);border-radius:10px;padding:12px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-bottom:6px">Session 3 — Meleah Tells Her Story</div>
-        <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Meleah retells something that happened this week. Aunt scaffolds with these prompts if she gets stuck. Bonus coins for using vocab words! 🪙</p>
-        <div class="input-group" style="margin-bottom:0">
-          <label class="input-label">Retelling Scaffolding Prompts (Aunt uses if Meleah gets stuck)</label>
-          <textarea class="input-field" id="wpStoryPrompts" rows="5" placeholder="Tell me about something that happened this week!&#10;If stuck: Who was there?&#10;If stuck: Where were you?&#10;If stuck: What happened first? Then what?&#10;Bonus coins: Can you use one of our vocab words?"></textarea>
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">Text Message Aunt Sends Before the Call</label>
-        <textarea class="input-field" id="wpStoryTextMsg" rows="2" placeholder="Hey Meleah! 🌟 This week we're going to..."></textarea>
-      </div>
-    </div>
+    <!-- AI-generated plan preview (populated after generation) -->
+    <div id="wpGeneratedPreview" style="display:none;margin-top:12px"></div>
 
     <!-- Publish button -->
     <button class="cashout-btn" style="margin-top:16px" onclick="wpPublish()">📤 Publish & Get Share Link</button>
@@ -746,136 +687,9 @@
       </div>
       <div id="wpCopyConfirm" style="text-align:center;font-size:13px;font-weight:800;color:var(--green);margin-top:8px;display:none">Copied! ✓</div>
     </div>
-  </div>
 
-  <!-- Weekly Plans -->
-  <div class="melissa-section">
-    <h3>📋 Weekly Plans</h3>
-    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px">Build and share Meleah's weekly assignment plan every Friday. Mon & Wed are interactive iPad days; Tue, Thu, Fri are paper days.</p>
-
-    <!-- Week navigation -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <button class="action-btn secondary" style="padding:8px 16px;flex-shrink:0" onclick="wpPrevWeek()">◀</button>
-      <div style="flex:1;text-align:center">
-        <div style="font-size:16px;font-weight:900" id="wpWeekLabel">Loading...</div>
-        <span class="wp-status-badge draft" id="wpStatusBadge">Draft</span>
-      </div>
-      <button class="action-btn secondary" style="padding:8px 16px;flex-shrink:0" onclick="wpNextWeek()">▶</button>
-    </div>
-
-    <!-- Site URL (one-time setup) -->
-    <div class="input-group">
-      <label class="input-label">🔗 Your Vercel Site URL (set once, then forget)</label>
-      <input class="input-field" id="wpBaseUrl" placeholder="https://meleahsworld.vercel.app" style="font-size:13px">
-      <button class="action-btn secondary" style="margin-top:8px;width:100%" onclick="wpSaveBaseUrl()">💾 Save URL</button>
-    </div>
-
-    <!-- Teacher doc upload -->
-    <div style="margin-bottom:16px">
-      <label class="input-label">📄 Upload Teacher's Lesson Doc (.docx or .pdf)</label>
-      <div class="wp-upload-zone" onclick="document.getElementById('wpFileInput').click()">
-        <div style="font-size:28px;margin-bottom:4px">📤</div>
-        <div style="font-size:14px;font-weight:700;color:var(--purple)">Click to upload teacher doc</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">.docx files work best — PDF works too</div>
-      </div>
-      <input type="file" id="wpFileInput" accept=".docx,.pdf" style="display:none" onchange="wpUploadDoc(this)">
-      <div id="wpUploadStatus" style="font-size:13px;font-weight:700;color:var(--teal);margin-top:8px;display:none"></div>
-    </div>
-
-    <!-- Teacher notes preview -->
-    <div class="input-group" id="wpNotesGroup" style="display:none">
-      <label class="input-label">Extracted Teacher Notes (reference while you fill in below)</label>
-      <textarea class="input-field" id="wpTeacherNotes" rows="5" readonly style="font-size:12px;line-height:1.6;background:#F9F9F9;resize:vertical"></textarea>
-    </div>
-
-    <!-- FCL Concept -->
-    <div class="input-group">
-      <label class="input-label">📚 FCL Concept Number This Week (26–43)</label>
-      <input class="input-field" id="wpFclNumber" type="number" min="26" max="43" placeholder="e.g. 26" style="max-width:100px;display:inline-block">
-    </div>
-    <div class="input-group">
-      <label class="input-label">Concept Name (what are you working on?)</label>
-      <input class="input-field" id="wpConceptName" placeholder="e.g. Beginning Consonant Blends">
-    </div>
-
-    <!-- Additional Notes for this week -->
-    <div class="input-group">
-      <label class="input-label">📝 Additional Notes for This Week (optional)</label>
-      <textarea class="input-field" id="wpAdditionalNotes" rows="3" placeholder="e.g. Meleah had a hard week — keep it gentle. Focus on the 'tr' blend words from Tuesday's lesson."></textarea>
-    </div>
-
-    <!-- AI Auto-Generate -->
-    <div class="wp-ai-box">
-      <div style="font-size:14px;font-weight:900;color:#5A3D9E;margin-bottom:6px">✨ Auto-Generate with AI</div>
-      <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px">Fill in the FCL concept + notes above, then let Claude build the whole week's plan!</p>
-      <button onclick="wpGenerateWithAI(false)" class="wp-ai-btn">✨ Generate This Week</button>
-      <button onclick="wpGenerateWithAI(true)" class="wp-ai-btn">✨ Generate 2 Weeks</button>
-      <div id="wpAiStatus"></div>
-
-      <!-- AI Instructions (collapsible) -->
-      <div style="margin-top:12px;border-top:1px solid #D4BBFF;padding-top:10px">
-        <button onclick="wpToggleInstructions()" style="background:none;border:none;font-size:12px;font-weight:800;color:#5A3D9E;cursor:pointer;padding:0;font-family:'Nunito',sans-serif">
-          ✏️ Student Profile for AI &nbsp;<span id="wpInstrToggle">▼ show</span>
-        </button>
-        <div id="wpInstrPanel" style="display:none;margin-top:10px">
-          <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">Describe Meleah to the AI — her interests, strengths, and what she finds hard. Saved permanently and used every time you generate.</p>
-          <textarea class="input-field" id="wpAiInstructions" rows="4" placeholder="e.g. Meleah is 9 years old and loves horses and Roblox. She does best with short numbered steps and lots of encouragement. She struggles most with blends but is improving fast! Keep activities fun and upbeat."></textarea>
-          <button class="action-btn secondary" style="margin-top:8px;width:100%" onclick="wpSaveAiInstructions()">💾 Save Student Profile</button>
-          <div id="wpInstrSaved" style="display:none;font-size:12px;font-weight:800;color:var(--green);margin-top:4px;text-align:center">Saved ✓</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Day tabs -->
-    <div style="display:flex;gap:6px;margin-bottom:14px">
-      <button class="wp-day-tab active" id="wptab-monday" onclick="wpSelectDay('monday')">Mon<br><span style="font-size:10px;opacity:0.8">🖥️</span></button>
-      <button class="wp-day-tab" id="wptab-tuesday" onclick="wpSelectDay('tuesday')">Tue<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
-      <button class="wp-day-tab" id="wptab-wednesday" onclick="wpSelectDay('wednesday')">Wed<br><span style="font-size:10px;opacity:0.8">🖥️</span></button>
-      <button class="wp-day-tab" id="wptab-thursday" onclick="wpSelectDay('thursday')">Thu<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
-      <button class="wp-day-tab" id="wptab-friday" onclick="wpSelectDay('friday')">Fri<br><span style="font-size:10px;opacity:0.8">🖨️</span></button>
-    </div>
-
-    <!-- Day editor (dynamically rendered) -->
-    <div id="wpDayEditor">
-      <!-- filled by wpRenderDay() -->
-    </div>
-
-    <!-- Story Studio (week-level — for Aunt) -->
-    <div class="wp-track-box story" style="margin-top:8px">
-      <div class="wp-track-label story">📖 Story Studio — Aunt's Section (FaceTime & Text) 📱</div>
-      <p style="font-size:12px;color:var(--pink);font-weight:700;margin-bottom:10px">Aunt reads this section on her phone before/during FaceTime calls.</p>
-      <div class="input-group">
-        <label class="input-label">Story Theme / Topic This Week</label>
-        <input class="input-field" id="wpStoryTopic" placeholder="e.g. Adventures with animals 🐸">
-      </div>
-      <div class="input-group">
-        <label class="input-label">FaceTime Talking Points (one per line)</label>
-        <textarea class="input-field" id="wpStoryPrompts" rows="4" placeholder="Tell me a story that starts with 'One day...'&#10;What would your character do if they got lost?&#10;Describe what the setting looks like"></textarea>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Text Message Idea (Aunt copies and sends to Meleah)</label>
-        <textarea class="input-field" id="wpStoryTextMsg" rows="2" placeholder="Hey Meleah! 🐸 Can you text me a story about..."></textarea>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Vocabulary Words to Explore Together</label>
-        <input class="input-field" id="wpStoryVocab" placeholder="e.g. adventurous, determined, mysterious">
-      </div>
-    </div>
-
-    <!-- Publish button -->
-    <button class="cashout-btn" style="margin-top:16px" onclick="wpPublish()">📤 Publish & Get Share Link</button>
-
-    <!-- Share box -->
-    <div class="wp-share-box" id="wpShareBox">
-      <div style="font-size:16px;font-weight:900;color:#2E7D32;margin-bottom:10px">✅ Published! Ready to share</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Copy and paste this into iMessage for everyone:</div>
-      <div class="wp-share-text" id="wpShareText"></div>
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <button class="action-btn" style="flex:1" onclick="wpCopyMessage()">📋 Copy Message</button>
-        <button class="action-btn secondary" style="flex:1" onclick="wpCopyLink()">🔗 Link Only</button>
-      </div>
-      <div id="wpCopyConfirm" style="text-align:center;font-size:13px;font-weight:800;color:var(--green);margin-top:8px;display:none">Copied! ✓</div>
-    </div>
+    <!-- Reset This Week button -->
+    <button onclick="wpResetWeek()" style="width:100%;margin-top:16px;background:#FFEAEA;color:#E53935;border:none;border-radius:16px;padding:14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer">🗑️ Reset This Week — Clear All Plan Data</button>
   </div>
 
   <!-- Danger Zone -->
@@ -1011,6 +825,8 @@ const FCL_CONCEPTS = {
   41: 'Ending L Blends (ld, lf, lk, lm, lp, lt, lve)',
   42: 'Remaining Ending Blends (nd, nk, nt, mp, sk, sp, st)',
   43: 'y as a vowel (ī sound)',
+  44: '-ng / -nk endings',
+  45: '-ck / -k endings',
 };
 
 // ════════════════════════════════════════════
@@ -2269,18 +2085,6 @@ function flyCoins(amount) {
 const WP_INTERACTIVE_DAYS = ['monday', 'wednesday'];
 const WP_DAYS = ['monday','tuesday','wednesday','thursday','friday'];
 
-// ─── FCL concept auto-fill ────────────────────
-function wpFclAutoFill() {
-  const numEl  = document.getElementById('wpFclNumber');
-  const nameEl = document.getElementById('wpConceptName');
-  if (!numEl || !nameEl) return;
-  const lookup = FCL_CONCEPTS[parseInt(numEl.value)];
-  if (!lookup) return;
-  const cur = nameEl.value.trim();
-  if (cur === '' || Object.values(FCL_CONCEPTS).includes(cur)) {
-    nameEl.value = lookup;
-  }
-}
 
 // ─── Load prior week context for AI ──────────
 async function wpGetPrevWeekContext(weekId) {
@@ -2336,6 +2140,9 @@ let wpState = {
   assignments: {},      // keyed by day → reading/story/plan data
   baseUrl: '',
   dirty: false,
+  _fclDocText: null,    // extracted PDF text from selected FCL document
+  _fclDocName: null,    // selected FCL PDF filename
+  _lastAiData: null,    // raw AI response (needed for publish if not yet saved)
 };
 
 // ─── Date helpers ────────────────────────────
@@ -2363,10 +2170,17 @@ async function wpInit() {
     const urlEl = document.getElementById('wpBaseUrl');
     if (urlEl && !urlEl.value) urlEl.value = wpState.baseUrl;
   }
+  // Load student profile text
+  if (state.aiInstructions) {
+    const instrEl = document.getElementById('wpAiInstructions');
+    if (instrEl && !instrEl.value) instrEl.value = state.aiInstructions;
+  }
   await wpLoadWeek(wpState.weekId);
   wpRenderWeekHeader();
-  wpRenderDay();
-  wpRenderStoryStudio();
+  // Show preview if saved plan data exists for this week
+  if (wpState.assignments && Object.keys(wpState.assignments).length) {
+    wpRenderAiPreview(null);
+  }
 }
 
 // ─── Load plan + assignments from Supabase ───
@@ -2387,6 +2201,13 @@ async function wpLoadWeek(weekId) {
   } catch(e) {
     console.warn('wpLoadWeek error', e);
   }
+  // Reset FCL doc selection state for new week
+  wpState._fclDocText = null;
+  wpState._fclDocName = null;
+  const fclLabel  = document.getElementById('wpFclDocLabel');
+  const fclStatus = document.getElementById('wpFclDocStatus');
+  if (fclLabel)  fclLabel.textContent = 'Click to choose FCL PDF';
+  if (fclStatus) { fclStatus.textContent = ''; fclStatus.style.display = 'none'; }
 }
 
 // ─── Render week header ───────────────────────
@@ -2394,7 +2215,6 @@ function wpRenderWeekHeader() {
   const label = document.getElementById('wpWeekLabel');
   const badge = document.getElementById('wpStatusBadge');
   const fclNum = document.getElementById('wpFclNumber');
-  const fclName = document.getElementById('wpConceptName');
   if (label) label.textContent = wpFormatWeekLabel(wpState.weekId);
   if (badge) {
     const status = wpState.plan?.status || 'draft';
@@ -2402,99 +2222,13 @@ function wpRenderWeekHeader() {
     badge.className = 'wp-status-badge ' + status;
   }
   if (fclNum && wpState.plan?.fcl_concept) fclNum.value = wpState.plan.fcl_concept;
-  if (fclName && wpState.plan?.concept_name) fclName.value = wpState.plan.concept_name;
-  // Show teacher notes if we have them
-  if (wpState.plan?.teacher_notes) {
-    const notesGroup = document.getElementById('wpNotesGroup');
-    const notesEl = document.getElementById('wpTeacherNotes');
-    if (notesGroup) notesGroup.style.display = 'block';
-    if (notesEl) notesEl.value = wpState.plan.teacher_notes;
-  }
+  // Load teacher notes and additional notes into editable fields
+  const teacherNotesEl = document.getElementById('wpTeacherNotes');
+  if (teacherNotesEl) teacherNotesEl.value = wpState.plan?.teacher_notes || '';
+  const additionalNotesEl = document.getElementById('wpAdditionalNotes');
+  if (additionalNotesEl) additionalNotesEl.value = wpState.plan?.additional_notes || '';
 }
 
-// ─── Render the day editor ────────────────────
-function wpRenderDay() {
-  // Update tab highlights
-  WP_DAYS.forEach(d => {
-    const tab = document.getElementById('wptab-' + d);
-    if (tab) tab.classList.toggle('active', d === wpState.currentDay);
-  });
-
-  const day = wpState.currentDay;
-  const isInteractive = WP_INTERACTIVE_DAYS.includes(day);
-  const sessionBadge = isInteractive
-    ? '<span class="wp-session-badge interactive">🖥️ Interactive iPad Day</span>'
-    : '<span class="wp-session-badge paper">🖨️ Paper Day</span>';
-
-  const rdg = wpState.assignments[day]?.reading || {};
-  const pln = wpState.assignments[day]?.plan || {};
-
-  const editor = document.getElementById('wpDayEditor');
-  if (!editor) return;
-  editor.innerHTML = `
-    <!-- Reading Studio for this day -->
-    <div class="wp-track-box reading">
-      <div class="wp-track-label reading">📚 Reading Studio — Grandma & Dad &nbsp;${sessionBadge}</div>
-      ${isInteractive ? `<p style="font-size:12px;color:#5A3D9E;font-weight:700;margin-bottom:10px">Meleah will do an interactive iPad activity for this session. Describe what she should practice (the word list below powers the activity).</p>` : ''}
-      <div class="input-group">
-        <label class="input-label">Activity Name</label>
-        <input class="input-field" id="wpRdgActivity" placeholder="e.g. Word Card Game" value="${esc(rdg.activity_name||'')}">
-      </div>
-      <div class="input-group">
-        <label class="input-label">Instructions (step by step for Grandma/Dad)</label>
-        <textarea class="input-field" id="wpRdgInstructions" rows="5" placeholder="Step 1: ...&#10;Step 2: ...">${esc(rdg.instructions||'')}</textarea>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Word List (comma-separated)</label>
-        <input class="input-field" id="wpRdgWords" placeholder="trip, drop, grip, crab, frog" value="${esc(rdg.word_list||'')}">
-      </div>
-      <div class="input-group">
-        <label class="input-label">Coach Tips</label>
-        <textarea class="input-field" id="wpRdgTips" rows="2" placeholder="Helpful hints for the coach...">${esc(rdg.coach_tips||'')}</textarea>
-      </div>
-      <div class="input-group" style="margin-bottom:0">
-        <label class="input-label">Duration (minutes)</label>
-        <input class="input-field" id="wpRdgDuration" type="number" placeholder="15" value="${rdg.duration_min||''}" style="max-width:100px">
-      </div>
-    </div>
-
-    <!-- My Plan for this day -->
-    <div class="wp-track-box plan">
-      <div class="wp-track-label plan">🗓️ My Plan — Morning & Evening</div>
-      <div class="input-group">
-        <label class="input-label">Morning Prompt</label>
-        <input class="input-field" id="wpPlanMorning" placeholder="What are your 3 things today?" value="${esc(pln.activity_name||'')}">
-      </div>
-      <div class="input-group" style="margin-bottom:0">
-        <label class="input-label">Evening Reflection</label>
-        <input class="input-field" id="wpPlanEvening" placeholder="Which ones did you do?" value="${esc(pln.instructions||'')}">
-      </div>
-    </div>
-
-    <button class="action-btn" style="width:100%;padding:14px" onclick="wpSaveDay()">💾 Save ${day.charAt(0).toUpperCase()+day.slice(1)}</button>
-    <div id="wpSaveConfirm" style="text-align:center;font-size:13px;font-weight:800;color:var(--green);margin-top:8px;display:none">Saved ✓</div>
-  `;
-}
-
-// Helper: escape HTML in template literals
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ─── Render Story Studio ─────────────────────
-function wpRenderStoryStudio() {
-  const story = wpState.assignments['week']?.story || {};
-  // Parse the JSON blob that holds the new session fields
-  let vocabData = {};
-  try { vocabData = JSON.parse(story.vocab_cards_json || '{}'); } catch(e) {}
-
-  const el = id => document.getElementById(id);
-  if (el('wpStoryTopic')      && story.activity_name) el('wpStoryTopic').value      = story.activity_name;
-  if (el('wpStoryAuntText')   && story.instructions)  el('wpStoryAuntText').value   = story.instructions;
-  if (el('wpStoryDiscussion') && vocabData.discussion) el('wpStoryDiscussion').value = vocabData.discussion;
-  if (el('wpStoryPrompts')    && vocabData.prompts)    el('wpStoryPrompts').value    = vocabData.prompts;
-  if (el('wpStoryTextMsg')    && story.coach_tips)     el('wpStoryTextMsg').value    = story.coach_tips;
-  if (el('wpStoryVocab')      && story.word_list)      el('wpStoryVocab').value      = story.word_list;
-  if (el('wpStoryVocabWords') && vocabData.vocab_raw)  el('wpStoryVocabWords').value = vocabData.vocab_raw;
-}
 
 // ─── Open Vocab Cards page ────────────────────
 function wpOpenVocabCards() {
@@ -2513,9 +2247,14 @@ async function wpPrevWeek() {
   wpState.currentDay = 'monday';
   await wpLoadWeek(wpState.weekId);
   wpRenderWeekHeader();
-  wpRenderDay();
-  wpRenderStoryStudio();
   document.getElementById('wpShareBox')?.classList.remove('visible');
+  // Show preview if assignments exist, otherwise hide
+  if (wpState.assignments && Object.keys(wpState.assignments).length) {
+    wpRenderAiPreview(null);
+  } else {
+    const preview = document.getElementById('wpGeneratedPreview');
+    if (preview) { preview.innerHTML = ''; preview.style.display = 'none'; }
+  }
 }
 
 async function wpNextWeek() {
@@ -2526,15 +2265,14 @@ async function wpNextWeek() {
   wpState.currentDay = 'monday';
   await wpLoadWeek(wpState.weekId);
   wpRenderWeekHeader();
-  wpRenderDay();
-  wpRenderStoryStudio();
   document.getElementById('wpShareBox')?.classList.remove('visible');
-}
-
-// ─── Day tab selection ────────────────────────
-function wpSelectDay(day) {
-  wpState.currentDay = day;
-  wpRenderDay();
+  // Show preview if assignments exist, otherwise hide
+  if (wpState.assignments && Object.keys(wpState.assignments).length) {
+    wpRenderAiPreview(null);
+  } else {
+    const preview = document.getElementById('wpGeneratedPreview');
+    if (preview) { preview.innerHTML = ''; preview.style.display = 'none'; }
+  }
 }
 
 // ─── Save base URL ────────────────────────────
@@ -2563,138 +2301,37 @@ function showToast(msg) {
   setTimeout(() => { t.style.opacity = '0'; }, 2000);
 }
 
-// ─── Teacher doc upload ───────────────────────
-async function wpUploadDoc(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const status = document.getElementById('wpUploadStatus');
-  if (status) { status.style.display = 'block'; status.textContent = '⏳ Reading file...'; }
-
-  let extractedText = '';
-  try {
-    if (file.name.endsWith('.docx')) {
-      const ab = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer: ab });
-      extractedText = result.value;
-    } else if (file.name.endsWith('.pdf')) {
-      // PDF: prompt user to paste text (pdf.js not loaded by default to keep file small)
-      extractedText = '[PDF uploaded: ' + file.name + ']\n\nNote: To extract PDF text automatically, please copy the text from the PDF and paste it into a notes app, then re-save it as a .docx file. Or you can manually type the key details in the fields below.';
-    } else {
-      throw new Error('Unsupported file type');
-    }
-
-    // Show notes
-    const notesGroup = document.getElementById('wpNotesGroup');
-    const notesEl = document.getElementById('wpTeacherNotes');
-    if (notesGroup) notesGroup.style.display = 'block';
-    if (notesEl) notesEl.value = extractedText;
-
-    // Save to Supabase
-    await wpAutoSavePlan(extractedText);
-    if (status) status.textContent = '✅ File read successfully! Notes appear above for reference.';
-  } catch(e) {
-    if (status) status.textContent = '❌ Could not read file. Try a .docx file.';
-    console.warn('wpUploadDoc error', e);
-  }
-  input.value = ''; // reset so same file can be re-uploaded
-}
 
 // ─── Auto-save plan metadata ──────────────────
 async function wpAutoSavePlan(teacherNotes) {
   if (!isOnline) return;
   const fclNum = parseInt(document.getElementById('wpFclNumber')?.value) || null;
-  const conceptName = document.getElementById('wpConceptName')?.value || '';
   const payload = {
     id: wpState.weekId,
     week_start: wpState.weekId,
     fcl_concept: fclNum,
-    concept_name: conceptName,
+    additional_notes: document.getElementById('wpAdditionalNotes')?.value || '',
     status: wpState.plan?.status || 'draft',
     updated_at: new Date().toISOString(),
   };
-  if (teacherNotes !== undefined) payload.teacher_notes = teacherNotes;
+  if (teacherNotes !== undefined) {
+    payload.teacher_notes = teacherNotes;
+  } else {
+    payload.teacher_notes = document.getElementById('wpTeacherNotes')?.value || '';
+  }
   const { data } = await db.from('meleah_weekly_plans').upsert(payload).select().single();
   if (data) wpState.plan = data;
 }
 
-// ─── Save current day's assignments ──────────
-async function wpSaveDay() {
-  if (!isOnline) { showToast('You\'re offline — connect to save'); return; }
-  await wpAutoSavePlan();
-
-  const day = wpState.currentDay;
-  const isInteractive = WP_INTERACTIVE_DAYS.includes(day);
-
-  const rdgRow = {
-    id: (wpState.assignments[day]?.reading?.id) || genId(),
-    week_id: wpState.weekId,
-    day_of_week: day,
-    track: 'reading',
-    session_type: isInteractive ? 'interactive' : 'paper',
-    activity_name: document.getElementById('wpRdgActivity')?.value || '',
-    instructions: document.getElementById('wpRdgInstructions')?.value || '',
-    word_list: document.getElementById('wpRdgWords')?.value || '',
-    coach_tips: document.getElementById('wpRdgTips')?.value || '',
-    duration_min: parseInt(document.getElementById('wpRdgDuration')?.value) || null,
-    sort_order: 0,
-  };
-  const planRow = {
-    id: (wpState.assignments[day]?.plan?.id) || genId(),
-    week_id: wpState.weekId,
-    day_of_week: day,
-    track: 'plan',
-    session_type: 'paper',
-    activity_name: document.getElementById('wpPlanMorning')?.value || '',
-    instructions: document.getElementById('wpPlanEvening')?.value || '',
-    word_list: '',
-    coach_tips: '',
-    duration_min: 5,
-    sort_order: 1,
-  };
-  // Save story studio (stored under day='week')
-  // Pack the new session fields into vocab_cards_json to avoid a schema change
-  const vocabCardsJson = JSON.stringify({
-    cards:      wpState._vocabCards || [],
-    discussion: document.getElementById('wpStoryDiscussion')?.value  || '',
-    prompts:    document.getElementById('wpStoryPrompts')?.value     || '',
-    vocab_raw:  document.getElementById('wpStoryVocabWords')?.value  || '',
-  });
-  const storyRow = {
-    id: (wpState.assignments['week']?.story?.id) || genId(),
-    week_id: wpState.weekId,
-    day_of_week: 'week',
-    track: 'story',
-    session_type: 'facetime',
-    activity_name:    document.getElementById('wpStoryTopic')?.value    || '',
-    instructions:     document.getElementById('wpStoryAuntText')?.value || '',  // Aunt's story script
-    coach_tips:       document.getElementById('wpStoryTextMsg')?.value  || '',
-    word_list:        document.getElementById('wpStoryVocab')?.value    || '',
-    vocab_cards_json: vocabCardsJson,
-    duration_min: null,
-    sort_order: 0,
-  };
-
-  await Promise.all([
-    db.from('meleah_daily_assignments').upsert(rdgRow),
-    db.from('meleah_daily_assignments').upsert(planRow),
-    db.from('meleah_daily_assignments').upsert(storyRow),
-  ]);
-
-  // Update local state
-  if (!wpState.assignments[day]) wpState.assignments[day] = {};
-  wpState.assignments[day].reading = rdgRow;
-  wpState.assignments[day].plan = planRow;
-  if (!wpState.assignments['week']) wpState.assignments['week'] = {};
-  wpState.assignments['week'].story = storyRow;
-
-  const confirm = document.getElementById('wpSaveConfirm');
-  if (confirm) { confirm.style.display = 'block'; setTimeout(() => { confirm.style.display = 'none'; }, 2000); }
-}
 
 // ─── Publish & share ──────────────────────────
 async function wpPublish() {
   if (!isOnline) { showToast('Connect to publish'); return; }
-  await wpSaveDay();
+  // If AI data exists but assignments haven't been saved yet, save them now
+  if (wpState._lastAiData && (!wpState.assignments?.monday?.reading)) {
+    await wpSaveAllDays(wpState._lastAiData);
+  }
+  await wpAutoSavePlan();
 
   // Mark as published
   const { data } = await db.from('meleah_weekly_plans')
@@ -2710,11 +2347,10 @@ async function wpPublish() {
   const baseUrl = wpState.baseUrl || '[set your Vercel URL above first]';
   const shareUrl = `${baseUrl}/WeeklyPlan.html?week=${wpState.weekId}`;
   const weekLabel = wpFormatWeekLabel(wpState.weekId);
-  const conceptName = wpState.plan?.concept_name || '';
   const fclNum = wpState.plan?.fcl_concept || '';
-  const conceptLine = conceptName ? `📚 This week: FCL Concept ${fclNum} — ${conceptName}` : '';
+  const conceptLine = fclNum ? `📚 This week: FCL Concept ${fclNum} — ${FCL_CONCEPTS[fclNum] || ''}` : '';
 
-  const shareMsg = `Here's Meleah's plan for the ${weekLabel}! 🌟\n${conceptLine}\n\n🔗 ${shareUrl}\n\nGrandma & Dad: Reading Studio and My Plan are in there — Mon & Wed are iPad activity days, other days print the worksheet.\nAunt: Scroll to the Story Studio section — that's yours! 💜\n\nEach iPad activity earns Meleah coins! 🪙`;
+  const shareMsg = `Here's Meleah's plan for the ${weekLabel}! 🌟\n${conceptLine}\n\n🔗 ${shareUrl}\n\nGrandma & Dad: Reading Studio is in there — Mon & Wed are iPad activity days, other days print the worksheet.\nAunt: Scroll to the Story Studio section — that's yours! 💜\n\nEach iPad activity earns Meleah coins! 🪙`;
 
   const shareText = document.getElementById('wpShareText');
   const shareBox = document.getElementById('wpShareBox');
@@ -2858,143 +2494,46 @@ ${rows}
   win.document.close();
 }
 
-// ─── AI Instructions (student profile) ───────
-
-// ─── Journal PDF Download ─────────────────────
-function populateJournalWeekSelect() {
-  const sel = document.getElementById('journalWeekSelect');
-  if (!sel || !state.journal?.length) return;
-
-  // Group entries by Monday of their week
-  const weekMap = {};
-  state.journal.forEach(e => {
-    const d = new Date(e.date + 'T12:00:00');
-    const day = d.getDay(); // 0=Sun, 1=Mon...
-    const offset = day === 0 ? -6 : 1 - day; // shift to Monday
-    const mon = new Date(d); mon.setDate(d.getDate() + offset);
-    const key = mon.toISOString().slice(0, 10);
-    weekMap[key] = (weekMap[key] || 0) + 1;
-  });
-
-  const weeks = Object.keys(weekMap).sort().reverse(); // newest first
-  sel.innerHTML = '<option value="">Select a week to download...</option>';
-  weeks.forEach(monDate => {
-    const d = new Date(monDate + 'T12:00:00');
-    const label = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const count = weekMap[monDate];
-    const opt = document.createElement('option');
-    opt.value = monDate;
-    opt.textContent = `Week of ${label} (${count} entr${count === 1 ? 'y' : 'ies'})`;
-    sel.appendChild(opt);
-  });
-}
-
-function downloadJournalPDF() {
-  const sel = document.getElementById('journalWeekSelect');
-  const weekStart = sel?.value;
-  if (!weekStart) { showToast('Pick a week from the dropdown first'); return; }
-
-  const monDate = new Date(weekStart + 'T12:00:00');
-  const sunDate = new Date(monDate); sunDate.setDate(monDate.getDate() + 6);
-
-  const entries = (state.journal || []).filter(e => {
-    const d = e.date;
-    return d >= weekStart && d <= sunDate.toISOString().slice(0, 10);
-  }).sort((a, b) => a.date.localeCompare(b.date));
-
-  if (!entries.length) { showToast('No journal entries for that week'); return; }
-
-  const weekLabel = monDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const rows = entries.map(e => `
-    <div class="entry">
-      <div class="entry-header">
-        <span class="entry-date">${e.dateDisplay || e.date}</span>
-        <span class="entry-mood">${e.moodEmoji || ''} ${e.mood || ''}</span>
-      </div>
-      <div class="entry-text">${(e.text || '(no text)').replace(/\n/g, '<br>')}</div>
-    </div>`).join('');
-
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Meleah's Journal — Week of ${weekLabel}</title>
-<style>
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 680px; margin: 40px auto; color: #222; }
-  h1 { font-size: 22px; color: #7C5CBF; border-bottom: 3px solid #7C5CBF; padding-bottom: 10px; }
-  .subtitle { font-size: 14px; color: #888; margin-bottom: 28px; }
-  .entry { margin-bottom: 24px; border-left: 4px solid #E8D5FF; padding-left: 16px; }
-  .entry-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
-  .entry-date { font-size: 14px; font-weight: 700; color: #5A3D9E; }
-  .entry-mood { font-size: 14px; color: #555; }
-  .entry-text { font-size: 15px; line-height: 1.7; color: #333; }
-  @media print { body { margin: 20px; } }
-</style></head><body>
-<h1>💭 Meleah's Journal</h1>
-<div class="subtitle">Week of ${weekLabel} &nbsp;·&nbsp; ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}</div>
-${rows}
-<script>window.onload = function(){ window.print(); }<\/script>
-</body></html>`);
-  win.document.close();
-}
-
 // ─── AI Auto-Generate Weekly Plan ────────────
-async function wpGenerateWithAI(twoWeeks) {
-  const fclNum          = document.getElementById('wpFclNumber')?.value      || '';
-  const conceptName     = document.getElementById('wpConceptName')?.value    || '';
-  const teacherNotes    = document.getElementById('wpTeacherNotes')?.value   || '';
+async function wpGenerateWithAI() {
+  const fclNum          = document.getElementById('wpFclNumber')?.value       || '';
+  const teacherNotes    = document.getElementById('wpTeacherNotes')?.value    || '';
   const additionalNotes = document.getElementById('wpAdditionalNotes')?.value || '';
-  if (!fclNum && !conceptName) {
-    showToast('Enter the FCL Concept number and name first');
+  const fclDocSnippet   = wpState._fclDocText ? wpState._fclDocText.slice(0, 2000) : null;
+  if (!fclNum) {
+    showToast('Enter the FCL Concept number first');
     return;
   }
   const statusEl = document.getElementById('wpAiStatus');
 
   try {
-    // Load prior week context to prevent repeating words and story themes
     if (statusEl) { statusEl.textContent = '⏳ Loading last week\'s context…'; statusEl.style.color = 'var(--purple)'; }
     const prevContext = await wpGetPrevWeekContext(wpState.weekId);
     const freshNote = prevContext ? '' : ' (no prior week — starting fresh)';
     if (statusEl) { statusEl.textContent = `🤖 Generating plan…${freshNote} (10–20 seconds)`; statusEl.style.color = 'var(--purple)'; }
 
-    // Generate week 1
-    const data = await wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, wpState.weekId, prevContext, null);
-    await wpFillFromAI(data);
-    if (statusEl) { statusEl.textContent = '✅ Plan generated! Review each day, then click Publish when ready.'; statusEl.style.color = 'var(--green)'; }
-
-    if (twoWeeks) {
-      // Build week 1 context (word lists + story theme) to ensure week 2 is different
-      const days = ['monday','tuesday','wednesday','thursday','friday'];
-      const wordLines = days
-        .map(d => data[d]?.word_list ? `  ${d}: ${data[d].word_list}` : null)
-        .filter(Boolean).join('\n');
-      const week1StoryTopic = data.story?.topic || null;
-      const week1Context = [
-        wordLines,
-        week1StoryTopic ? `Week 1 story theme: "${week1StoryTopic}" — week 2 must use a DIFFERENT story theme.` : null,
-      ].filter(Boolean).join('\n') || null;
-
-      if (statusEl) { statusEl.textContent = '🤖 Generating week 2…'; statusEl.style.color = 'var(--purple)'; }
-      await wpNextWeek();
-      await new Promise(r => setTimeout(r, 800));
-      const data2 = await wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, wpState.weekId, prevContext, week1Context);
-      await wpFillFromAI(data2);
-      if (statusEl) { statusEl.textContent = '✅ 2 weeks generated! Review each week and publish separately.'; statusEl.style.color = 'var(--green)'; }
-    }
+    const data = await wpCallClaude(fclNum, teacherNotes, additionalNotes, wpState.weekId, prevContext, fclDocSnippet);
+    wpState._lastAiData = data;
+    await wpSaveAllDays(data);
+    wpRenderAiPreview(data);
+    if (statusEl) { statusEl.textContent = '✅ Plan generated! Review above, then click Publish when ready.'; statusEl.style.color = 'var(--green)'; }
   } catch (e) {
     console.error('wpGenerateWithAI error', e);
     if (statusEl) { statusEl.textContent = '❌ ' + (e.message || 'Something went wrong. Check your API key.'); statusEl.style.color = '#E53935'; }
   }
 }
 
-async function wpCallClaude(fclNum, conceptName, teacherNotes, additionalNotes, weekId, prevContext, week1Context) {
+async function wpCallClaude(fclNum, teacherNotes, additionalNotes, weekId, prevContext, fclDocText) {
   const weekDate = new Date(weekId + 'T12:00:00');
   const dayNames = ['Mon','Tue','Wed','Thu','Fri'];
   const dates = dayNames.map((d, i) => {
     const dd = new Date(weekDate); dd.setDate(dd.getDate() + i);
     return `${d} ${dd.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
   });
-  const instrSnippet  = state.aiInstructions ? `\nAbout Meleah:\n${state.aiInstructions}\n` : '';
-  const notesSnippet  = teacherNotes    ? `\nTeacher Notes:\n${teacherNotes.slice(0,1500)}\n`    : '';
-  const addlSnippet   = additionalNotes ? `\nAdditional Notes for This Week:\n${additionalNotes}\n` : '';
+  const instrSnippet = state.aiInstructions ? `\nAbout Meleah:\n${state.aiInstructions}\n` : '';
+  const notesSnippet = teacherNotes    ? `\nTeacher Notes:\n${teacherNotes.slice(0,1500)}\n`    : '';
+  const addlSnippet  = additionalNotes ? `\nAdditional Notes for This Week:\n${additionalNotes}\n` : '';
+  const fclSnippet   = fclDocText      ? `\nFCL Reference Material (first 2000 chars):\n${fclDocText.slice(0,2000)}\n` : '';
 
   let prevSnippet = '';
   if (prevContext) {
@@ -3011,23 +2550,17 @@ ${listLines || '  (none recorded)'}
 Choose DIFFERENT words and a DIFFERENT story theme this week.\n`;
   }
 
-  let week1Snippet = '';
-  if (week1Context) {
-    week1Snippet = `\nWEEK 2 OF 2 — build on week 1, not a repeat:
-${week1Context}
-Use DIFFERENT, slightly more challenging words. Story Studio theme must be completely fresh.\n`;
-  }
-
   const prompt = `You are a dyslexia reading tutor assistant. Generate a structured weekly reading plan for Meleah, a child learning with the Orton-Gillingham / FCL approach.
 ${instrSnippet}
-FCL Concept #${fclNum}${conceptName ? ` — "${conceptName}"` : ''}
-Week of: ${dates.join(', ')}${notesSnippet}${addlSnippet}${prevSnippet}${week1Snippet}
+FCL Concept #${fclNum}
+Week of: ${dates.join(', ')}${notesSnippet}${addlSnippet}${fclSnippet}${prevSnippet}
 RULES:
 - Monday and Wednesday are interactive iPad days (fun, engaging digital practice)
 - Tuesday, Thursday, Friday are paper days (worksheets done with Grandma or Dad in-person)
 - Word lists: 8–10 words focused on the FCL concept pattern
 - Instructions: numbered steps, simple and encouraging, written for a parent coach
 - Coach tips: 1–2 sentences of expert advice for the adult helper
+- Use specific Orton-Gillingham multisensory techniques where appropriate: sky writing, sand tray, syllable tapping, Red/White/Green drill cards, word sorting, arm blending, visual-auditory-kinesthetic activities
 - Story Studio is for Aunt Kariss via FaceTime from LA — 3 structured sessions per week, NOT phonics drills:
   * Session 1: Aunt teaches 4–6 vocabulary words using visual cards on her phone (word + emoji + kid-friendly definition + synonyms + example)
   * Session 2: Aunt reads a short story aloud (6–8 simple sentences, uses 2–3 vocab words); Meleah identifies Character, Setting, Problem, Action, Ending
@@ -3072,48 +2605,212 @@ Return ONLY valid JSON, no markdown, no extra text:
   return JSON.parse(text);
 }
 
-async function wpFillFromAI(data) {
-  const days = ['monday','tuesday','wednesday','thursday','friday'];
+// ─── Lazy-load pdf.js CDN ────────────────────
+function wpLoadPdfJs(callback) {
+  if (window.pdfjsLib) { callback(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  s.onload = () => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    callback();
+  };
+  document.head.appendChild(s);
+}
 
-  // Fill Story Studio fields (always visible)
-  if (data.story) {
-    const s = data.story;
-    const el = id => document.getElementById(id);
-    if (el('wpStoryTopic'))      el('wpStoryTopic').value      = s.topic             || '';
-    if (el('wpStoryAuntText'))   el('wpStoryAuntText').value   = s.aunt_story        || '';
-    if (el('wpStoryDiscussion')) el('wpStoryDiscussion').value = s.discussion        || '';
-    if (el('wpStoryPrompts'))    el('wpStoryPrompts').value    = s.retelling_prompts || '';
-    if (el('wpStoryTextMsg'))    el('wpStoryTextMsg').value    = s.text_msg          || '';
-    if (el('wpStoryVocab'))      el('wpStoryVocab').value      = s.vocab             || '';
-    // Store vocab card objects for wpSaveDay()
-    wpState._vocabCards = Array.isArray(s.vocab_cards) ? s.vocab_cards : [];
-    // Build human-readable vocab textarea
-    if (el('wpStoryVocabWords') && wpState._vocabCards.length) {
-      el('wpStoryVocabWords').value = wpState._vocabCards.map(c =>
-        `${c.word} ${c.emoji || ''} | ${c.definition || ''} | ${(c.synonyms || []).join(', ')} | ${c.example || ''}`
-      ).join('\n');
+// ─── FCL PDF file selection + text extraction ─
+async function wpSelectFclDoc(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('wpFclDocStatus');
+  const label  = document.getElementById('wpFclDocLabel');
+  if (status) { status.style.display = 'block'; status.textContent = '⏳ Reading PDF...'; }
+  wpState._fclDocName = file.name;
+  if (label) label.textContent = '📄 ' + file.name;
+
+  wpLoadPdfJs(async () => {
+    try {
+      const ab  = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+      let text = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page    = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(' ') + '\n';
+      }
+      wpState._fclDocText = text.trim() || null;
+      if (status) status.textContent = wpState._fclDocText
+        ? `✅ Loaded: ${file.name} (${pdf.numPages} pages)`
+        : `⚠️ PDF is image-based — AI will use concept number only`;
+    } catch(e) {
+      wpState._fclDocText = null;
+      if (status) status.textContent = `⚠️ Could not read PDF — AI will use concept number only`;
     }
-  }
+  });
+  input.value = '';
+}
 
-  // Fill each day by switching the tab, letting wpRenderDay populate from state, then saving
-  const originalDay = wpState.currentDay;
-  for (const day of days) {
-    const d = data[day]; if (!d) continue;
-    if (!wpState.assignments[day]) wpState.assignments[day] = {};
-    wpState.assignments[day].reading = {
-      ...(wpState.assignments[day].reading || {}),
+// ─── Save all 5 days + story studio from AI data ─
+async function wpSaveAllDays(aiData) {
+  if (!isOnline) { showToast('Connect to save'); return; }
+  await wpAutoSavePlan();
+
+  const days = ['monday','tuesday','wednesday','thursday','friday'];
+  const rows = [];
+
+  days.forEach(day => {
+    const d = aiData[day]; if (!d) return;
+    const isInteractive = WP_INTERACTIVE_DAYS.includes(day);
+    const row = {
+      id:            (wpState.assignments[day]?.reading?.id) || genId(),
+      week_id:       wpState.weekId,
+      day_of_week:   day,
+      track:         'reading',
+      session_type:  isInteractive ? 'interactive' : 'paper',
       activity_name: d.activity_name || '',
       instructions:  d.instructions  || '',
       word_list:     d.word_list      || '',
       coach_tips:    d.coach_tips     || '',
       duration_min:  d.duration_min   || 15,
+      sort_order:    0,
     };
-    wpState.currentDay = day;
-    wpRenderDay();
-    await wpSaveDay();
+    rows.push(row);
+    if (!wpState.assignments[day]) wpState.assignments[day] = {};
+    wpState.assignments[day].reading = row;
+  });
+
+  // Story Studio (stored as day='week', track='story')
+  if (aiData.story) {
+    const s = aiData.story;
+    const vocabCardsJson = JSON.stringify({
+      cards:      Array.isArray(s.vocab_cards) ? s.vocab_cards : [],
+      discussion: s.discussion        || '',
+      prompts:    s.retelling_prompts || '',
+      vocab_raw:  s.vocab             || '',
+    });
+    const storyRow = {
+      id:               (wpState.assignments['week']?.story?.id) || genId(),
+      week_id:          wpState.weekId,
+      day_of_week:      'week',
+      track:            'story',
+      session_type:     'facetime',
+      activity_name:    s.topic      || '',
+      instructions:     s.aunt_story || '',
+      coach_tips:       s.text_msg   || '',
+      word_list:        s.vocab      || '',
+      vocab_cards_json: vocabCardsJson,
+      duration_min:     null,
+      sort_order:       0,
+    };
+    rows.push(storyRow);
+    if (!wpState.assignments['week']) wpState.assignments['week'] = {};
+    wpState.assignments['week'].story = storyRow;
   }
-  wpState.currentDay = originalDay;
-  wpRenderDay();
+
+  await Promise.all(rows.map(row => db.from('meleah_daily_assignments').upsert(row)));
+}
+
+// ─── Render read-only AI plan preview ────────
+function wpRenderAiPreview(aiData) {
+  const preview = document.getElementById('wpGeneratedPreview');
+  if (!preview) return;
+
+  // If no aiData passed, build from saved wpState.assignments
+  let source = aiData;
+  if (!source) {
+    // Reconstruct from saved assignments
+    source = {};
+    ['monday','tuesday','wednesday','thursday','friday'].forEach(day => {
+      const rdg = wpState.assignments[day]?.reading;
+      if (rdg) source[day] = rdg;
+    });
+    const story = wpState.assignments['week']?.story;
+    if (story) {
+      let vocabData = {};
+      try { vocabData = JSON.parse(story.vocab_cards_json || '{}'); } catch(e) {}
+      source.story = {
+        topic:              story.activity_name || '',
+        aunt_story:         story.instructions  || '',
+        vocab:              story.word_list      || '',
+        text_msg:           story.coach_tips     || '',
+        discussion:         vocabData.discussion || '',
+        retelling_prompts:  vocabData.prompts    || '',
+      };
+    }
+    if (!Object.keys(source).length) { preview.style.display = 'none'; return; }
+  }
+
+  const days = ['monday','tuesday','wednesday','thursday','friday'];
+  const dayLabels = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri' };
+
+  let html = '<div style="font-weight:900;color:var(--purple);font-size:15px;margin-bottom:10px">📋 Generated Plan Preview</div>';
+
+  days.forEach(day => {
+    const d = source[day]; if (!d) return;
+    const isIPad = WP_INTERACTIVE_DAYS.includes(day);
+    const badge  = isIPad
+      ? '<span style="background:#e8d5ff;color:#5A3D9E;font-size:11px;padding:2px 7px;border-radius:8px;font-weight:700">🖥️ iPad</span>'
+      : '<span style="background:#e5f6fd;color:#0277bd;font-size:11px;padding:2px 7px;border-radius:8px;font-weight:700">🖨️ Paper</span>';
+    const words   = (d.word_list || '').split(',').map(w => w.trim()).filter(Boolean).slice(0,8).join(' · ');
+    const preview_instructions = (d.instructions || '').slice(0, 80) + ((d.instructions || '').length > 80 ? '…' : '');
+    html += `<div style="background:#f8f5ff;border-radius:12px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-weight:800;font-size:14px">${dayLabels[day]}</span>${badge}
+        <span style="font-size:13px;font-weight:700;color:var(--purple);margin-left:4px">${d.activity_name || ''}</span>
+      </div>
+      ${words ? `<div style="font-size:12px;color:#555;margin-bottom:3px">📝 ${words}</div>` : ''}
+      ${preview_instructions ? `<div style="font-size:11px;color:#777">${preview_instructions}</div>` : ''}
+    </div>`;
+  });
+
+  if (source.story) {
+    const s = source.story;
+    html += `<div style="background:#f3e8ff;border:2px solid #c084fc;border-radius:12px;padding:12px;margin-top:4px">
+      <div style="font-weight:900;font-size:13px;color:var(--purple);margin-bottom:4px">📝 Story Studio — Aunt Kariss (FaceTime)</div>
+      ${s.topic ? `<div style="font-size:13px;font-weight:700;margin-bottom:4px">Theme: ${s.topic}</div>` : ''}
+      ${s.vocab ? `<div style="font-size:12px;color:#555">Vocab: ${s.vocab}</div>` : ''}
+    </div>`;
+  }
+
+  html += `<div style="text-align:center;font-size:13px;font-weight:800;color:var(--green);margin-top:10px">✅ Plan generated! Review above, then publish when ready.</div>`;
+
+  preview.innerHTML = html;
+  preview.style.display = 'block';
+}
+
+// ─── Reset entire week ────────────────────────
+async function wpResetWeek() {
+  if (!confirm('Clear all plan data for this week? This cannot be undone.')) return;
+  if (!isOnline) { showToast('Connect to reset'); return; }
+  await Promise.all([
+    db.from('meleah_daily_assignments').delete().eq('week_id', wpState.weekId),
+    db.from('meleah_weekly_plans').delete().eq('id', wpState.weekId),
+  ]);
+  wpState.plan = null;
+  wpState.assignments = {};
+  wpState._lastAiData = null;
+  wpState._fclDocText = null;
+  wpState._fclDocName = null;
+  // Clear form fields
+  ['wpTeacherNotes','wpFclNumber','wpAdditionalNotes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const previewEl = document.getElementById('wpGeneratedPreview');
+  if (previewEl) { previewEl.innerHTML = ''; previewEl.style.display = 'none'; }
+  const fclLabel  = document.getElementById('wpFclDocLabel');
+  const fclStatus = document.getElementById('wpFclDocStatus');
+  if (fclLabel)  fclLabel.textContent = 'Click to choose FCL PDF';
+  if (fclStatus) { fclStatus.textContent = ''; fclStatus.style.display = 'none'; }
+  wpRenderWeekHeader();
+  showToast('Week data cleared ✓');
+}
+
+// ─── Debounce auto-save for text input ───────
+let _wpSaveTimer = null;
+function wpDebounceSavePlan() {
+  clearTimeout(_wpSaveTimer);
+  _wpSaveTimer = setTimeout(() => wpAutoSavePlan(), 1500);
 }
 
 
