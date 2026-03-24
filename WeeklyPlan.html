@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meleah's Weekly Plan 📚</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="print.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --purple: #7C5CBF;
+    --purple-light: #EDE8F8;
+    --gold: #F4A62A;
+    --gold-light: #FEF3D8;
+    --teal: #1E8A8A;
+    --teal-light: #E6F4F4;
+    --coral: #E8643A;
+    --green: #4CAF50;
+    --green-light: #E8F5E9;
+    --pink: #E91E8C;
+    --pink-light: #FCE4F3;
+    --bg: #FFF8F0;
+    --card: #FFFFFF;
+    --text: #2C2C2C;
+    --muted: #888;
+    --radius: 16px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── Header ── */
+  .page-header {
+    background: linear-gradient(135deg, var(--purple), #5A3D9E);
+    color: white;
+    padding: 28px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg);
+    border-radius: 50% 50% 0 0 / 40px 40px 0 0;
+  }
+  .app-logo { font-size: 13px; font-weight: 700; opacity: 0.75; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .week-title { font-size: 26px; font-weight: 900; line-height: 1.2; }
+  .concept-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    margin-top: 10px;
+  }
+  .print-btn {
+    position: absolute;
+    top: 24px; right: 24px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .print-btn:hover { background: rgba(255,255,255,0.35); }
+  .email-btn {
+    position: absolute;
+    top: 24px; right: 175px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .email-btn:hover { background: rgba(255,255,255,0.35); }
+  .print-hint { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.75); margin-top: 4px; text-align: right; padding-right: 4px; }
+
+  /* ── Main layout ── */
+  .main { padding: 16px 20px 40px; max-width: 680px; margin: 0 auto; }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-size: 12px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--muted); margin: 28px 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 2px; background: #EEE; }
+
+  /* ── Day tabs ── */
+  .day-tabs {
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+    scrollbar-width: none; margin-bottom: 20px;
+  }
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-tab {
+    flex-shrink: 0;
+    padding: 8px 18px;
+    border: 2px solid #EEE;
+    border-radius: 20px;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .day-tab.active { background: var(--purple); color: white; border-color: var(--purple); }
+  .day-tab .day-type { font-size: 10px; opacity: 0.75; display: block; margin-top: 2px; }
+
+  /* ── Track cards ── */
+  .track-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    border-left: 5px solid #DDD;
+  }
+  .track-card.reading { border-left-color: var(--purple); }
+  .track-card.story   { border-left-color: var(--pink); }
+  .track-card.plan    { border-left-color: var(--teal); }
+
+  .track-card-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .track-card-title {
+    font-size: 16px; font-weight: 900; flex: 1;
+  }
+  .track-card-title.reading { color: var(--purple); }
+  .track-card-title.story   { color: var(--pink); }
+  .track-card-title.plan    { color: var(--teal); }
+
+  .session-badge {
+    font-size: 11px; font-weight: 800; padding: 4px 10px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .session-badge.interactive { background: #E8F5E9; color: #388E3C; border: 1px solid #C8E6C9; }
+  .session-badge.paper       { background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; }
+  .session-badge.facetime    { background: var(--pink-light); color: var(--pink); border: 1px solid #F48FB1; }
+
+  .activity-name { font-size: 18px; font-weight: 900; margin-bottom: 10px; }
+  .duration-tag { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+  /* ── Word list ── */
+  .word-grid {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;
+  }
+  .word-box {
+    background: var(--purple-light);
+    border: 2px solid var(--purple);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--purple);
+  }
+
+  /* ── Instructions ── */
+  .instructions-block {
+    background: #FAFAFA;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    color: var(--text);
+    margin: 10px 0;
+  }
+
+  /* ── Coach tips ── */
+  .coach-tips-box {
+    border-left: 4px solid var(--gold);
+    padding: 10px 14px;
+    background: var(--gold-light);
+    border-radius: 0 10px 10px 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.6;
+    margin-top: 10px;
+    color: #7A5000;
+  }
+  .coach-tips-box strong { display: block; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; color: var(--gold); }
+
+  /* ── Activity link ── */
+  .activity-link-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+    border: 2px solid var(--green);
+    border-radius: 12px;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: #2E7D32;
+    font-weight: 800;
+    font-size: 14px;
+    margin: 10px 0;
+    transition: all 0.2s;
+  }
+  .activity-link-btn:hover { background: linear-gradient(135deg, #C8E6C9, #A5D6A7); }
+  .activity-link-btn .coin-tag { margin-left: auto; font-size: 12px; background: white; padding: 3px 10px; border-radius: 20px; }
+
+  /* ── Story Studio (Aunt section) ── */
+  .aunt-banner {
+    background: linear-gradient(135deg, var(--pink), #C2185B);
+    color: white;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .aunt-banner .icon { font-size: 36px; }
+  .aunt-banner h3 { font-size: 16px; font-weight: 900; }
+  .aunt-banner p { font-size: 13px; opacity: 0.9; margin-top: 2px; }
+
+  .prompt-card {
+    background: var(--pink-light);
+    border: 2px solid #F48FB1;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .prompt-card .prompt-num { font-size: 11px; font-weight: 900; color: var(--pink); display: block; margin-bottom: 4px; }
+
+  .text-msg-card {
+    background: white;
+    border: 2px solid var(--pink);
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.6;
+    position: relative;
+  }
+  .text-msg-card::before { content: '💬'; font-size: 18px; display: block; margin-bottom: 6px; }
+  .copy-text-btn {
+    display: block;
+    width: 100%;
+    background: var(--pink);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  .vocab-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .vocab-pill {
+    background: var(--pink-light);
+    border: 2px solid #F48FB1;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--pink);
+  }
+
+  /* ── My Plan ── */
+  .plan-card {
+    background: var(--teal-light);
+    border: 2px solid var(--teal);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .plan-prompt { font-size: 16px; font-weight: 800; color: var(--teal); margin-bottom: 6px; }
+  .plan-line { border-bottom: 2px solid var(--teal); height: 32px; margin-bottom: 8px; }
+
+  /* ── Loading/error states ── */
+  .loading { text-align: center; padding: 60px 20px; font-size: 18px; color: var(--muted); }
+  .error-card { background: #FFEAEA; border: 2px solid #E53935; border-radius: var(--radius); padding: 20px; margin: 20px; }
+
+  /* ── Empty state for unpublished ── */
+  .draft-banner {
+    background: var(--gold-light);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #7A5000;
+  }
+
+  /* ── Decodable Reader Section ── */
+  .reader-section {
+    margin-top: 40px;
+    padding-top: 8px;
+  }
+  .reader-header {
+    background: linear-gradient(135deg, var(--purple-light), #D7C8F8);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .reader-phonics-tag {
+    font-size: 12px; font-weight: 900; color: var(--purple);
+    text-transform: uppercase; letter-spacing: 1px;
+    background: white; padding: 4px 12px; border-radius: 20px;
+    display: inline-block; margin: 4px 4px 0 0;
+  }
+  .reader-word-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .reader-word-chip {
+    background: var(--purple-light); border: 2px solid var(--purple);
+    border-radius: 10px; padding: 6px 14px;
+    font-size: 15px; font-weight: 800; color: var(--purple);
+  }
+  .reader-version-label {
+    font-size: 12px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--muted); margin: 28px 0 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .reader-version-label::after { content: ''; flex: 1; height: 2px; background: #EEE; }
+  .reader-page {
+    background: white; border-radius: 12px; padding: 20px;
+    margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 1px solid #EEE;
+  }
+  .reader-sentence { font-size: 21px; font-weight: 700; line-height: 1.7; color: var(--text); margin: 3px 0; }
+  .illustration-box {
+    border: 2px dashed #CCC; border-radius: 10px; min-height: 170px;
+    margin-top: 14px; display: flex; align-items: center;
+    justify-content: center; background: #FAFAFA;
+  }
+  .illustration-box-label { font-size: 13px; color: #CCC; font-weight: 700; font-style: italic; }
+  @media print {
+    .reader-page { box-shadow: none; border: 1px solid #DDD; page-break-inside: avoid; }
+    .reader-page-illu { page-break-before: always; }
+    .reader-page-illu:first-of-type { page-break-before: auto; }
+    .illustration-box { min-height: 210px; border: 2px solid #BBB; }
+    .reader-no-illus .reader-page { page-break-before: always; }
+    .reader-no-illus .reader-page:first-of-type { page-break-before: auto; }
+    .reader-version-label { page-break-before: always; }
+  }
+
+  /* Hide screen-only items when printing (handled by print.css too) */
+  @media print {
+    .page-header { background: white !important; color: black !important; padding: 0 0 16pt; }
+    .page-header::after { display: none; }
+    .week-title { color: #5A3D9E !important; }
+    .concept-badge { background: none; color: #5A3D9E; border: 2px solid #5A3D9E; }
+    .main { padding: 0; }
+    .day-tabs { display: none; }
+    .day-section { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header week-header" id="pageHeader">
+  <div class="app-logo">Meleah's World 🌟</div>
+  <div class="week-title" id="weekTitle">Loading plan...</div>
+  <div id="conceptBadge"></div>
+  <button class="email-btn no-print" onclick="emailFamily()">📧 Email Family</button>
+  <button class="print-btn no-print" onclick="window.print()">📄 Save as PDF / Print</button>
+  <div class="print-hint no-print">In print dialog → choose "Save as PDF"</div>
+</div>
+
+<div class="main" id="mainContent">
+  <div class="loading" id="loadingState">⏳ Loading this week's plan...</div>
+</div>
+
+<script>
+// ────────────────────────────────────────────
+// CONFIG — same Supabase as Meleah's World
+// ────────────────────────────────────────────
+const SUPABASE_URL     = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ────────────────────────────────────────────
+// Helpers
+// ────────────────────────────────────────────
+function getWeekIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('week');
+}
+
+function formatWeekLabel(weekId) {
+  const d = new Date(weekId + 'T12:00:00');
+  return 'Week of ' + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function formatDayLabel(day) {
+  const labels = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday' };
+  return labels[day] || day;
+}
+
+function getDayDate(weekId, day) {
+  const offset = { monday:0, tuesday:1, wednesday:2, thursday:3, friday:4 };
+  const d = new Date(weekId + 'T12:00:00');
+  d.setDate(d.getDate() + (offset[day] || 0));
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ────────────────────────────────────────────
+// Load data
+// ────────────────────────────────────────────
+const DAYS = ['monday','tuesday','wednesday','thursday','friday'];
+const INTERACTIVE_DAYS = ['monday','wednesday'];
+
+let weekId = null;
+let planData = null;
+let assignments = {};
+let currentDay = 'monday';
+
+// Get the base URL of this file (for building activity links)
+function getBaseUrl() {
+  const url = new URL(window.location.href);
+  return url.origin + url.pathname.replace('WeeklyPlan.html', '');
+}
+
+async function loadPlan() {
+  weekId = getWeekIdFromUrl();
+  if (!weekId) {
+    showError('No week specified in the URL. Ask Melissa to share the correct link!');
+    return;
+  }
+
+  try {
+    const [planRes, assignRes] = await Promise.all([
+      db.from('meleah_weekly_plans').select('*').eq('id', weekId).maybeSingle(),
+      db.from('meleah_daily_assignments').select('*').eq('week_id', weekId),
+    ]);
+
+    if (!planRes.data) {
+      showError('No plan found for this week yet. Melissa is still working on it — check back Friday evening!');
+      return;
+    }
+
+    planData = planRes.data;
+
+    // Build assignments map
+    assignments = {};
+    (assignRes.data || []).forEach(row => {
+      if (!assignments[row.day_of_week]) assignments[row.day_of_week] = {};
+      assignments[row.day_of_week][row.track] = row;
+    });
+
+    renderPage();
+  } catch(e) {
+    showError('Could not load the plan right now. Make sure you have internet, then refresh the page.');
+    console.error(e);
+  }
+}
+
+// ────────────────────────────────────────────
+// Render
+// ────────────────────────────────────────────
+function renderPage() {
+  // Header
+  document.getElementById('weekTitle').textContent = formatWeekLabel(weekId);
+  const badge = document.getElementById('conceptBadge');
+  if (planData.concept_name) {
+    badge.innerHTML = `<span class="concept-badge">FCL Concept ${planData.fcl_concept || ''} — ${esc(planData.concept_name)}</span>`;
+  }
+
+  const main = document.getElementById('mainContent');
+
+  if (planData.status === 'draft') {
+    main.innerHTML = `<div class="draft-banner">📝 This plan is still being finalized by Melissa. Check back Friday evening!</div>`;
+    return;
+  }
+
+  // Day navigation tabs
+  const tabsHtml = `
+    <div class="no-print">
+      <div class="section-label">Jump to a day</div>
+      <div class="day-tabs">
+        ${DAYS.map(d => `
+          <button class="day-tab ${d === currentDay ? 'active' : ''}" id="tab-${d}" onclick="switchDay('${d}')">
+            ${formatDayLabel(d)}
+            <span class="day-type">${INTERACTIVE_DAYS.includes(d) ? '🖥️ iPad' : '🖨️ Paper'}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+  `;
+
+  // Reading Studio section for current day (screen) or all days (print)
+  const readingHtml = DAYS.map(d => renderDaySection(d)).join('');
+
+  // Story Studio section (Aunt)
+  const storyHtml = renderStorySection();
+
+  main.innerHTML = tabsHtml + `
+    <div id="readingDays">${readingHtml}</div>
+    ${storyHtml}
+    ${renderPlanSection()}
+    ${renderReaderSection()}
+  `;
+
+  // Hide non-current days on screen (print shows all)
+  updateDayVisibility();
+}
+
+function renderDaySection(day) {
+  const rdg = assignments[day]?.reading || {};
+  const isInteractive = INTERACTIVE_DAYS.includes(day);
+  const isCurrentDay = day === currentDay;
+
+  const sessionBadge = isInteractive
+    ? '<span class="session-badge interactive">🖥️ Interactive iPad Day</span>'
+    : '<span class="session-badge paper">🖨️ Print & Do Together</span>';
+
+  const wordList = rdg.word_list
+    ? rdg.word_list.split(',').map(w => w.trim()).filter(Boolean)
+        .map(w => `<div class="word-box">${esc(w)}</div>`).join('')
+    : '';
+
+  // Pick the featured activity by day (Mon = blend-build, Wed = rapid-drill)
+  const featuredActivity = day === 'monday'
+    ? `<a class="activity-link-btn" href="activities/blend-build.html?week=${weekId}&day=${day}" target="_blank" style="background:linear-gradient(135deg,#E0F2F1,#B2DFDB);border-color:var(--teal)"><span style="color:var(--teal)">🧩 Build the Word!</span><span class="coin-tag">🪙 +5 coins</span></a>`
+    : `<a class="activity-link-btn" href="activities/rapid-drill.html?week=${weekId}&day=${day}" target="_blank" style="background:linear-gradient(135deg,#FFF8E1,#FFECB3);border-color:var(--gold)"><span style="color:#E65100">⚡ Rapid Word Drill</span><span class="coin-tag">🪙 +5 coins</span></a>`;
+
+  const activityLinks = isInteractive ? `
+    <div style="margin: 12px 0">
+      <div style="font-size:13px;font-weight:800;color:var(--green);margin-bottom:8px">🎮 Today's Activity for Meleah (earns coins!)</div>
+      ${featuredActivity}
+      <details style="margin-top:8px">
+        <summary style="font-size:12px;font-weight:800;color:#888;cursor:pointer;padding:6px 0">More activities ▾</summary>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+          <a class="activity-link-btn" href="activities/tap-word.html?week=${weekId}&day=${day}" target="_blank">
+            <span>👆 Tap the Right Word</span><span class="coin-tag">🪙 +5 coins</span>
+          </a>
+          <a class="activity-link-btn" href="activities/drag-sort.html?week=${weekId}&day=${day}" target="_blank">
+            <span>🔀 Drag &amp; Sort Words</span><span class="coin-tag">🪙 +5 coins</span>
+          </a>
+          <a class="activity-link-btn" href="activities/spell-word.html?week=${weekId}&day=${day}" target="_blank">
+            <span>🔤 Spell It Out!</span><span class="coin-tag">🪙 +5 coins</span>
+          </a>
+          <a class="activity-link-btn" href="activities/read-comprehension.html?week=${weekId}&day=${day}" target="_blank">
+            <span>📖 Read &amp; Answer</span><span class="coin-tag">🪙 +5 coins</span>
+          </a>
+        </div>
+      </details>
+    </div>` : `
+    <div style="margin:12px 0">
+      <a class="activity-link-btn no-print" href="worksheets/reading-worksheet.html?week=${weekId}&day=${day}" target="_blank" style="background:linear-gradient(135deg,var(--purple-light),#D7C8F8);border-color:var(--purple);">
+        <span style="color:var(--purple)">🖨️ Open Printable Worksheet</span>
+        <span class="coin-tag" style="background:var(--purple-light);color:var(--purple)">Print & do together</span>
+      </a>
+    </div>`;
+
+  return `
+    <div class="day-section" id="day-${day}" style="display:${isCurrentDay ? 'block' : 'none'}">
+      <div class="section-label">${formatDayLabel(day)} · ${getDayDate(weekId, day)}</div>
+      <div class="track-card reading">
+        <div class="track-card-header">
+          <div class="track-card-title reading">📚 Reading Studio — Grandma &amp; Dad</div>
+          ${sessionBadge}
+        </div>
+        ${rdg.activity_name ? `<div class="activity-name">${esc(rdg.activity_name)}</div>` : ''}
+        ${rdg.duration_min ? `<div class="duration-tag">⏱ ${rdg.duration_min} minutes</div>` : ''}
+        ${wordList ? `
+          <div style="margin:12px 0">
+            <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Word List</div>
+            <div class="word-grid">${wordList}</div>
+          </div>` : ''}
+        ${rdg.instructions ? `
+          <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Instructions</div>
+          <div class="instructions-block">${esc(rdg.instructions)}</div>` : ''}
+        ${activityLinks}
+        ${rdg.coach_tips ? `
+          <div class="coach-tips-box">
+            <strong>💡 Coach Tips</strong>
+            ${esc(rdg.coach_tips)}
+          </div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderStorySection() {
+  const story = assignments['week']?.story || {};
+  const vocab  = (story.word_list || '').split(',').map(v => v.trim()).filter(Boolean);
+
+  // Parse the JSON blob that holds the 3-session fields
+  let vocabData = {};
+  try { vocabData = JSON.parse(story.vocab_cards_json || '{}'); } catch(e) {}
+  const cards      = vocabData.cards      || [];
+  const discussion = vocabData.discussion || '';
+  const prompts    = (vocabData.prompts   || '').split('\n').filter(p => p.trim());
+
+  // Decide whether we have the new 3-session structure or old-style data
+  const hasNewData = cards.length > 0 || story.instructions?.length > 80 || discussion;
+
+  // ── Backward-compatible old layout ──
+  if (!hasNewData) {
+    const oldPrompts = (story.instructions || '').split('\n').filter(p => p.trim());
+    return `
+    <div class="story-section" id="storySection">
+      <div class="section-label">Story Studio — Aunt's Section 📱</div>
+      <div class="aunt-banner">
+        <div class="icon">📖</div>
+        <div><h3>Aunt's FaceTime &amp; Text Guide</h3><p>All sessions are via FaceTime — no printing needed!</p></div>
+      </div>
+      ${story.activity_name ? `<div class="track-card story" style="margin-bottom:12px"><div class="track-card-header"><div class="track-card-title story">📖 This Week's Story Theme</div></div><div class="activity-name">${esc(story.activity_name)}</div></div>` : ''}
+      ${oldPrompts.length ? `<div style="margin-bottom:14px"><div style="font-size:13px;font-weight:800;color:var(--pink);margin-bottom:8px">FaceTime Talking Points</div>${oldPrompts.map((p,i) => `<div class="prompt-card"><span class="prompt-num">Prompt ${i+1}</span>${esc(p)}</div>`).join('')}</div>` : ''}
+      ${story.coach_tips ? `<div style="margin-bottom:14px"><div style="font-size:13px;font-weight:800;color:var(--pink);margin-bottom:8px">Text Message Idea</div><div class="text-msg-card">${esc(story.coach_tips)}<button class="copy-text-btn no-print" onclick="copyText('${esc(story.coach_tips).replace(/'/g,"\\'")}')">📋 Copy to paste into iMessage</button></div></div>` : ''}
+      ${vocab.length ? `<div><div style="font-size:13px;font-weight:800;color:var(--pink);margin-bottom:8px">Vocabulary Words to Explore Together</div><div class="vocab-pills">${vocab.map(v => `<span class="vocab-pill">${esc(v)}</span>`).join('')}</div></div>` : ''}
+    </div>`;
+  }
+
+  // ── New 3-session layout ──
+  const vocabCardBtnHtml = `
+    <a class="activity-link-btn no-print" href="activities/vocab-cards.html?week=${weekId}" target="_blank"
+       style="background:linear-gradient(135deg,#FCE4F3,#F8BBD0);border-color:var(--pink);">
+      <span style="color:var(--pink)">🃏 Open Vocab Cards</span>
+      <span class="coin-tag" style="background:white;color:var(--pink)">Share screen on FaceTime</span>
+    </a>`;
+
+  const vocabPillsHtml = vocab.length
+    ? `<div class="vocab-pills" style="margin-top:8px">${vocab.map(v => `<span class="vocab-pill">${esc(v)}</span>`).join('')}</div>`
+    : '';
+
+  const discussionLines = discussion.split('\n').filter(d => d.trim());
+  const discussionHtml = discussionLines.length
+    ? discussionLines.map(d => `<div class="prompt-card" style="border-color:#9C27B0;background:#F3E5F5"><span class="prompt-num" style="color:#9C27B0">${esc(d.split(':')[0] || '▶')}</span>${esc(d.split(':').slice(1).join(':').trim() || d)}</div>`).join('')
+    : '';
+
+  const retellingHtml = prompts.length
+    ? prompts.map((p, i) => `<div class="prompt-card" style="border-color:var(--green);background:var(--green-light)"><span class="prompt-num" style="color:var(--green)">${i + 1}</span>${esc(p)}</div>`).join('')
+    : '';
+
+  return `
+    <div class="story-section" id="storySection">
+      <div class="section-label">Story Studio — Aunt Kariss 📱 FaceTime 3×/week</div>
+      <div class="aunt-banner">
+        <div class="icon">📖</div>
+        <div>
+          <h3>Three sessions this week — they build on each other!</h3>
+          <p>All from LA via FaceTime — no printing needed!</p>
+        </div>
+      </div>
+
+      ${story.activity_name ? `
+        <div style="font-size:16px;font-weight:900;color:var(--pink);margin-bottom:16px;text-align:center">
+          📖 This Week's Theme: ${esc(story.activity_name)}
+        </div>` : ''}
+
+      <!-- SESSION 1 -->
+      <div style="background:#FFF0F8;border-left:4px solid var(--pink);border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--pink);margin-bottom:8px">Session 1 — Vocabulary Exploration</div>
+        <p style="font-size:13px;color:#666;font-weight:700;margin-bottom:10px">Open the Vocab Cards on your phone and share your screen. Go through each word together!</p>
+        ${vocabCardBtnHtml}
+        ${vocabPillsHtml}
+      </div>
+
+      <!-- SESSION 2 -->
+      <div style="background:#F0F4FF;border-left:4px solid #7C5CBF;border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:#7C5CBF;margin-bottom:8px">Session 2 — Aunt Tells a Story</div>
+        <p style="font-size:13px;color:#666;font-weight:700;margin-bottom:10px">Read this story aloud to Meleah on FaceTime, then ask the questions below.</p>
+        ${story.instructions ? `
+          <div style="background:white;border-radius:10px;padding:14px;font-size:14px;font-weight:700;color:var(--text);line-height:1.7;margin-bottom:10px;white-space:pre-wrap">${esc(story.instructions)}</div>` : ''}
+        ${discussionHtml ? `
+          <div style="font-size:12px;font-weight:900;color:#7C5CBF;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Story Element Questions</div>
+          ${discussionHtml}` : ''}
+      </div>
+
+      <!-- SESSION 3 -->
+      <div style="background:#F0FFF4;border-left:4px solid var(--green);border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-bottom:8px">Session 3 — Meleah Tells Her Story</div>
+        <p style="font-size:13px;color:#666;font-weight:700;margin-bottom:10px">Meleah retells something from her week. Use these prompts if she gets stuck. Bonus coins for using vocab words! 🪙</p>
+        ${retellingHtml}
+      </div>
+
+      <!-- Text message -->
+      ${story.coach_tips ? `
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:800;color:var(--pink);margin-bottom:8px">Text Message to Send Before the Call</div>
+          <div class="text-msg-card">
+            ${esc(story.coach_tips)}
+            <button class="copy-text-btn no-print" onclick="copyText('${esc(story.coach_tips).replace(/'/g,"\\'")}')">📋 Copy to paste into iMessage</button>
+          </div>
+        </div>` : ''}
+    </div>`;
+}
+
+function renderPlanSection() {
+  const planDay = assignments['monday']?.plan || {};
+  const morning  = planDay.activity_name  || 'What are your 3 things today?';
+  const evening  = planDay.instructions   || 'Which ones did you do?';
+
+  return `
+    <div id="planSection">
+      <div class="section-label">My Plan — Daily (Grandma &amp; Dad)</div>
+      <div class="plan-card">
+        <div style="font-size:11px;font-weight:900;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">🌅 Morning</div>
+        <div class="plan-prompt">${esc(morning)}</div>
+        <div class="plan-line"></div><div class="plan-line"></div><div class="plan-line"></div>
+
+        <div style="font-size:11px;font-weight:900;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:16px 0 12px">🌙 Evening</div>
+        <div class="plan-prompt">${esc(evening)}</div>
+        <div class="plan-line"></div><div class="plan-line"></div>
+      </div>
+    </div>`;
+}
+
+// ────────────────────────────────────────────
+// Day tab switching
+// ────────────────────────────────────────────
+function switchDay(day) {
+  currentDay = day;
+  // Update tab highlight
+  DAYS.forEach(d => {
+    document.getElementById('tab-' + d)?.classList.toggle('active', d === day);
+  });
+  updateDayVisibility();
+}
+
+function updateDayVisibility() {
+  DAYS.forEach(d => {
+    const el = document.getElementById('day-' + d);
+    if (el) el.style.display = d === currentDay ? 'block' : 'none';
+  });
+}
+
+// ────────────────────────────────────────────
+// Email & PDF sharing
+// ────────────────────────────────────────────
+function emailFamily() {
+  const weekLabel = document.getElementById('weekTitle')?.textContent || 'This Week';
+  const concept   = document.getElementById('conceptBadge')?.textContent || '';
+  const url       = window.location.href;
+  const subject   = `Meleah's Assignments – ${weekLabel}`;
+  const body      = `Hi! Here's Meleah's plan for ${weekLabel}! 🌟\n\nOpen the plan here:\n${url}\n\n${concept ? concept + '\n\n' : ''}📚 Grandma & Dad: Reading Studio and My Plan are inside — Mon & Wed are iPad activity days, other days have printable worksheets.\n\n💜 Aunt: Scroll to the Story Studio section — that's your section! All FaceTime and text prompts are in there.\n\nEach iPad activity earns Meleah coins! 🪙`;
+  window.open('mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body));
+}
+
+// ────────────────────────────────────────────
+// Utilities
+// ────────────────────────────────────────────
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Copied! Paste it into iMessage for Aunt. 💜');
+  }).catch(() => {
+    prompt('Copy this text:', text);
+  });
+}
+
+function showError(msg) {
+  document.getElementById('loadingState').innerHTML = `
+    <div class="error-card">
+      <div style="font-size:24px;margin-bottom:10px">😔</div>
+      <div style="font-size:16px;font-weight:800;margin-bottom:6px">Hmm, something's up</div>
+      <div style="font-size:14px;font-weight:600;color:#666;line-height:1.5">${esc(msg)}</div>
+    </div>`;
+}
+
+// ────────────────────────────────────────────
+// Decodable Reader Section
+// ────────────────────────────────────────────
+function renderReaderSection() {
+  let reader = null;
+  try { reader = JSON.parse(planData.reader_story_json || 'null'); } catch(e) {}
+  if (!reader || !reader.pages || !reader.pages.length) return '';
+
+  const title    = reader.title || "This Week's Decodable Reader";
+  const phonic   = reader.phonics_focus || '';
+  const wordsArr = (reader.target_words || '').split(',').map(w => w.trim()).filter(Boolean);
+
+  const phonicHtml = phonic
+    ? `<span class="reader-phonics-tag">📚 ${esc(phonic)}</span>` : '';
+  const wordsHtml = wordsArr.length
+    ? `<div class="reader-word-row">${wordsArr.map(w => `<span class="reader-word-chip">${esc(w)}</span>`).join('')}</div>` : '';
+
+  const withIllu = reader.pages.map((lines, i) => `
+    <div class="reader-page reader-page-illu">
+      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px">Page ${i + 1} of ${reader.pages.length}</div>
+      ${lines.map(l => `<div class="reader-sentence">${esc(l)}</div>`).join('')}
+      <div class="illustration-box"><span class="illustration-box-label">✏️  Draw what you see!</span></div>
+    </div>`).join('');
+
+  const noIllu = reader.pages.map((lines, i) => `
+    <div class="reader-page">
+      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px">Page ${i + 1} of ${reader.pages.length}</div>
+      ${lines.map(l => `<div class="reader-sentence">${esc(l)}</div>`).join('')}
+    </div>`).join('');
+
+  return `
+    <div class="reader-section" id="readerSection">
+      <div class="section-label">📖 This Week's Decodable Reader</div>
+
+      <div class="reader-header">
+        <div style="font-size:18px;font-weight:900;color:var(--purple);margin-bottom:8px">📖 ${esc(title)}</div>
+        ${phonicHtml}
+        ${wordsHtml}
+      </div>
+
+      <div class="reader-version-label">✏️  Version 1 — Print &amp; Draw (with illustration boxes)</div>
+      <div>${withIllu}</div>
+
+      <div class="reader-version-label">📖 Version 2 — Fluency Practice (reading only)</div>
+      <div class="reader-no-illus">${noIllu}</div>
+    </div>`;
+}
+
+// ────────────────────────────────────────────
+// Init
+// ────────────────────────────────────────────
+loadPlan();
+</script>
+</body>
+</html>

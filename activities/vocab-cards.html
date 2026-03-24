@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Vocabulary Cards 🃏</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --purple: #7C5CBF; --purple-light: #EDE8F8;
+    --pink: #E91E8C; --pink-light: #FCE4F3;
+    --green: #4CAF50; --teal: #00897B;
+    --bg: #FFF8F0; --card: #FFFFFF; --text: #2C2C2C;
+    --muted: #888; --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  .header {
+    background: linear-gradient(135deg, var(--pink), #C2185B);
+    color: white; padding: 20px 24px 60px; text-align: center; position: relative;
+  }
+  .header::after { content:''; position:absolute; bottom:-28px; left:0; right:0; height:56px; background:var(--bg); border-radius:50% 50% 0 0 / 40px 40px 0 0; }
+  .header-title { font-size: 22px; font-weight: 900; }
+  .header-sub { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+
+  .page { flex: 1; padding: 16px 20px 40px; max-width: 500px; margin: 0 auto; width: 100%; }
+
+  /* Progress dots */
+  .dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #DDD; transition: background 0.3s; flex-shrink: 0; }
+  .dot.active { background: var(--pink); transform: scale(1.3); }
+  .dot.done   { background: var(--green); }
+
+  /* Vocab card */
+  .vocab-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    min-height: 320px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    animation: fadeIn 0.35s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card-num { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pink); margin-bottom: 12px; }
+  .vocab-word { font-size: 38px; font-weight: 900; color: var(--purple); line-height: 1.1; margin-bottom: 10px; }
+  .vocab-emoji { font-size: 72px; margin: 8px 0 14px; }
+  .vocab-def { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.5; margin-bottom: 14px; max-width: 320px; }
+  .synonyms-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px; }
+  .synonym-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 14px; }
+  .synonym-chip {
+    background: var(--pink-light); border: 2px solid var(--pink);
+    border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 800; color: var(--pink);
+  }
+  .vocab-example { font-size: 14px; color: var(--muted); font-style: italic; font-weight: 700; line-height: 1.5; max-width: 300px; }
+
+  /* Speak button */
+  .speak-btn {
+    background: var(--purple-light); border: 3px solid var(--purple); border-radius: 50px;
+    padding: 10px 22px; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 900;
+    color: var(--purple); cursor: pointer; margin-top: 16px; transition: all 0.2s;
+  }
+  .speak-btn:active { background: var(--purple); color: white; transform: scale(0.96); }
+
+  /* Navigation */
+  .nav-row { display: flex; gap: 12px; }
+  .nav-btn {
+    flex: 1; background: white; border: 3px solid #E0E0E0; border-radius: 16px;
+    padding: 16px; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 900;
+    color: var(--text); cursor: pointer; transition: all 0.2s;
+  }
+  .nav-btn:active { transform: scale(0.96); }
+  .nav-btn.primary { background: var(--pink); border-color: var(--pink); color: white; }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Counter */
+  .counter { text-align: center; font-size: 13px; font-weight: 800; color: var(--muted); margin-top: 12px; }
+
+  /* Done screen */
+  .done-screen {
+    display: none; text-align: center; padding: 40px 20px;
+    background: var(--card); border-radius: var(--radius); box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin: 20px 0;
+  }
+  .done-screen.visible { display: block; }
+
+  .loading { text-align: center; padding: 60px 20px; font-size: 16px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🃏 Vocabulary Cards</div>
+  <div class="header-sub" id="headerSub">Loading this week's words…</div>
+</div>
+
+<div class="page">
+  <div id="dotsRow" class="dots"></div>
+  <div id="cardArea"><div class="loading">⏳ Loading vocabulary cards…</div></div>
+  <div class="done-screen" id="doneScreen">
+    <div style="font-size:64px;margin-bottom:12px">🎉</div>
+    <div style="font-size:24px;font-weight:900;color:var(--purple);margin-bottom:8px">All Words Done!</div>
+    <div style="font-size:15px;color:var(--muted);font-weight:700;margin-bottom:20px">Great work going through the vocabulary with Meleah!</div>
+    <button class="nav-btn primary" style="max-width:260px;margin:0 auto;display:block" onclick="restart()">🔄 Go Through Again</button>
+  </div>
+  <div id="navRow" class="nav-row" style="display:none">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>← Previous</button>
+    <button class="nav-btn primary" id="nextBtn" onclick="nextCard()">Next →</button>
+  </div>
+  <div class="counter" id="counterEl"></div>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let cards = [];
+let current = 0;
+
+async function loadCards() {
+  const params = new URLSearchParams(window.location.search);
+  const weekId = params.get('week');
+
+  if (!weekId) {
+    document.getElementById('cardArea').innerHTML = '<div class="loading">❌ No week in URL. Open from the weekly plan.</div>';
+    return;
+  }
+
+  try {
+    const { data } = await db.from('meleah_daily_assignments')
+      .select('vocab_cards_json, word_list, week_id')
+      .eq('week_id', weekId)
+      .eq('day_of_week', 'week')
+      .eq('track', 'story')
+      .maybeSingle();
+
+    // Try to parse rich vocab cards from JSON
+    let parsed = [];
+    try {
+      const obj = JSON.parse(data?.vocab_cards_json || '{}');
+      parsed = obj.cards || [];
+    } catch(e) {}
+
+    // Backward compatibility: if no cards but word_list exists, make minimal cards
+    if (parsed.length === 0 && data?.word_list) {
+      parsed = data.word_list.split(',').map(w => ({
+        word: w.trim(), emoji: '📝', definition: '', synonyms: [], example: ''
+      })).filter(c => c.word);
+    }
+
+    if (parsed.length === 0) {
+      document.getElementById('cardArea').innerHTML =
+        '<div class="loading">📋 No vocab cards yet — Melissa is still building this week\'s plan. Check back later!</div>';
+      return;
+    }
+
+    cards = parsed;
+    current = 0;
+    document.getElementById('headerSub').textContent = `${cards.length} word${cards.length !== 1 ? 's' : ''} this week`;
+    renderCard();
+    document.getElementById('navRow').style.display = 'flex';
+    renderDots();
+
+  } catch(e) {
+    document.getElementById('cardArea').innerHTML = '<div class="loading">❌ Could not load cards. Check internet and try again.</div>';
+  }
+}
+
+function renderCard() {
+  if (current >= cards.length) {
+    document.getElementById('cardArea').style.display = 'none';
+    document.getElementById('doneScreen').classList.add('visible');
+    document.getElementById('navRow').style.display = 'none';
+    document.getElementById('dotsRow').innerHTML = '';
+    document.getElementById('counterEl').textContent = '';
+    return;
+  }
+
+  document.getElementById('doneScreen').classList.remove('visible');
+  document.getElementById('cardArea').style.display = 'block';
+  document.getElementById('navRow').style.display = 'flex';
+
+  const c = cards[current];
+  const synonymHtml = (c.synonyms || []).filter(Boolean).length
+    ? `<div class="synonyms-label">Also means…</div>
+       <div class="synonym-chips">${(c.synonyms || []).filter(Boolean).map(s => `<span class="synonym-chip">${esc(s)}</span>`).join('')}</div>`
+    : '';
+  const exampleHtml = c.example
+    ? `<div class="vocab-example">"${esc(c.example)}"</div>` : '';
+  const defHtml = c.definition
+    ? `<div class="vocab-def">${esc(c.definition)}</div>` : '';
+
+  document.getElementById('cardArea').innerHTML = `
+    <div class="vocab-card">
+      <div class="card-num">Word ${current + 1} of ${cards.length}</div>
+      <div class="vocab-word">${esc(c.word)}</div>
+      <div class="vocab-emoji">${c.emoji || '📝'}</div>
+      ${defHtml}
+      ${synonymHtml}
+      ${exampleHtml}
+      <button class="speak-btn" onclick="speakWord('${c.word.replace(/'/g,"\\'")}')">🔊 Hear it</button>
+    </div>`;
+
+  // Buttons
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done ✓' : 'Next →';
+
+  // Counter
+  document.getElementById('counterEl').textContent = `${current + 1} / ${cards.length}`;
+
+  renderDots();
+  // Auto-speak new word
+  setTimeout(() => speakWord(c.word), 500);
+}
+
+function renderDots() {
+  document.getElementById('dotsRow').innerHTML = cards.map((_, i) => {
+    const cls = i === current ? 'dot active' : (i < current ? 'dot done' : 'dot');
+    return `<div class="${cls}"></div>`;
+  }).join('');
+}
+
+function nextCard() {
+  if (current < cards.length) { current++; renderCard(); }
+}
+function prevCard() {
+  if (current > 0) { current--; renderCard(); }
+}
+function restart() {
+  current = 0;
+  document.getElementById('doneScreen').classList.remove('visible');
+  renderCard();
+  document.getElementById('navRow').style.display = 'flex';
+}
+
+function speakWord(word) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(word);
+  utt.rate = 0.85; utt.pitch = 1.1;
+  window.speechSynthesis.speak(utt);
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadCards();
+</script>
+</body>
+</html>

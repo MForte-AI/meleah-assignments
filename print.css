@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════
+   print.css — Shared print stylesheet for Meleah's assignments
+   Included by WeeklyPlan.html, reading-worksheet.html, myplan-worksheet.html
+   ═══════════════════════════════════════════════════════ */
+
+@media print {
+  /* Hide everything that's screen-only */
+  .no-print,
+  .activity-link-btn,
+  .print-btn,
+  .email-btn,
+  .print-hint,
+  .day-tabs,
+  nav,
+  .nav-bar,
+  .share-section,
+  button:not(.print-show) {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+    font-family: 'Nunito', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Each day section (after the first) starts on a new page */
+  .day-section + .day-section {
+    page-break-before: always;
+  }
+  /* Keep legacy class support too */
+  .day-section.print-page-break {
+    page-break-before: always;
+  }
+  /* Don't break inside a track box */
+  .track-box, .word-grid, .coach-tips-box {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Weekly plan header prints cleanly */
+  .week-header {
+    border-bottom: 3px solid #7C5CBF;
+    padding-bottom: 12pt;
+    margin-bottom: 16pt;
+  }
+
+  .week-header h1,
+  .week-title {
+    font-size: 20pt;
+    font-weight: 900;
+    color: #5A3D9E !important;
+  }
+
+  .concept-badge {
+    background: none !important;
+    color: #5A3D9E !important;
+    border: 2px solid #5A3D9E;
+    padding: 4pt 10pt;
+    border-radius: 20pt;
+    font-size: 10pt;
+    font-weight: 800;
+  }
+
+  /* Track boxes print with light backgrounds */
+  .track-box {
+    border: 2px solid #DDD;
+    border-radius: 8pt;
+    padding: 10pt;
+    margin-bottom: 10pt;
+    break-inside: avoid;
+  }
+
+  .track-box.reading { border-color: #7C5CBF; }
+  .track-box.story   { border-color: #E91E8C; }
+  .track-box.plan    { border-color: #1E8A8A; }
+
+  .track-label {
+    font-size: 13pt;
+    font-weight: 900;
+    margin-bottom: 8pt;
+  }
+
+  /* Word list prints as large boxes */
+  .word-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6pt;
+    margin: 8pt 0;
+  }
+
+  .word-box {
+    border: 2px solid #9C9C9C;
+    border-radius: 6pt;
+    padding: 6pt 8pt;
+    font-size: 14pt;
+    font-weight: 700;
+    text-align: center;
+    min-height: 30pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Instructions print clearly */
+  .instructions-text {
+    font-size: 11pt;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  /* Coach tips box */
+  .coach-tips-box {
+    border-left: 4px solid #F4A62A;
+    padding-left: 10pt;
+    margin-top: 8pt;
+    font-size: 10pt;
+    color: #555 !important;
+  }
+
+  /* Writing lines for Meleah */
+  .writing-lines {
+    margin-top: 10pt;
+  }
+  .writing-line {
+    border-bottom: 1.5pt solid #CCC;
+    height: 28pt;
+    margin-bottom: 4pt;
+  }
+
+  /* Day header */
+  .day-header {
+    background: none !important;
+    color: black !important;
+    font-size: 14pt;
+    font-weight: 900;
+    border-bottom: 2pt solid #DDD;
+    padding-bottom: 6pt;
+    margin-bottom: 10pt;
+  }
+
+  /* Aunt's section prints on its own page */
+  .story-section {
+    page-break-before: always;
+  }
+
+  /* Meleah's name/date header on worksheets */
+  .worksheet-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2pt solid #7C5CBF;
+    padding-bottom: 8pt;
+    margin-bottom: 14pt;
+  }
+
+  .name-line, .date-line {
+    border-bottom: 1.5pt solid #999;
+    min-width: 120pt;
+    display: inline-block;
+  }
+}

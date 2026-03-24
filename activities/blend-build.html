@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Build the Word! 🧩</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --teal: #00897B; --teal-light: #E0F2F1;
+    --green: #4CAF50; --green-light: #E8F5E9;
+    --coral: #E8643A; --coral-light: #FCEEE8;
+    --purple: #7C5CBF; --purple-light: #EDE8F8;
+    --gold: #F4A62A;
+    --bg: #FFF8F0; --card: #FFFFFF; --text: #2C2C2C;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  .header {
+    background: linear-gradient(135deg, var(--teal), #00695C);
+    color: white; padding: 20px 24px 60px; text-align: center; position: relative;
+  }
+  .header::after { content:''; position:absolute; bottom:-28px; left:0; right:0; height:56px; background:var(--bg); border-radius:50% 50% 0 0 / 40px 40px 0 0; }
+  .header-title { font-size: 22px; font-weight: 900; }
+  .header-sub { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+
+  .game { flex: 1; padding: 12px 20px 40px; max-width: 500px; margin: 0 auto; width: 100%; }
+
+  /* Progress */
+  .progress-bar { background: #EEE; border-radius: 20px; height: 10px; margin: 16px 0 4px; overflow: hidden; }
+  .progress-fill { background: var(--teal); height: 100%; border-radius: 20px; transition: width 0.4s ease; }
+  .progress-label { font-size: 12px; font-weight: 800; color: #888; text-align: right; margin-bottom: 20px; }
+
+  /* Build zone */
+  .build-zone-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 8px; }
+  .build-zone {
+    background: var(--teal-light); border: 3px dashed var(--teal); border-radius: 16px;
+    padding: 18px 16px; min-height: 80px; display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 8px; margin-bottom: 16px; transition: all 0.2s;
+  }
+  .build-zone.complete { border-style: solid; border-color: var(--green); background: var(--green-light); }
+  .build-zone.wrong    { border-color: var(--coral); background: var(--coral-light); animation: shake 0.4s ease; }
+  .build-zone-empty { font-size: 14px; color: var(--teal); font-weight: 800; opacity: 0.7; }
+
+  /* Tiles */
+  .tiles-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 10px; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
+  .tile {
+    background: white; border: 3px solid var(--teal); border-radius: 14px;
+    padding: 14px 20px; font-size: 22px; font-weight: 900; color: var(--teal);
+    cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+  .tile:active { transform: scale(0.93); background: var(--teal); color: white; }
+  .tile.selected { background: var(--teal); color: white; opacity: 0.5; pointer-events: none; }
+  .tile.in-zone  { background: white; border-color: var(--teal); color: var(--teal); font-size: 26px; padding: 10px 18px; cursor: pointer; }
+  .tile.in-zone:active { transform: scale(0.93); background: var(--coral-light); border-color: var(--coral); }
+
+  /* Buttons */
+  .action-row { display: flex; gap: 10px; }
+  .build-btn {
+    flex: 2; background: var(--teal); color: white; border: none; border-radius: 14px;
+    padding: 18px; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .build-btn:active { transform: scale(0.97); opacity: 0.9; }
+  .build-btn:disabled { background: #CCC; cursor: not-allowed; }
+  .clear-btn {
+    flex: 1; background: white; border: 3px solid #DDD; border-radius: 14px;
+    padding: 18px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 900;
+    color: #888; cursor: pointer;
+  }
+  .clear-btn:active { background: #F5F5F5; }
+
+  /* Feedback */
+  .feedback { height: 32px; text-align: center; font-size: 16px; font-weight: 900; margin: 12px 0; transition: opacity 0.3s; }
+  .feedback.ok  { color: var(--green); }
+  .feedback.err { color: var(--coral); }
+
+  /* Complete screen */
+  .complete-screen {
+    display: none; text-align: center; padding: 32px 20px;
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+  }
+  .complete-screen.visible { display: block; }
+  .complete-emoji { font-size: 72px; margin-bottom: 12px; }
+  .complete-title { font-size: 26px; font-weight: 900; color: var(--teal); margin-bottom: 8px; }
+  .complete-sub { font-size: 16px; color: #666; margin-bottom: 12px; }
+  .coins-earned { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 24px; }
+  .play-again-btn {
+    background: var(--teal); color: white; border: none; border-radius: 16px;
+    padding: 16px 32px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900;
+    cursor: pointer;
+  }
+  .play-again-btn:active { opacity: 0.9; transform: scale(0.97); }
+
+  .loading { text-align: center; padding: 60px 20px; font-size: 16px; color: #888; }
+
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+  @keyframes pop   { 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🧩 Build the Word!</div>
+  <div class="header-sub" id="headerSub">Loading your words…</div>
+</div>
+
+<div class="game" id="gameArea">
+  <div class="loading">⏳ Loading your words…</div>
+</div>
+
+<div class="complete-screen" id="completeScreen">
+  <div class="complete-emoji" id="completeEmoji">🌟</div>
+  <div class="complete-title">You Built Them All!</div>
+  <div class="complete-sub" id="completeMsg"></div>
+  <div class="coins-earned" id="coinsMsg"></div>
+  <button class="play-again-btn" onclick="startGame()">Play Again 🔄</button>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+const USER_ID = 'meleah';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const COINS_PER_GAME = 5;
+
+let words = [];
+let deck = [];
+let currentIndex = 0;
+let score = 0;
+let chosen = [];   // tiles selected so far (each = a part string)
+let parts = [];    // correct parts for current word
+
+// ── Split a word into 2-3 phonemic tiles ──
+function splitWord(w) {
+  const vowels = 'aeiouAEIOU';
+  const len = w.length;
+  if (len <= 3) return [w];
+  if (len <= 5) {
+    // Split near midpoint at a consonant boundary
+    const mid = Math.ceil(len / 2);
+    for (let i = mid; i < len - 1; i++) {
+      if (!vowels.includes(w[i]) && vowels.includes(w[i+1])) return [w.slice(0,i+1), w.slice(i+1)];
+      if (vowels.includes(w[i-1]) && !vowels.includes(w[i]))  return [w.slice(0,i), w.slice(i)];
+    }
+    return [w.slice(0, mid), w.slice(mid)];
+  }
+  // Longer words: try to find two split points
+  const first  = Math.floor(len / 3);
+  const second = Math.floor(2 * len / 3);
+  const p1 = findSplit(w, first);
+  const p2 = findSplit(w.slice(p1), second - p1) + p1;
+  if (p2 > p1 && p2 < len) return [w.slice(0, p1), w.slice(p1, p2), w.slice(p2)];
+  return [w.slice(0, p1), w.slice(p1)];
+}
+function findSplit(w, near) {
+  const vowels = 'aeiouAEIOU';
+  for (let i = near; i < w.length - 1; i++) {
+    if (vowels.includes(w[i]) && !vowels.includes(w[i+1])) return i + 1;
+  }
+  for (let i = near; i > 0; i--) {
+    if (vowels.includes(w[i-1]) && !vowels.includes(w[i])) return i;
+  }
+  return near;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+async function loadWords() {
+  const params = new URLSearchParams(window.location.search);
+  const weekId = params.get('week');
+  const day    = params.get('day') || 'monday';
+
+  if (!weekId) {
+    document.getElementById('gameArea').innerHTML = '<div class="loading">❌ No week in URL. Open from the weekly plan.</div>';
+    return;
+  }
+  try {
+    const { data } = await db.from('meleah_daily_assignments')
+      .select('word_list')
+      .eq('week_id', weekId)
+      .eq('day_of_week', day)
+      .eq('track', 'reading')
+      .maybeSingle();
+
+    const raw = data?.word_list || '';
+    words = raw.split(',').map(w => w.trim()).filter(Boolean);
+
+    if (words.length < 2) {
+      document.getElementById('gameArea').innerHTML = '<div class="loading">📋 Not enough words yet — Melissa is still building the word list. Check back later!</div>';
+      return;
+    }
+    document.getElementById('headerSub').textContent = `${words.length} words to build`;
+    startGame();
+  } catch(e) {
+    document.getElementById('gameArea').innerHTML = '<div class="loading">❌ Could not load words. Check internet and try again.</div>';
+  }
+}
+
+function startGame() {
+  document.getElementById('completeScreen').classList.remove('visible');
+  document.getElementById('gameArea').style.display = 'block';
+  deck = shuffle(words);
+  currentIndex = 0;
+  score = 0;
+  showWord();
+}
+
+function showWord() {
+  if (currentIndex >= deck.length) { endGame(); return; }
+
+  const word = deck[currentIndex];
+  parts = splitWord(word);
+  chosen = [];
+  const progress = (currentIndex / deck.length) * 100;
+  const shuffledParts = shuffle(parts);
+
+  document.getElementById('gameArea').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+    <div class="progress-label">Word ${currentIndex+1} of ${deck.length}</div>
+
+    <div class="build-zone-label">Build Zone — tap parts to add them in order</div>
+    <div class="build-zone" id="buildZone">
+      <span class="build-zone-empty">Tap the parts below →</span>
+    </div>
+
+    <div class="tiles-label">Word Parts — tap to add</div>
+    <div class="tiles" id="tilesArea">
+      ${shuffledParts.map((p, i) =>
+        `<button class="tile" id="tile-${i}" onclick="addTile(${i},'${p.replace(/'/g,"\\'")}')">${p}</button>`
+      ).join('')}
+    </div>
+
+    <div class="feedback" id="feedback">&nbsp;</div>
+
+    <div class="action-row">
+      <button class="clear-btn" onclick="clearZone()">Clear ✕</button>
+      <button class="build-btn" id="buildBtn" onclick="checkWord()" disabled>Build! 🔨</button>
+    </div>`;
+
+  // Auto-speak the target word softly after a pause
+  setTimeout(() => speak(word), 700);
+}
+
+function addTile(idx, part) {
+  const btn = document.getElementById('tile-' + idx);
+  if (!btn || btn.classList.contains('selected')) return;
+  btn.classList.add('selected');
+  chosen.push(part);
+  updateBuildZone();
+  if (chosen.length === parts.length) {
+    document.getElementById('buildBtn').disabled = false;
+  }
+}
+
+function updateBuildZone() {
+  const zone = document.getElementById('buildZone');
+  if (!zone) return;
+  if (chosen.length === 0) {
+    zone.innerHTML = '<span class="build-zone-empty">Tap the parts below →</span>';
+    zone.classList.remove('complete','wrong');
+    return;
+  }
+  zone.innerHTML = chosen.map((p, i) =>
+    `<button class="tile in-zone" onclick="removeTile(${i})">${p}</button>`
+  ).join('');
+}
+
+function removeTile(idx) {
+  const part = chosen[idx];
+  chosen.splice(idx, 1);
+  // Re-enable matching tile
+  const allTiles = document.querySelectorAll('.tile.selected');
+  allTiles.forEach(t => { if (t.textContent === part && t.classList.contains('selected')) { t.classList.remove('selected'); } });
+  updateBuildZone();
+  document.getElementById('buildBtn').disabled = chosen.length < parts.length;
+}
+
+function clearZone() {
+  chosen = [];
+  document.querySelectorAll('.tile.selected').forEach(t => t.classList.remove('selected'));
+  updateBuildZone();
+  document.getElementById('buildBtn').disabled = true;
+  document.getElementById('feedback').textContent = '\u00a0';
+  document.getElementById('feedback').className = 'feedback';
+}
+
+function checkWord() {
+  const built = chosen.join('');
+  const target = deck[currentIndex];
+  const zone = document.getElementById('buildZone');
+  const feedback = document.getElementById('feedback');
+
+  if (built.toLowerCase() === target.toLowerCase()) {
+    zone.classList.add('complete');
+    feedback.textContent = '✅ You built it! Amazing! 🌟';
+    feedback.className = 'feedback ok';
+    score++;
+    speak('Amazing!');
+    setTimeout(() => { currentIndex++; showWord(); }, 1500);
+  } else {
+    zone.classList.add('wrong');
+    feedback.textContent = `❌ Almost! The word is "${target}" — try again!`;
+    feedback.className = 'feedback err';
+    setTimeout(() => {
+      zone.classList.remove('wrong');
+      clearZone();
+    }, 1200);
+  }
+}
+
+async function endGame() {
+  document.getElementById('gameArea').style.display = 'none';
+  const screen = document.getElementById('completeScreen');
+  screen.classList.add('visible');
+  const pct = Math.round((score / deck.length) * 100);
+  const emoji = pct >= 80 ? '🌟' : pct >= 60 ? '🧩' : '💪';
+  document.getElementById('completeEmoji').textContent = emoji;
+  document.getElementById('completeMsg').textContent = `You built ${score} out of ${deck.length} words correctly (${pct}%)!`;
+  document.getElementById('coinsMsg').textContent = `🪙 +${COINS_PER_GAME} coins earned!`;
+
+  try {
+    const genId = () => Math.random().toString(36).slice(2);
+    await db.from('meleah_coin_history').insert({
+      id: genId(), user_id: USER_ID, amount: COINS_PER_GAME,
+      reason: `Build the Word 🧩 (${pct}%)`, timestamp: new Date().toISOString(),
+    });
+    const { data: st } = await db.from('meleah_state').select('coins_total').eq('user_id', USER_ID).maybeSingle();
+    if (st) await db.from('meleah_state').update({ coins_total: (st.coins_total || 0) + COINS_PER_GAME }).eq('user_id', USER_ID);
+  } catch(e) { console.warn('Could not award coins:', e); }
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.85; utt.pitch = 1.1;
+  window.speechSynthesis.speak(utt);
+}
+
+loadWords();
+</script>
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morphology Tree Worksheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #e8f4f8;
+    --grass: #5a9e4f;
+    --grass-dark: #3d7a35;
+    --trunk: #8B5E3C;
+    --trunk-dark: #6b4423;
+    --leaf-1: #6bba5e;
+    --leaf-2: #4ea845;
+    --leaf-3: #81c97a;
+    --leaf-4: #3d9e38;
+    --leaf-5: #58b34f;
+    --leaf-6: #72c466;
+    --leaf-7: #48a840;
+    --leaf-8: #8ed484;
+    --highlight: #ffe066;
+    --text-dark: #2c1a0e;
+    --text-mid: #4a3728;
+    --paper: #fffdf4;
+    --border-warm: #c8a96e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(180deg, #b8dff5 0%, #d4efc4 60%, #7dc46e 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .worksheet-header {
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 18px 30px;
+    background: var(--paper);
+    border-radius: 16px;
+    border: 3px solid var(--border-warm);
+    max-width: 720px;
+    width: 100%;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+  }
+
+  .worksheet-header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--grass-dark);
+    letter-spacing: 1px;
+    text-shadow: 1px 2px 0 rgba(0,0,0,0.07);
+  }
+
+  .worksheet-header p {
+    font-size: 1rem;
+    color: var(--text-mid);
+    margin-top: 6px;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+  }
+
+  /* BASE WORD SELECTOR */
+  .base-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 18px;
+    max-width: 720px;
+    width: 100%;
+  }
+
+  .base-btn {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: 3px solid var(--grass-dark);
+    background: var(--paper);
+    color: var(--grass-dark);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .base-btn:hover {
+    background: #d6f0c8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.13);
+  }
+
+  .base-btn.active {
+    background: var(--grass-dark);
+    color: white;
+    box-shadow: 0 4px 12px rgba(61,122,53,0.35);
+  }
+
+  /* TREE WRAPPER */
+  .tree-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* CANOPY */
+  .canopy {
+    position: relative;
+    width: 680px;
+    height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* SVG TREE */
+  .tree-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  /* LEAVES */
+  .leaf-group {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .leaf-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .leaf-input {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    background: rgba(255,255,255,0.92);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 50px;
+    padding: 6px 12px;
+    width: 130px;
+    color: var(--text-dark);
+    outline: none;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    letter-spacing: 0.04em;
+  }
+
+  .leaf-input::placeholder {
+    color: #aaa;
+    font-weight: 400;
+    font-size: 0.85rem;
+  }
+
+  .leaf-input:focus {
+    background: var(--highlight);
+    border-color: var(--grass-dark);
+    transform: scale(1.06);
+    box-shadow: 0 4px 14px rgba(61,122,53,0.3);
+  }
+
+  /* LEAF SHAPE BACKGROUND - using SVG clip or colored pill shapes */
+  .leaf-pill {
+    background: var(--leaf-1);
+    border-radius: 50px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: transform 0.2s;
+  }
+
+  .leaf-pill:hover {
+    transform: scale(1.04) rotate(-2deg);
+  }
+
+  /* BASE WORD BUBBLE on trunk */
+  .base-bubble {
+    position: absolute;
+    z-index: 3;
+    bottom: 88px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--trunk);
+    border-radius: 18px;
+    border: 4px solid var(--highlight);
+    padding: 16px 28px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+    min-width: 200px;
+  }
+
+  .base-word {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--highlight);
+    letter-spacing: 2px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .base-meaning {
+    font-size: 0.88rem;
+    color: #f5e8d0;
+    margin-top: 4px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  /* GROUND */
+  .ground {
+    width: 100%;
+    max-width: 720px;
+    height: 60px;
+    background: linear-gradient(180deg, var(--grass) 0%, var(--grass-dark) 100%);
+    border-radius: 0 0 30px 30px;
+    position: relative;
+    margin-top: -10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+
+  /* NAME LINE */
+  .name-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    background: var(--paper);
+    border: 2px dashed var(--border-warm);
+    border-radius: 12px;
+    max-width: 720px;
+    width: 100%;
+    margin-top: 14px;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .name-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-mid);
+  }
+
+  .name-field input {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    border: none;
+    border-bottom: 2px solid var(--border-warm);
+    background: transparent;
+    padding: 2px 8px;
+    width: 160px;
+    color: var(--text-dark);
+    outline: none;
+    font-weight: 600;
+  }
+
+  /* INSTRUCTIONS BOX */
+  .instructions {
+    background: #fff9e6;
+    border: 2px solid var(--highlight);
+    border-radius: 12px;
+    padding: 12px 20px;
+    max-width: 720px;
+    width: 100%;
+    margin-bottom: 14px;
+    font-size: 0.95rem;
+    color: var(--text-mid);
+    line-height: 1.7;
+  }
+
+  .instructions strong {
+    color: var(--grass-dark);
+  }
+
+  .instructions ol {
+    padding-left: 20px;
+    margin-top: 4px;
+  }
+
+  /* PRINT BUTTON */
+  .print-btn {
+    margin-top: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 12px 32px;
+    border-radius: 30px;
+    border: none;
+    background: var(--grass-dark);
+    color: white;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(61,122,53,0.35);
+  }
+
+  .print-btn:hover {
+    background: #2d6128;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(61,122,53,0.45);
+  }
+
+  @media print {
+    body { background: white; padding: 10px; }
+    .base-selector, .print-btn { display: none; }
+    .worksheet-header, .instructions, .name-line, .tree-wrapper { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="worksheet-header">
+  <h1>🌳 Word Root Tree</h1>
+  <p>Grow your vocabulary! Every big word has a <strong>root</strong> — a base that gives it meaning.<br>
+  Read the root on the trunk, then fill in the leaves with words you know!</p>
+</div>
+
+<div class="instructions">
+  <strong>How to use this worksheet:</strong>
+  <ol>
+    <li>Choose a <strong>base word</strong> below — it will appear on the tree trunk.</li>
+    <li>Read the <strong>meaning</strong> of the base.</li>
+    <li>Type or write a word that uses that base on each <strong>leaf</strong>.</li>
+    <li>Can you find a word for every leaf?</li>
+  </ol>
+</div>
+
+<!-- BASE WORD SELECTOR -->
+<div class="base-selector" id="baseSelector"></div>
+
+<!-- TREE -->
+<div class="tree-wrapper">
+  <div class="canopy" id="canopy">
+
+    <!-- SVG TREE BACKGROUND -->
+    <svg class="tree-svg" viewBox="0 0 680 480" xmlns="http://www.w3.org/2000/svg">
+      <!-- Main trunk -->
+      <rect x="310" y="270" width="60" height="170" rx="12" fill="#8B5E3C"/>
+      <rect x="320" y="270" width="12" height="170" rx="6" fill="#a8714d" opacity="0.4"/>
+      <!-- Trunk roots -->
+      <ellipse cx="340" cy="445" rx="80" ry="12" fill="#6b4423" opacity="0.5"/>
+      <!-- Main branches -->
+      <line x1="340" y1="310" x2="150" y2="180" stroke="#8B5E3C" stroke-width="18" stroke-linecap="round"/>
+      <line x1="340" y1="310" x2="530" y2="180" stroke="#8B5E3C" stroke-width="18" stroke-linecap="round"/>
+      <line x1="340" y1="290" x2="340" y2="150" stroke="#8B5E3C" stroke-width="16" stroke-linecap="round"/>
+      <!-- Sub branches left -->
+      <line x1="200" y1="210" x2="110" y2="130" stroke="#8B5E3C" stroke-width="12" stroke-linecap="round"/>
+      <line x1="200" y1="210" x2="220" y2="110" stroke="#8B5E3C" stroke-width="12" stroke-linecap="round"/>
+      <!-- Sub branches right -->
+      <line x1="480" y1="210" x2="570" y2="130" stroke="#8B5E3C" stroke-width="12" stroke-linecap="round"/>
+      <line x1="480" y1="210" x2="460" y2="110" stroke="#8B5E3C" stroke-width="12" stroke-linecap="round"/>
+      <!-- Sub branches center -->
+      <line x1="340" y1="190" x2="270" y2="110" stroke="#8B5E3C" stroke-width="11" stroke-linecap="round"/>
+      <line x1="340" y1="190" x2="410" y2="110" stroke="#8B5E3C" stroke-width="11" stroke-linecap="round"/>
+      <!-- Foliage blobs -->
+      <ellipse cx="340" cy="200" rx="170" ry="130" fill="#6bba5e" opacity="0.3"/>
+      <ellipse cx="200" cy="160" rx="110" ry="90" fill="#5aaa50" opacity="0.3"/>
+      <ellipse cx="480" cy="160" rx="110" ry="90" fill="#5aaa50" opacity="0.3"/>
+    </svg>
+
+    <!-- LEAVES (positioned absolutely) -->
+    <div id="leavesContainer"></div>
+
+    <!-- BASE BUBBLE -->
+    <div class="base-bubble" id="baseBubble">
+      <div class="base-word" id="baseWordDisplay">-port-</div>
+      <div class="base-meaning" id="baseMeaningDisplay">meaning: to carry</div>
+    </div>
+  </div>
+
+  <div class="ground"></div>
+</div>
+
+<div class="name-line">
+  <div class="name-field">📝 Name: <input type="text" placeholder="Your name"></div>
+  <div class="name-field">📅 Date: <input type="text" placeholder="Today's date"></div>
+  <div class="name-field">⭐ Class: <input type="text" placeholder="Class"></div>
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨️ Print This Worksheet</button>
+
+<script>
+  const bases = [
+    {
+      id: "port",
+      label: "-port-",
+      meaning: "to carry",
+      origin: "Latin: portare",
+      leaves: [
+        { hint: "move goods in", placeholder: "import" },
+        { hint: "send goods out", placeholder: "export" },
+        { hint: "move to new place", placeholder: "transport" },
+        { hint: "support below", placeholder: "support" },
+        { hint: "carry news", placeholder: "report" },
+        { hint: "a travel document", placeholder: "passport" },
+        { hint: "where ships dock", placeholder: "port" },
+        { hint: "carry across", placeholder: "deport" },
+      ]
+    },
+    {
+      id: "vis",
+      label: "-vis-",
+      meaning: "to see",
+      origin: "Latin: videre",
+      leaves: [
+        { hint: "able to be seen", placeholder: "visible" },
+        { hint: "a trip to see someone", placeholder: "visit" },
+        { hint: "sight or dream", placeholder: "vision" },
+        { hint: "able to see far ahead", placeholder: "visionary" },
+        { hint: "something you can see", placeholder: "visual" },
+        { hint: "look over again", placeholder: "revise" },
+        { hint: "check closely", placeholder: "supervise" },
+        { hint: "to picture ahead", placeholder: "envision" },
+      ]
+    },
+    {
+      id: "struct",
+      label: "-struct-",
+      meaning: "to build",
+      origin: "Latin: struere",
+      leaves: [
+        { hint: "a building or framework", placeholder: "structure" },
+        { hint: "to build something", placeholder: "construct" },
+        { hint: "to build knowledge in", placeholder: "instruct" },
+        { hint: "to take apart", placeholder: "destruct" },
+        { hint: "to rebuild", placeholder: "reconstruct" },
+        { hint: "blocked; unable to flow", placeholder: "obstruct" },
+        { hint: "a type of building", placeholder: "infrastructure" },
+        { hint: "helping to build up", placeholder: "constructive" },
+      ]
+    },
+    {
+      id: "scrib",
+      label: "-scrib-",
+      meaning: "to write",
+      origin: "Latin: scribere",
+      leaves: [
+        { hint: "tell in words", placeholder: "describe" },
+        { hint: "write your name", placeholder: "subscribe" },
+        { hint: "write a doctor's note", placeholder: "prescribe" },
+        { hint: "handwriting", placeholder: "manuscript" },
+        { hint: "written record", placeholder: "transcript" },
+        { hint: "a written mark", placeholder: "inscription" },
+        { hint: "write over again", placeholder: "transcribe" },
+        { hint: "a short piece of writing", placeholder: "script" },
+      ]
+    },
+    {
+      id: "dict",
+      label: "-dict-",
+      meaning: "to say / speak",
+      origin: "Latin: dicere",
+      leaves: [
+        { hint: "predict the future", placeholder: "predict" },
+        { hint: "a book of words", placeholder: "dictionary" },
+        { hint: "say how to spell aloud", placeholder: "dictate" },
+        { hint: "a saying", placeholder: "diction" },
+        { hint: "say the opposite", placeholder: "contradict" },
+        { hint: "words added at end", placeholder: "verdict" },
+        { hint: "say what will happen", placeholder: "indicate" },
+        { hint: "judge's ruling", placeholder: "edict" },
+      ]
+    }
+  ];
+
+  // LEAF POSITIONS (8 leaves, different positions on the tree)
+  const leafPositions = [
+    { top: "18px",  left: "60px"  },
+    { top: "10px",  left: "252px" },
+    { top: "18px",  left: "442px" },
+    { top: "120px", left: "18px"  },
+    { top: "120px", left: "495px" },
+    { top: "188px", left: "60px"  },
+    { top: "188px", left: "445px" },
+    { top: "65px",  left: "248px" },
+  ];
+
+  const leafColors = [
+    "#4ea845","#58b34f","#3d9e38","#6bba5e",
+    "#48a840","#72c466","#5aaa50","#81c97a"
+  ];
+
+  let currentBase = bases[0];
+
+  function renderBaseSelector() {
+    const container = document.getElementById('baseSelector');
+    container.innerHTML = '';
+    bases.forEach((base, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'base-btn' + (i === 0 ? ' active' : '');
+      btn.textContent = base.label;
+      btn.onclick = () => selectBase(i);
+      container.appendChild(btn);
+    });
+  }
+
+  function selectBase(index) {
+    currentBase = bases[index];
+    document.querySelectorAll('.base-btn').forEach((b, i) => {
+      b.classList.toggle('active', i === index);
+    });
+    document.getElementById('baseWordDisplay').textContent = currentBase.label;
+    document.getElementById('baseMeaningDisplay').textContent = 'meaning: ' + currentBase.meaning;
+    renderLeaves();
+  }
+
+  function renderLeaves() {
+    const container = document.getElementById('leavesContainer');
+    container.innerHTML = '';
+
+    currentBase.leaves.forEach((leaf, i) => {
+      const pos = leafPositions[i];
+      const color = leafColors[i];
+
+      const group = document.createElement('div');
+      group.className = 'leaf-group';
+      group.style.top = pos.top;
+      group.style.left = pos.left;
+      group.style.position = 'absolute';
+
+      const pill = document.createElement('div');
+      pill.className = 'leaf-pill';
+      pill.style.background = color;
+
+      const label = document.createElement('div');
+      label.className = 'leaf-label';
+      label.textContent = leaf.hint;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'leaf-input';
+      input.placeholder = '✏️ your word';
+      input.setAttribute('aria-label', 'Word with base ' + currentBase.label + ': ' + leaf.hint);
+
+      pill.appendChild(label);
+      pill.appendChild(input);
+      group.appendChild(pill);
+      container.appendChild(group);
+    });
+  }
+
+  renderBaseSelector();
+  renderLeaves();
+</script>
+</body>
+</html>

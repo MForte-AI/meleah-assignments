@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Word Safari 🦁 — Meleah's World</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Nunito',sans-serif;background:linear-gradient(180deg,#E6F4F4 0%,#F0F0F0 100%);min-height:100vh;overflow-x:hidden;user-select:none;-webkit-user-select:none}
+
+  /* ===== HEADER ===== */
+  .game-header{background:linear-gradient(135deg,#1E7A7A,#237878);color:#fff;text-align:center;padding:14px 16px 10px}
+  .game-header .brand{font-size:10px;font-weight:700;letter-spacing:2px;opacity:.7;text-transform:uppercase}
+  .game-header h1{font-size:24px;font-weight:900;margin:2px 0}
+  .game-header .subtitle{font-size:12px;font-weight:600;opacity:.85}
+
+  /* ===== PROGRESS MAP ===== */
+  .progress-map{display:flex;align-items:center;justify-content:center;padding:12px 16px;background:#fff;gap:0;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+  .map-step{display:flex;align-items:center;gap:0}
+  .map-node{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;border:3px solid #DDD;background:#F5F5F5;color:#AAA;transition:all .3s}
+  .map-node.active{border-color:#1E7A7A;background:#E6F4F4;color:#1E7A7A;transform:scale(1.15);box-shadow:0 2px 10px rgba(30,122,122,.3)}
+  .map-node.complete{border-color:#4CAF50;background:#4CAF50;color:#fff}
+  .map-node.locked{opacity:.5}
+  .map-connector{width:28px;height:3px;background:#DDD;transition:background .3s}
+  .map-connector.complete{background:#4CAF50}
+  .map-label{font-size:8px;font-weight:700;color:#999;text-align:center;margin-top:2px;letter-spacing:.3px}
+  .map-step-wrap{display:flex;flex-direction:column;align-items:center}
+
+  /* ===== SCORE BAR ===== */
+  .score-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#FDF8E8;border-bottom:2px solid #F0E6C8}
+  .score-bar .coins{font-size:16px;font-weight:800;color:#C09A30}
+  .score-bar .streak{font-size:13px;font-weight:700;color:#B85C38}
+  .score-bar .round-info{font-size:12px;font-weight:700;color:#666}
+  .coin-pop{position:fixed;font-size:20px;font-weight:900;color:#C09A30;pointer-events:none;z-index:800;animation:coinFloat 1s ease forwards}
+  @keyframes coinFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.3)}}
+
+  /* ===== INSTRUCTION ===== */
+  .instruction-banner{text-align:center;padding:10px 16px;font-size:15px;font-weight:700;color:#1E7A7A;background:#E6F4F4;border-bottom:2px solid #D0EDED;min-height:44px;display:flex;align-items:center;justify-content:center}
+
+  /* ===== DROP ZONES ===== */
+  .zones-container{display:flex;gap:10px;padding:12px;justify-content:center}
+  .drop-zone{flex:1;max-width:260px;min-height:160px;border:3px dashed #BBB;border-radius:16px;padding:10px;text-align:center;transition:all .2s;background:#fff}
+  .drop-zone.highlight{border-color:#1E7A7A;background:#E6F4F4;border-style:solid;transform:scale(1.02)}
+  .drop-zone.correct-flash{border-color:#4CAF50;background:#E8F5E9;border-style:solid}
+  .drop-zone.wrong-flash{border-color:#E53935;background:#FFEBEE;border-style:solid}
+  .zone-label{font-size:16px;font-weight:900;color:#1E7A7A;margin-bottom:6px;padding-bottom:6px;border-bottom:2px solid #E6F4F4}
+  .zone-words{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;min-height:30px;padding:6px 0}
+  .sorted-word{background:#E6F4F4;color:#1E7A7A;padding:5px 12px;border-radius:8px;font-size:15px;font-weight:700;animation:popIn .3s ease}
+
+  /* ===== WORD BANK ===== */
+  .word-bank{padding:14px 12px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:70px}
+  .word-card{background:#fff;border:3px solid #C09A30;border-radius:14px;padding:12px 20px;font-size:22px;font-weight:800;color:#2C2C2C;cursor:pointer;transition:all .15s;box-shadow:0 3px 10px rgba(0,0,0,.1);touch-action:none;display:flex;align-items:center;gap:6px}
+  .word-card:hover{transform:translateY(-2px);box-shadow:0 5px 16px rgba(0,0,0,.15)}
+  .word-card.selected{border-color:#1E7A7A;background:#E6F4F4;transform:scale(1.05);box-shadow:0 5px 18px rgba(30,122,122,.3)}
+  .word-card .speaker-btn{font-size:16px;cursor:pointer;background:none;border:none;padding:0;opacity:.5;transition:opacity .15s}
+  .word-card .speaker-btn:hover{opacity:1}
+  .word-card.ghost-drag{position:fixed;pointer-events:none;z-index:500;transform:scale(1.1) rotate(2deg);box-shadow:0 12px 32px rgba(0,0,0,.25);border-color:#1E7A7A;background:#E6F4F4;opacity:.92}
+  .word-card.mystery{background:linear-gradient(135deg,#FDF8E8,#FAF0EA);border-color:#B85C38;animation:mysteryPulse 1.5s ease infinite}
+  @keyframes mysteryPulse{0%,100%{box-shadow:0 3px 10px rgba(184,92,56,.2)}50%{box-shadow:0 3px 20px rgba(184,92,56,.5)}}
+
+  /* ===== ROUND INTRO SCREEN ===== */
+  .round-intro{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:900;align-items:center;justify-content:center}
+  .round-intro.active{display:flex}
+  .round-intro-card{background:#fff;border-radius:24px;padding:36px 32px;text-align:center;max-width:380px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.2);animation:popIn .4s ease}
+  .round-intro-card .round-icon{font-size:56px;margin-bottom:8px}
+  .round-intro-card h2{font-size:26px;font-weight:900;color:#1E7A7A;margin-bottom:4px}
+  .round-intro-card .round-subtitle{font-size:15px;color:#666;font-weight:600;margin-bottom:12px}
+  .round-intro-card .round-details{font-size:13px;color:#888;line-height:1.6;margin-bottom:16px;text-align:left;background:#F8F8F8;padding:12px;border-radius:10px}
+  .round-intro-card .round-details span{font-weight:800;color:#1E7A7A}
+  .start-round-btn{background:#1E7A7A;color:#fff;border:none;border-radius:14px;padding:14px 36px;font-family:'Nunito',sans-serif;font-size:18px;font-weight:800;cursor:pointer;transition:all .15s}
+  .start-round-btn:hover{background:#176565;transform:scale(1.03)}
+
+  /* ===== SOUND OUT OVERLAY ===== */
+  .overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:400;align-items:center;justify-content:center}
+  .overlay.active{display:flex}
+  .overlay-card{background:#fff;border-radius:24px;padding:28px;text-align:center;max-width:340px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.2);animation:popIn .3s ease}
+  .sound-out-word{font-size:40px;font-weight:900;color:#2C2C2C;letter-spacing:4px;margin:8px 0}
+  .sound-out-word .hl{color:#B85C38;text-decoration:underline;text-decoration-color:#C09A30;text-underline-offset:6px}
+  .tap-circles{display:flex;gap:8px;justify-content:center;margin:12px 0}
+  .tap-circle{width:40px;height:40px;border-radius:50%;background:#E6F4F4;border:2px solid #1E7A7A;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#1E7A7A;cursor:pointer;transition:all .15s}
+  .tap-circle.tapped{background:#1E7A7A;color:#fff;transform:scale(1.15)}
+  .action-btn{border:none;border-radius:12px;padding:10px 24px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin:4px;transition:all .15s}
+  .action-btn.gold{background:#C09A30;color:#fff}
+  .action-btn.gold:hover{background:#A98528}
+  .action-btn.teal{background:#1E7A7A;color:#fff}
+  .action-btn.teal:hover{background:#176565}
+
+  /* ===== STREAK BANNER ===== */
+  .streak-banner{display:none;position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(0);background:linear-gradient(135deg,#B85C38,#C09A30);color:#fff;padding:8px 24px;border-radius:20px;font-size:16px;font-weight:900;z-index:600;box-shadow:0 4px 16px rgba(184,92,56,.4);transition:transform .3s cubic-bezier(.175,.885,.32,1.275);white-space:nowrap}
+  .streak-banner.show{display:block;transform:translateX(-50%) scale(1)}
+
+  /* ===== ROUND COMPLETE ===== */
+  .round-complete{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:900;align-items:center;justify-content:center}
+  .round-complete.active{display:flex}
+  .round-complete-card{background:#fff;border-radius:24px;padding:32px;text-align:center;max-width:380px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.2);animation:popIn .4s ease}
+  .round-complete-card h2{font-size:24px;font-weight:900;color:#1E7A7A;margin:8px 0}
+  .round-complete-card .stats{display:flex;gap:16px;justify-content:center;margin:16px 0}
+  .stat-box{background:#F8F8F8;border-radius:12px;padding:12px 16px;text-align:center;min-width:80px}
+  .stat-box .stat-value{font-size:24px;font-weight:900;color:#C09A30}
+  .stat-box .stat-label{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px}
+  .encouragement{font-size:14px;color:#666;font-weight:600;margin:8px 0 16px;font-style:italic}
+
+  /* ===== LIGHTNING ROUND ===== */
+  .lightning-word-display{font-size:48px;font-weight:900;color:#2C2C2C;text-align:center;padding:30px 20px;min-height:120px;display:flex;align-items:center;justify-content:center}
+  .lightning-word-display.mystery-mode{font-size:60px}
+  .lightning-buttons{display:flex;gap:12px;padding:0 16px 16px;justify-content:center}
+  .lightning-btn{flex:1;max-width:200px;padding:20px;border-radius:16px;border:3px solid;font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;cursor:pointer;transition:all .15s}
+  .lightning-btn.ng-btn{border-color:#1E7A7A;background:#E6F4F4;color:#1E7A7A}
+  .lightning-btn.ng-btn:hover{background:#1E7A7A;color:#fff}
+  .lightning-btn.nk-btn{border-color:#B85C38;background:#FAF0EA;color:#B85C38}
+  .lightning-btn.nk-btn:hover{background:#B85C38;color:#fff}
+  .lightning-btn:active{transform:scale(.95)}
+  .personal-best{text-align:center;padding:8px;font-size:13px;font-weight:700;color:#C09A30}
+  .timer-display{text-align:center;font-size:14px;font-weight:700;color:#666;padding:4px}
+
+  /* ===== FINAL CELEBRATION ===== */
+  .final-celebration{display:none;text-align:center;padding:30px 20px}
+  .final-celebration.active{display:block}
+  .final-celebration .trophy{font-size:80px;margin-bottom:8px}
+  .final-celebration h2{font-size:30px;font-weight:900;color:#1E7A7A;margin-bottom:6px}
+  .final-celebration .stars-container{font-size:36px;margin:10px 0;letter-spacing:6px}
+  .final-celebration .final-stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+  .final-celebration p{font-size:15px;color:#555;font-weight:600;margin:6px 0}
+  .final-celebration .coins-earned{font-size:32px;font-weight:900;color:#C09A30;margin:12px 0}
+  .play-again-btn{background:#1E7A7A;color:#fff;border:none;border-radius:14px;padding:14px 36px;font-family:'Nunito',sans-serif;font-size:18px;font-weight:800;cursor:pointer;margin-top:12px}
+
+  /* ===== TOAST ===== */
+  .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:#fff;border-radius:20px;padding:20px 32px;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:600;text-align:center;transition:transform .3s cubic-bezier(.175,.885,.32,1.275)}
+  .toast.show{transform:translate(-50%,-50%) scale(1)}
+  .toast .emoji{font-size:44px}
+  .toast .msg{font-size:18px;font-weight:800;margin-top:4px}
+  .toast.correct .msg{color:#4CAF50}
+  .toast.wrong .msg{color:#E53935}
+
+  .confetti-piece{position:fixed;z-index:700;pointer-events:none}
+
+  /* Keep / Try Again Buttons */
+  .keep-coins-btn{background:linear-gradient(135deg,#C09A30,#D4AF37);color:#fff;border:none;border-radius:14px;padding:16px 40px;font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 4px 16px rgba(192,154,48,.4);transition:all .15s;min-width:260px}
+  .keep-coins-btn:hover{transform:scale(1.04);box-shadow:0 6px 20px rgba(192,154,48,.5)}
+  .try-again-btn{background:transparent;color:#1E7A7A;border:3px solid #1E7A7A;border-radius:14px;padding:12px 32px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all .15s;min-width:260px}
+  .try-again-btn:hover{background:#E6F4F4}
+
+  /* Coins Saved Screen */
+  .coins-saved{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,#FDF8E8 0%,#FAF0EA 50%,#E6F4F4 100%);z-index:1000;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}
+  .coins-saved.active{display:flex}
+  .coins-saved-card{animation:popIn .5s ease}
+  .coins-saved-icon{font-size:100px;margin-bottom:0;animation:coinBounce 1s ease infinite}
+  .coins-saved-sparkle{font-size:40px;margin:-10px 0 10px}
+  .coins-saved h2{font-size:34px;font-weight:900;color:#C09A30;margin-bottom:8px}
+  .coins-saved-total{font-size:64px;font-weight:900;color:#C09A30;margin:8px 0;text-shadow:0 2px 8px rgba(192,154,48,.3)}
+  .coins-saved p{font-size:16px;color:#666;font-weight:600;margin-bottom:16px}
+  .coins-saved-msg{font-size:18px;color:#1E7A7A;font-weight:700;margin:8px 0}
+  .coins-saved-done{margin-top:24px;font-size:20px;font-weight:800;color:#4CAF50;background:#E8F5E9;display:inline-block;padding:12px 32px;border-radius:14px}
+  @keyframes coinBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+
+  .coach-footer{background:#FDF8E8;border-top:3px solid #C09A30;padding:12px 16px;margin-top:16px}
+  .coach-footer .label{font-size:10px;font-weight:800;color:#C09A30;letter-spacing:.5px;margin-bottom:3px}
+  .coach-footer p{font-size:12px;color:#666;line-height:1.5}
+
+  @keyframes popIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+  @keyframes confettiFall{0%{transform:translateY(-10vh) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<div class="game-header">
+  <div class="brand">MELEAH'S WORLD 🌟</div>
+  <h1>Word Safari 🦁</h1>
+  <div class="subtitle" id="headerSubtitle">Sort the -ng and -nk words into the right habitats!</div>
+</div>
+
+<!-- Progress Map -->
+<div class="progress-map" id="progressMap">
+  <div class="map-step-wrap"><div class="map-node active" id="mapNode1">🔍</div><div class="map-label">Scout</div></div>
+  <div class="map-connector" id="mapConn1"></div>
+  <div class="map-step-wrap"><div class="map-node locked" id="mapNode2">🧭</div><div class="map-label">Explorer</div></div>
+  <div class="map-connector" id="mapConn2"></div>
+  <div class="map-step-wrap"><div class="map-node locked" id="mapNode3">🏆</div><div class="map-label">Champion</div></div>
+  <div class="map-connector" id="mapConn3"></div>
+  <div class="map-step-wrap"><div class="map-node locked" id="mapNode4">⚡</div><div class="map-label">Lightning</div></div>
+</div>
+
+<div class="score-bar">
+  <span class="coins">🪙 <span id="coinCount">0</span></span>
+  <span class="streak" id="streakDisplay"></span>
+  <span class="round-info" id="roundInfo">Round 1 of 4</span>
+</div>
+
+<div class="instruction-banner" id="instruction">Loading...</div>
+
+<!-- Game Area -->
+<div id="gameArea">
+  <div class="zones-container" id="zonesContainer">
+    <div class="drop-zone" id="zone-ng">
+      <div class="zone-label">🌿 -ng Words</div>
+      <div class="zone-words" id="zone-ng-words"></div>
+    </div>
+    <div class="drop-zone" id="zone-nk">
+      <div class="zone-label">🏜️ -nk Words</div>
+      <div class="zone-words" id="zone-nk-words"></div>
+    </div>
+  </div>
+  <div class="word-bank" id="wordBank"></div>
+</div>
+
+<!-- Lightning Round Area -->
+<div id="lightningArea" style="display:none">
+  <div class="personal-best" id="personalBestDisplay"></div>
+  <div class="timer-display" id="timerDisplay"></div>
+  <div class="lightning-word-display" id="lightningWord"></div>
+  <div class="lightning-buttons">
+    <button class="lightning-btn ng-btn" id="lngBtn" onclick="lightningAnswer('ng')">🌿 -ng</button>
+    <button class="lightning-btn nk-btn" id="lnkBtn" onclick="lightningAnswer('nk')">🏜️ -nk</button>
+  </div>
+</div>
+
+<!-- Overlays -->
+<div class="round-intro" id="roundIntro">
+  <div class="round-intro-card">
+    <div class="round-icon" id="introIcon">🔍</div>
+    <h2 id="introTitle">Scout Mode</h2>
+    <div class="round-subtitle" id="introSubtitle">Learn the patterns</div>
+    <div class="round-details" id="introDetails"></div>
+    <button class="start-round-btn" id="startRoundBtn" onclick="startCurrentRound()">Let's Go! 🚀</button>
+  </div>
+</div>
+
+<div class="overlay" id="soundOverlay">
+  <div class="overlay-card">
+    <p style="font-size:13px;color:#888;font-weight:700">🔊 Let's sound it out!</p>
+    <div class="sound-out-word" id="soundOutWord"></div>
+    <div style="font-size:14px;color:#666;font-weight:700;margin:6px 0" id="soundOutTaps"></div>
+    <div class="tap-circles" id="tapCircles"></div>
+    <p style="font-size:12px;color:#999;margin:6px 0" id="tapInstruction">Tap each circle as you say each sound!</p>
+    <div style="margin-top:10px">
+      <button class="action-btn gold" onclick="hearCurrentWord()">🔊 Hear It</button>
+      <button class="action-btn teal" onclick="closeSoundOut()">✅ Got It!</button>
+    </div>
+  </div>
+</div>
+
+<div class="round-complete" id="roundComplete">
+  <div class="round-complete-card">
+    <div style="font-size:48px" id="rcIcon">🎉</div>
+    <h2 id="rcTitle">Round Complete!</h2>
+    <div class="stats" id="rcStats"></div>
+    <div class="encouragement" id="rcEncouragement"></div>
+    <button class="start-round-btn" id="rcNextBtn" onclick="nextRound()">Next Round →</button>
+  </div>
+</div>
+
+<div class="final-celebration" id="finalCelebration">
+  <div class="trophy">🏆</div>
+  <h2>Safari Master!</h2>
+  <div class="stars-container" id="finalStars"></div>
+  <p id="finalMsg"></p>
+  <div class="final-stats" id="finalStats"></div>
+  <div class="coins-earned">🪙 <span id="finalTotalCoins">0</span> total coins!</div>
+  <p style="font-size:13px;color:#888">Your brain conquered every word — that's champion-level exploring!</p>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:16px">
+    <button class="keep-coins-btn" onclick="keepCoins()">🪙 Keep My Coins!</button>
+    <button class="try-again-btn" onclick="fullReset()">🔄 Try Again for More Coins</button>
+  </div>
+</div>
+
+<!-- Coins Saved Confirmation -->
+<div class="coins-saved" id="coinsSaved">
+  <div class="coins-saved-card">
+    <div class="coins-saved-icon">🪙</div>
+    <div class="coins-saved-sparkle">✨</div>
+    <h2>Coins Saved!</h2>
+    <div class="coins-saved-total" id="savedTotal">0</div>
+    <p>coins added to your Meleah's World account!</p>
+    <div class="coins-saved-msg">Great work today — you earned every single one! 💛</div>
+    <div class="coins-saved-done">✅ You're all done!</div>
+  </div>
+</div>
+
+<div class="streak-banner" id="streakBanner"></div>
+<div class="toast" id="toast"><div class="emoji" id="toastEmoji"></div><div class="msg" id="toastMsg"></div></div>
+
+<div class="coach-footer">
+  <div class="label">💡 FOR GRANDMA & DAD</div>
+  <p>This game has 4 rounds that get progressively more challenging. Meleah earns more coins as rounds get harder, and streak bonuses reward consistency. The mystery word in Round 3 practices listening — a key skill for dyslexic learners. There are no countdown timers — only a personal-best tracker in the Lightning Round so she competes only with herself. Celebrate every round!</p>
+</div>
+
+<script>
+// ===================== CONFIGURATION =====================
+const ALL_WORDS = [
+  {word:"drink",  cat:"nk", sounds:["d","r","i","nk"], end:"nk"},
+  {word:"stung",  cat:"ng", sounds:["s","t","u","ng"],  end:"ng"},
+  {word:"honk",   cat:"nk", sounds:["h","o","nk"],      end:"nk"},
+  {word:"blank",  cat:"nk", sounds:["b","l","a","nk"],  end:"nk"},
+  {word:"sing",   cat:"ng", sounds:["s","i","ng"],       end:"ng"},
+  {word:"trunk",  cat:"nk", sounds:["t","r","u","nk"],  end:"nk"},
+  {word:"stink",  cat:"nk", sounds:["s","t","i","nk"],  end:"nk"},
+  {word:"bring",  cat:"ng", sounds:["b","r","i","ng"],  end:"ng"},
+  {word:"mustang",cat:"ng", sounds:["m","u","s","t","a","ng"], end:"ng"},
+  {word:"belong", cat:"ng", sounds:["b","e","l","o","ng"], end:"ng"},
+  {word:"sunk",   cat:"nk", sounds:["s","u","nk"],      end:"nk"},
+  {word:"rang",   cat:"ng", sounds:["r","a","ng"],       end:"ng"},
+  {word:"think",  cat:"nk", sounds:["th","i","nk"],     end:"nk"},
+  {word:"blink",  cat:"nk", sounds:["b","l","i","nk"],  end:"nk"},
+  {word:"chunk",  cat:"nk", sounds:["ch","u","nk"],     end:"nk"},
+  {word:"strong", cat:"ng", sounds:["s","t","r","o","ng"], end:"ng"},
+  {word:"king",   cat:"ng", sounds:["k","i","ng"],       end:"ng"},
+  {word:"bank",   cat:"nk", sounds:["b","a","nk"],      end:"nk"},
+  {word:"long",   cat:"ng", sounds:["l","o","ng"],       end:"ng"},
+  {word:"pink",   cat:"nk", sounds:["p","i","nk"],      end:"nk"}
+];
+
+const ROUNDS = [
+  {name:"Scout Mode",icon:"🔍",subtitle:"Learn the patterns",wordCount:4,coinsPerWord:1,streakBonus:0,
+   details:"<span>4 words</span> to sort • <span>1 coin</span> per correct sort • Sound out every word to build your ear!",
+   showSoundOutAlways:true, hasMystery:false},
+  {name:"Explorer Mode",icon:"🧭",subtitle:"Streaks earn bonus coins!",wordCount:6,coinsPerWord:2,streakBonus:1,
+   details:"<span>6 words</span> to sort • <span>2 coins</span> per correct sort • Get <span>3 in a row</span> for a streak bonus! Sound-out helps when you need it.",
+   showSoundOutAlways:false, hasMystery:false},
+  {name:"Safari Champion",icon:"🏆",subtitle:"Mystery word challenge!",wordCount:8,coinsPerWord:3,streakBonus:2,
+   details:"<span>8 words</span> including harder ones • <span>3 coins</span> per sort • Streak bonuses <span>doubled!</span> • One <span>Mystery Word</span> — sort it by sound alone!",
+   showSoundOutAlways:false, hasMystery:true},
+  {name:"Lightning Safari",icon:"⚡",subtitle:"Beat your personal best!",wordCount:10,coinsPerWord:2,streakBonus:1,
+   details:"All words flash one at a time — tap <span>-ng</span> or <span>-nk</span> as fast as you feel comfortable! No timer pressure — just try to beat <span>your own best</span> score. Big coin jackpot at the end!",
+   showSoundOutAlways:false, hasMystery:false, isLightning:true}
+];
+
+// ===================== STATE =====================
+let currentRound = 0;
+let totalCoins = 0;
+let roundCoins = 0;
+let streak = 0;
+let bestStreak = 0;
+let sorted = 0;
+let correctInRound = 0;
+let selectedWordIndex = null;
+let currentSoundWord = null;
+let gameWords = [];
+let dragGhost = null;
+let dragIndex = null;
+let totalCorrectAll = 0;
+let totalWordsAll = 0;
+let lightningIndex = 0;
+let lightningCorrect = 0;
+let lightningStartTime = 0;
+let personalBest = null;
+let lightningWords = [];
+let roundUnlocked = [true, false, false, false];
+
+// ===================== SPEECH =====================
+function speak(text, rate=0.8) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = rate; u.pitch = 1; u.volume = 1;
+  const voices = speechSynthesis.getVoices();
+  const pref = voices.find(v=>v.name.includes('Samantha'))||voices.find(v=>v.lang.startsWith('en')&&v.localService)||voices.find(v=>v.lang.startsWith('en'));
+  if(pref) u.voice = pref;
+  speechSynthesis.speak(u);
+}
+if('speechSynthesis' in window){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices()}
+function hearCurrentWord(){if(currentSoundWord)speak(currentSoundWord.word,.6)}
+
+// ===================== UTILITIES =====================
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function pickWords(count,hasMystery){
+  const ng=shuffle(ALL_WORDS.filter(w=>w.cat==='ng'));
+  const nk=shuffle(ALL_WORDS.filter(w=>w.cat==='nk'));
+  const half=Math.ceil(count/2);
+  let picks=[...ng.slice(0,half),...nk.slice(0,count-half)];
+  picks=shuffle(picks).slice(0,count);
+  // Ensure at least 1 of each
+  if(!picks.find(w=>w.cat==='ng')) picks[0]=ng[0];
+  if(!picks.find(w=>w.cat==='nk')) picks[picks.length-1]=nk[0];
+  return picks.map((w,i)=>({...w,sorted:false,isMystery:hasMystery&&i===picks.length-1}));
+}
+
+function updateScoreBar(){
+  document.getElementById('coinCount').textContent=totalCoins;
+  const sd=document.getElementById('streakDisplay');
+  if(streak>=2) sd.textContent='🔥 '+streak+' streak!';
+  else sd.textContent='';
+  document.getElementById('roundInfo').textContent=`Round ${currentRound+1} of ${ROUNDS.length}`;
+}
+
+function updateMap(){
+  for(let i=0;i<4;i++){
+    const node=document.getElementById('mapNode'+(i+1));
+    const conn=document.getElementById('mapConn'+(i+1));
+    node.className='map-node';
+    if(i<currentRound) {node.classList.add('complete');if(conn)conn.classList.add('complete')}
+    else if(i===currentRound) node.classList.add('active');
+    else if(roundUnlocked[i]) node.classList.remove('locked');
+    else node.classList.add('locked');
+  }
+}
+
+function showCoinPop(x,y,amount){
+  const el=document.createElement('div');
+  el.className='coin-pop';
+  el.textContent='+'+amount+' 🪙';
+  el.style.left=x+'px';el.style.top=y+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1000);
+}
+
+// ===================== ROUND FLOW =====================
+function showRoundIntro(){
+  const r=ROUNDS[currentRound];
+  document.getElementById('introIcon').textContent=r.icon;
+  document.getElementById('introTitle').textContent=r.name;
+  document.getElementById('introSubtitle').textContent=r.subtitle;
+  document.getElementById('introDetails').innerHTML=r.details;
+  document.getElementById('roundIntro').classList.add('active');
+  if(currentRound===3) document.getElementById('startRoundBtn').textContent='⚡ Start Lightning Round!';
+  else document.getElementById('startRoundBtn').textContent="Let's Go! 🚀";
+}
+
+function startCurrentRound(){
+  document.getElementById('roundIntro').classList.remove('active');
+  const r=ROUNDS[currentRound];
+  roundCoins=0; streak=0; bestStreak=0; sorted=0; correctInRound=0; selectedWordIndex=null;
+  document.getElementById('zone-ng-words').innerHTML='';
+  document.getElementById('zone-nk-words').innerHTML='';
+
+  if(r.isLightning){startLightningRound();return}
+
+  document.getElementById('gameArea').style.display='block';
+  document.getElementById('lightningArea').style.display='none';
+  document.getElementById('finalCelebration').classList.remove('active');
+  document.getElementById('instruction').textContent='👆 Tap a word to hear it, then tap a habitat!';
+
+  gameWords=pickWords(r.wordCount,r.hasMystery);
+  updateScoreBar();updateMap();
+  renderWordBank();setupZoneListeners();
+}
+
+function renderWordBank(){
+  const bank=document.getElementById('wordBank');
+  bank.innerHTML='';
+  gameWords.forEach((w,i)=>{
+    if(w.sorted) return;
+    const card=document.createElement('div');
+    card.className='word-card';
+    card.dataset.index=i;
+    if(w.isMystery){
+      card.classList.add('mystery');
+      card.innerHTML='<span>❓</span><button class="speaker-btn" onclick="event.stopPropagation();speak(\''+w.word+'\',.6)">🔊</button>';
+    } else {
+      card.innerHTML='<span>'+w.word+'</span><button class="speaker-btn" onclick="event.stopPropagation();speak(\''+w.word+'\',.6)">🔊</button>';
+    }
+    card.onclick=()=>handleWordTap(i);
+    card.addEventListener('touchstart',e=>startDrag(e,i),{passive:false});
+    card.addEventListener('touchmove',e=>moveDrag(e),{passive:false});
+    card.addEventListener('touchend',e=>endDrag(e),{passive:false});
+    card.addEventListener('mousedown',e=>startMouseDrag(e,i));
+    bank.appendChild(card);
+  });
+}
+
+// ===================== TAP SORTING =====================
+function handleWordTap(index){
+  document.querySelectorAll('.word-card').forEach(c=>c.classList.remove('selected'));
+  if(selectedWordIndex===index){selectedWordIndex=null;document.getElementById('instruction').textContent='👆 Tap a word, then tap a habitat!';return}
+  selectedWordIndex=index;
+  const w=gameWords[index];
+  speak(w.word,.6);
+  document.querySelectorAll('.word-card').forEach(c=>{if(parseInt(c.dataset.index)===index)c.classList.add('selected')});
+  if(w.isMystery) document.getElementById('instruction').textContent='🎧 Listen carefully! Is this mystery word -ng or -nk?';
+  else document.getElementById('instruction').textContent=`Now tap the habitat for "${w.word}" — -ng or -nk? 🤔`;
+}
+
+function setupZoneListeners(){
+  document.getElementById('zone-ng').onclick=()=>{if(selectedWordIndex!==null)sortWord(selectedWordIndex,'ng')};
+  document.getElementById('zone-nk').onclick=()=>{if(selectedWordIndex!==null)sortWord(selectedWordIndex,'nk')};
+}
+
+function sortWord(index,zone){
+  const w=gameWords[index];
+  const correct=w.cat===zone;
+  const zoneEl=document.getElementById('zone-'+zone);
+  const r=ROUNDS[currentRound];
+
+  if(correct){
+    w.sorted=true;sorted++;correctInRound++;
+    const earned=r.coinsPerWord;
+    roundCoins+=earned;totalCoins+=earned;
+    streak++;
+    if(streak>bestStreak)bestStreak=streak;
+
+    // Streak bonus
+    if(streak>=3&&r.streakBonus>0){
+      const bonus=r.streakBonus;
+      roundCoins+=bonus;totalCoins+=bonus;
+      showStreakBanner(streak,bonus);
+    }
+
+    const wordEl=document.createElement('span');
+    wordEl.className='sorted-word';
+    wordEl.textContent=w.word;
+    document.getElementById('zone-'+zone+'-words').appendChild(wordEl);
+
+    zoneEl.classList.add('correct-flash');setTimeout(()=>zoneEl.classList.remove('correct-flash'),500);
+    showToast(true);
+
+    // Coin pop animation
+    const rect=zoneEl.getBoundingClientRect();
+    showCoinPop(rect.left+rect.width/2,rect.top,r.coinsPerWord+(streak>=3?r.streakBonus:0));
+
+    updateScoreBar();selectedWordIndex=null;renderWordBank();
+
+    // Sound out
+    if(r.showSoundOutAlways){
+      setTimeout(()=>{if(sorted<gameWords.length)showSoundOut(w);else setTimeout(()=>completeRound(),600)},800);
+    } else {
+      if(sorted>=gameWords.length)setTimeout(()=>completeRound(),800);
+    }
+  } else {
+    streak=0;
+    zoneEl.classList.add('wrong-flash');setTimeout(()=>zoneEl.classList.remove('wrong-flash'),500);
+    showToast(false);
+    updateScoreBar();
+
+    // Show sound-out on wrong answer for rounds 2+
+    if(!r.showSoundOutAlways && currentRound>0){
+      setTimeout(()=>showSoundOut(w),600);
+    }
+
+    if(w.isMystery) document.getElementById('instruction').textContent='Listen again — tap 🔊 on the mystery word and focus on the ending sound!';
+    else document.getElementById('instruction').textContent=`Hmm, listen to "${w.word}" again — -ng hums, -nk stops! Try again!`;
+    selectedWordIndex=null;
+    document.querySelectorAll('.word-card').forEach(c=>c.classList.remove('selected'));
+  }
+}
+
+// ===================== DRAG SUPPORT =====================
+function startDrag(e,i){e.preventDefault();const t=e.touches[0];dragIndex=i;const c=e.currentTarget;dragGhost=c.cloneNode(true);dragGhost.className='word-card ghost-drag';dragGhost.style.left=(t.clientX-50)+'px';dragGhost.style.top=(t.clientY-25)+'px';document.body.appendChild(dragGhost);c.style.opacity='.3';speak(gameWords[i].word,.6)}
+function moveDrag(e){if(!dragGhost)return;e.preventDefault();const t=e.touches[0];dragGhost.style.left=(t.clientX-50)+'px';dragGhost.style.top=(t.clientY-25)+'px';highlightZoneAt(t.clientX,t.clientY)}
+function endDrag(e){if(!dragGhost||dragIndex===null)return;const t=e.changedTouches[0];const z=getZoneAt(t.clientX,t.clientY);dragGhost.remove();dragGhost=null;document.querySelectorAll('.word-card').forEach(c=>c.style.opacity='1');document.querySelectorAll('.drop-zone').forEach(z=>z.classList.remove('highlight'));if(z)sortWord(dragIndex,z);dragIndex=null}
+function startMouseDrag(e,index){if(e.button!==0)return;let dragging=false;const sx=e.clientX,sy=e.clientY,card=e.currentTarget;function mm(ev){if(!dragging&&(Math.abs(ev.clientX-sx)>5||Math.abs(ev.clientY-sy)>5)){dragging=true;dragIndex=index;dragGhost=card.cloneNode(true);dragGhost.className='word-card ghost-drag';document.body.appendChild(dragGhost);card.style.opacity='.3';speak(gameWords[index].word,.6)}if(dragging&&dragGhost){dragGhost.style.left=(ev.clientX-50)+'px';dragGhost.style.top=(ev.clientY-25)+'px';highlightZoneAt(ev.clientX,ev.clientY)}}function mu(ev){document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);if(dragging&&dragGhost){const z=getZoneAt(ev.clientX,ev.clientY);dragGhost.remove();dragGhost=null;document.querySelectorAll('.word-card').forEach(c=>c.style.opacity='1');document.querySelectorAll('.drop-zone').forEach(z=>z.classList.remove('highlight'));if(z){card.onclick=null;setTimeout(()=>{card.onclick=()=>handleWordTap(index)},100);sortWord(dragIndex,z)}dragIndex=null}dragging=false}document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu)}
+function highlightZoneAt(x,y){document.querySelectorAll('.drop-zone').forEach(z=>{const r=z.getBoundingClientRect();z.classList.toggle('highlight',x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)})}
+function getZoneAt(x,y){const ng=document.getElementById('zone-ng').getBoundingClientRect();if(x>=ng.left&&x<=ng.right&&y>=ng.top&&y<=ng.bottom)return'ng';const nk=document.getElementById('zone-nk').getBoundingClientRect();if(x>=nk.left&&x<=nk.right&&y>=nk.top&&y<=nk.bottom)return'nk';return null}
+
+// ===================== SOUND OUT =====================
+function showSoundOut(w){
+  currentSoundWord=w;
+  const base=w.word.slice(0,w.word.length-w.end.length);
+  const ending=w.word.slice(w.word.length-w.end.length);
+  document.getElementById('soundOutWord').innerHTML=base+'<span class="hl">'+ending+'</span>';
+  document.getElementById('soundOutTaps').textContent=w.sounds.length+' sounds — tap each circle!';
+  const cc=document.getElementById('tapCircles');cc.innerHTML='';
+  w.sounds.forEach(s=>{
+    const c=document.createElement('div');c.className='tap-circle';c.textContent=s;
+    c.onclick=()=>{c.classList.add('tapped');speak(s,.55);
+      if(cc.querySelectorAll('.tapped').length===w.sounds.length){
+        document.getElementById('tapInstruction').textContent='🎉 You sounded it out!';
+        setTimeout(()=>speak(w.word,.65),300);
+      }};
+    cc.appendChild(c);
+  });
+  document.getElementById('tapInstruction').textContent='Tap each circle as you say each sound!';
+  document.getElementById('soundOverlay').classList.add('active');
+  setTimeout(()=>speak(w.word,.6),200);
+}
+function closeSoundOut(){
+  document.getElementById('soundOverlay').classList.remove('active');
+  currentSoundWord=null;
+  if(sorted>=gameWords.length) setTimeout(()=>completeRound(),400);
+  else document.getElementById('instruction').textContent='👆 Great! Tap the next word!';
+}
+
+// ===================== STREAK BANNER =====================
+function showStreakBanner(count,bonus){
+  const b=document.getElementById('streakBanner');
+  b.textContent='🔥 '+count+' in a row! +'+bonus+' bonus coin'+(bonus>1?'s':'')+'!';
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),1800);
+}
+
+// ===================== TOAST =====================
+function showToast(correct){
+  const t=document.getElementById('toast');
+  const yes=['🎉 Yes!','⭐ Awesome!','🦁 Roar!','💪 Got it!','🔥 On fire!','✨ Perfect!'];
+  const no=['🤔 Hmm!','💭 Try again!','👀 Listen!'];
+  const pick=correct?yes[Math.floor(Math.random()*yes.length)]:no[Math.floor(Math.random()*no.length)];
+  t.className=correct?'toast correct':'toast wrong';
+  document.getElementById('toastEmoji').textContent=pick.split(' ')[0];
+  document.getElementById('toastMsg').textContent=pick.split(' ').slice(1).join(' ');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),800);
+}
+
+// ===================== ROUND COMPLETE =====================
+function completeRound(){
+  totalCorrectAll+=correctInRound;totalWordsAll+=gameWords.length;
+  const pct=correctInRound/gameWords.length;
+
+  document.getElementById('rcIcon').textContent=pct===1?'🌟':pct>=.75?'🎉':'👏';
+  document.getElementById('rcTitle').textContent=ROUNDS[currentRound].name+' Complete!';
+
+  const stats=document.getElementById('rcStats');
+  stats.innerHTML=`
+    <div class="stat-box"><div class="stat-value">${correctInRound}/${gameWords.length}</div><div class="stat-label">Correct</div></div>
+    <div class="stat-box"><div class="stat-value">🪙 ${roundCoins}</div><div class="stat-label">Coins</div></div>
+    <div class="stat-box"><div class="stat-value">🔥 ${bestStreak}</div><div class="stat-label">Best Streak</div></div>`;
+
+  const msgs=['Your brain is getting stronger with every word!','Those neural pathways are firing up!','You are building real reading power!','Every word you practice makes you sharper!'];
+  document.getElementById('rcEncouragement').textContent=msgs[Math.floor(Math.random()*msgs.length)];
+
+  // Unlock next round
+  if(currentRound<3){
+    roundUnlocked[currentRound+1]=true;
+    if(currentRound===2 && pct<0.8){
+      // Lightning requires 80%
+      roundUnlocked[3]=false;
+      document.getElementById('rcNextBtn').textContent='🏁 See Final Results';
+      document.getElementById('rcNextBtn').onclick=()=>{document.getElementById('roundComplete').classList.remove('active');showFinalCelebration()};
+    } else {
+      document.getElementById('rcNextBtn').textContent='Next Round →';
+      document.getElementById('rcNextBtn').onclick=()=>nextRound();
+    }
+  } else {
+    document.getElementById('rcNextBtn').textContent='🏁 See Final Results';
+    document.getElementById('rcNextBtn').onclick=()=>{document.getElementById('roundComplete').classList.remove('active');showFinalCelebration()};
+  }
+
+  document.getElementById('roundComplete').classList.add('active');
+  updateMap();
+  launchMiniConfetti();
+}
+
+function nextRound(){
+  document.getElementById('roundComplete').classList.remove('active');
+  currentRound++;
+  updateMap();
+  showRoundIntro();
+}
+
+// ===================== LIGHTNING ROUND =====================
+function startLightningRound(){
+  document.getElementById('gameArea').style.display='none';
+  document.getElementById('lightningArea').style.display='block';
+  document.getElementById('finalCelebration').classList.remove('active');
+
+  lightningWords=shuffle([...ALL_WORDS]).slice(0,ROUNDS[3].wordCount);
+  lightningIndex=0;lightningCorrect=0;streak=0;bestStreak=0;roundCoins=0;
+  lightningStartTime=Date.now();
+
+  if(personalBest!==null) document.getElementById('personalBestDisplay').textContent='⭐ Personal Best: '+personalBest+'/'+ROUNDS[3].wordCount+' correct';
+  else document.getElementById('personalBestDisplay').textContent='⭐ Set your first personal best!';
+
+  document.getElementById('instruction').textContent='⚡ Tap -ng or -nk for each word!';
+  updateScoreBar();
+  showLightningWord();
+}
+
+function showLightningWord(){
+  if(lightningIndex>=lightningWords.length){finishLightning();return}
+  const w=lightningWords[lightningIndex];
+  const display=document.getElementById('lightningWord');
+  display.textContent=w.word;
+  display.classList.remove('mystery-mode');
+  document.getElementById('timerDisplay').textContent='Word '+(lightningIndex+1)+' of '+lightningWords.length;
+  speak(w.word,.7);
+}
+
+function lightningAnswer(zone){
+  const w=lightningWords[lightningIndex];
+  const correct=w.cat===zone;
+  if(correct){
+    lightningCorrect++;streak++;correctInRound++;
+    if(streak>bestStreak)bestStreak=streak;
+    const earned=ROUNDS[3].coinsPerWord;
+    roundCoins+=earned;totalCoins+=earned;
+    if(streak>=3){roundCoins+=ROUNDS[3].streakBonus;totalCoins+=ROUNDS[3].streakBonus;showStreakBanner(streak,ROUNDS[3].streakBonus)}
+    showToast(true);
+  } else {
+    streak=0;showToast(false);
+  }
+  updateScoreBar();
+  lightningIndex++;
+  setTimeout(showLightningWord,500);
+}
+
+function finishLightning(){
+  if(personalBest===null||lightningCorrect>personalBest) personalBest=lightningCorrect;
+  totalCorrectAll+=lightningCorrect;totalWordsAll+=lightningWords.length;
+
+  // Jackpot bonus
+  const jackpot=lightningCorrect>=8?10:lightningCorrect>=6?5:2;
+  roundCoins+=jackpot;totalCoins+=jackpot;
+  updateScoreBar();
+
+  document.getElementById('lightningArea').style.display='none';
+
+  document.getElementById('rcIcon').textContent='⚡';
+  document.getElementById('rcTitle').textContent='Lightning Safari Complete!';
+  document.getElementById('rcStats').innerHTML=`
+    <div class="stat-box"><div class="stat-value">${lightningCorrect}/${lightningWords.length}</div><div class="stat-label">Correct</div></div>
+    <div class="stat-box"><div class="stat-value">🪙 ${roundCoins}</div><div class="stat-label">Coins</div></div>
+    <div class="stat-box"><div class="stat-value">⭐ ${personalBest}</div><div class="stat-label">Best Score</div></div>`;
+  document.getElementById('rcEncouragement').textContent=lightningCorrect===lightningWords.length?'PERFECT Lightning Round — incredible!':'⚡ Lightning speed and lightning smart!';
+  document.getElementById('rcNextBtn').textContent='🏁 See Final Results';
+  document.getElementById('rcNextBtn').onclick=()=>{document.getElementById('roundComplete').classList.remove('active');showFinalCelebration()};
+  document.getElementById('roundComplete').classList.add('active');
+  launchMiniConfetti();
+}
+
+// ===================== FINAL CELEBRATION =====================
+function showFinalCelebration(){
+  document.getElementById('gameArea').style.display='none';
+  document.getElementById('lightningArea').style.display='none';
+  const pct=totalWordsAll>0?totalCorrectAll/totalWordsAll:0;
+  const stars=pct>=.95?5:pct>=.85?4:pct>=.7?3:pct>=.5?2:1;
+  document.getElementById('finalStars').textContent='⭐'.repeat(stars)+'☆'.repeat(5-stars);
+  document.getElementById('finalTotalCoins').textContent=totalCoins;
+  document.getElementById('finalMsg').textContent=pct===1?'PERFECT across every round — you are a true Safari Master!':pct>=.8?'Incredible job — your word-sorting skills are getting so strong!':'Great effort — every round makes your brain more powerful!';
+  document.getElementById('finalStats').innerHTML=`
+    <div class="stat-box"><div class="stat-value">${totalCorrectAll}</div><div class="stat-label">Total Correct</div></div>
+    <div class="stat-box"><div class="stat-value">${totalWordsAll}</div><div class="stat-label">Total Words</div></div>
+    <div class="stat-box"><div class="stat-value">${Math.round(pct*100)}%</div><div class="stat-label">Accuracy</div></div>`;
+  document.getElementById('finalCelebration').classList.add('active');
+  document.getElementById('instruction').textContent='🏆 Safari Master!';
+  launchConfetti();
+}
+
+// ===================== CONFETTI =====================
+function launchConfetti(){const cols=['#1E7A7A','#C09A30','#B85C38','#D6336C','#4CAF50','#2196F3'];for(let i=0;i<80;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'vw';p.style.background=cols[Math.floor(Math.random()*cols.length)];p.style.width=(Math.random()*8+6)+'px';p.style.height=(Math.random()*8+6)+'px';p.style.borderRadius=Math.random()>.5?'50%':'2px';p.style.animation=`confettiFall ${Math.random()*2+1.5}s ease-out ${Math.random()*.5}s forwards`;document.body.appendChild(p);setTimeout(()=>p.remove(),4000)}}
+function launchMiniConfetti(){const cols=['#C09A30','#1E7A7A','#4CAF50'];for(let i=0;i<25;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'vw';p.style.background=cols[Math.floor(Math.random()*cols.length)];p.style.width=(Math.random()*6+4)+'px';p.style.height=(Math.random()*6+4)+'px';p.style.borderRadius='50%';p.style.animation=`confettiFall ${Math.random()*1.5+1}s ease-out ${Math.random()*.3}s forwards`;document.body.appendChild(p);setTimeout(()=>p.remove(),3000)}}
+
+// ===================== KEEP COINS =====================
+function keepCoins(){
+  document.getElementById('finalCelebration').classList.remove('active');
+  document.getElementById('savedTotal').textContent=totalCoins;
+  document.getElementById('coinsSaved').classList.add('active');
+  launchConfetti();
+
+    // === SUPABASE HOOK ===
+  const SUPABASE_URL = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+  const _h = {'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
+  fetch(SUPABASE_URL+'/rest/v1/meleah_coin_history',{method:'POST',headers:_h,body:JSON.stringify({amount:totalCoins,reason:'word-safari'})});
+  fetch(SUPABASE_URL+'/rest/v1/meleah_state?user_id=eq.meleah',{headers:_h})
+    .then(r=>r.json())
+    .then(rows=>fetch(SUPABASE_URL+'/rest/v1/meleah_state?user_id=eq.meleah',{method:'PATCH',headers:_h,body:JSON.stringify({coins_total:(rows[0]?.coins_total||0)+totalCoins})}))
+    .catch(e=>console.log('Will sync later'));
+}
+
+// ===================== FULL RESET =====================
+function fullReset(){
+  document.querySelectorAll('.confetti-piece').forEach(p=>p.remove());
+  currentRound=0;totalCoins=0;totalCorrectAll=0;totalWordsAll=0;
+  roundUnlocked=[true,false,false,false];
+  document.getElementById('finalCelebration').classList.remove('active');
+  document.getElementById('gameArea').style.display='block';
+  document.getElementById('lightningArea').style.display='none';
+  updateMap();updateScoreBar();
+  showRoundIntro();
+}
+
+// ===================== START =====================
+updateMap();
+showRoundIntro();
+</script>
+</body>
+</html>

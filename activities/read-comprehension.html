@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Read & Answer 📖</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --purple: #7C5CBF; --purple-light: #EDE8F8;
+    --pink: #E91E8C; --pink-light: #FCE4F3;
+    --gold: #F4A62A; --gold-light: #FEF3D8;
+    --green: #4CAF50; --green-light: #E8F5E9;
+    --coral: #E8643A; --coral-light: #FCEEE8;
+    --teal: #1E8A8A; --bg: #FFF8F0; --text: #2C2C2C;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, var(--pink), #C2185B); color: white; padding: 20px 24px 60px; text-align: center; position: relative; }
+  .header::after { content:''; position:absolute; bottom:-28px; left:0; right:0; height:56px; background:var(--bg); border-radius:50% 50% 0 0 / 40px 40px 0 0; }
+  .header-title { font-size: 22px; font-weight: 900; }
+  .header-sub { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+
+  .game { padding: 16px 20px 40px; max-width: 520px; margin: 0 auto; }
+
+  /* Story card */
+  .story-card {
+    background: white; border-radius: var(--radius); padding: 22px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1); margin-bottom: 20px;
+    border-top: 5px solid var(--pink);
+  }
+  .story-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .story-label { font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--pink); }
+  .read-aloud-btn {
+    background: var(--pink); color: white; border: none; border-radius: 12px;
+    padding: 8px 16px; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .read-aloud-btn:active { transform: scale(0.95); opacity: 0.9; }
+  .read-aloud-btn.playing { background: var(--coral); }
+
+  .story-text {
+    font-size: 18px; font-weight: 700; line-height: 1.8; color: var(--text);
+    /* Dyslexia-friendly: generous line height, good font weight */
+  }
+  .story-text .highlight { background: var(--gold-light); border-radius: 4px; padding: 0 2px; }
+
+  /* Questions */
+  .questions-label { font-size: 14px; font-weight: 900; color: var(--pink); margin-bottom: 12px; }
+  .question-card {
+    background: white; border-radius: 16px; padding: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 12px;
+    border-left: 4px solid #EEE; transition: border-color 0.3s;
+  }
+  .question-card.answered-correct { border-left-color: var(--green); }
+  .question-card.answered-wrong   { border-left-color: var(--coral); }
+
+  .question-num { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--pink); margin-bottom: 6px; }
+  .question-text { font-size: 16px; font-weight: 800; margin-bottom: 14px; line-height: 1.4; }
+
+  .answer-choices { display: flex; flex-direction: column; gap: 8px; }
+  .answer-btn {
+    background: #FAFAFA; border: 2px solid #EEE; border-radius: 12px;
+    padding: 12px 16px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700;
+    text-align: left; cursor: pointer; transition: all 0.2s; color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .answer-btn:active { transform: scale(0.98); }
+  .answer-btn.correct { background: var(--green-light); border-color: var(--green); color: var(--green); }
+  .answer-btn.wrong   { background: var(--coral-light); border-color: var(--coral); color: var(--coral); }
+  .answer-btn:disabled { cursor: default; }
+  .answer-indicator { font-size: 18px; flex-shrink: 0; }
+
+  /* Progress */
+  .progress-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; color: #888; margin-bottom: 12px; }
+  .progress-row .val { color: var(--pink); }
+
+  /* Feedback */
+  .question-feedback { font-size: 13px; font-weight: 800; margin-top: 8px; }
+  .question-feedback.correct { color: var(--green); }
+  .question-feedback.wrong   { color: var(--coral); }
+
+  /* Complete */
+  .complete-screen { display: none; text-align: center; padding: 40px 24px; }
+  .complete-screen.visible { display: block; }
+  .complete-emoji { font-size: 72px; margin-bottom: 12px; }
+  .complete-title { font-size: 28px; font-weight: 900; color: var(--pink); margin-bottom: 8px; }
+  .complete-sub { font-size: 16px; color: #666; margin-bottom: 12px; }
+  .coins-earned { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 24px; }
+  .play-again-btn { background: var(--pink); color: white; border: none; border-radius: 16px; padding: 16px 32px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; cursor: pointer; }
+
+  .loading { text-align: center; padding: 60px 20px; font-size: 16px; color: #888; }
+  .error-card { background: #FFEAEA; border: 2px solid var(--coral); border-radius: var(--radius); padding: 20px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">📖 Read &amp; Answer</div>
+  <div class="header-sub" id="headerSub">Loading your story...</div>
+</div>
+
+<div id="gameArea" class="game">
+  <div class="loading">⏳ Loading...</div>
+</div>
+
+<div class="complete-screen" id="completeScreen">
+  <div class="complete-emoji">📚</div>
+  <div class="complete-title">Great Reading!</div>
+  <div class="complete-sub" id="completeMsg"></div>
+  <div class="coins-earned">🪙 +5 coins earned!</div>
+  <button class="play-again-btn" onclick="loadAndRender()">Read Again 🔄</button>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+const USER_ID = 'meleah';
+const COINS_PER_GAME = 5;
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let questions = [];
+let answers = [];
+let score = 0;
+let isReading = false;
+let passage = '';
+
+// ── Generate a simple story + questions from the word list ──
+function generateStoryFromWords(wordList, conceptName) {
+  // Create a short, phonics-focused passage using the word list
+  const concept = conceptName || 'reading';
+  const words = wordList.slice(0, 12); // Use up to 12 words
+
+  // Simple template stories based on common patterns
+  const story = buildStory(words, concept);
+  const qs = buildQuestions(words, story);
+  return { story, questions: qs };
+}
+
+function buildStory(words, concept) {
+  // Pick some words and build sentences
+  const w = words;
+  const sentences = [];
+
+  if (w.length >= 4) {
+    sentences.push(`Sam can ${w[0]} and ${w[1]} with a ${w[2]}.`);
+  }
+  if (w.length >= 6) {
+    sentences.push(`The ${w[3]} went to the big ${w[4]} to get a ${w[5]}.`);
+  }
+  if (w.length >= 8) {
+    sentences.push(`Then they had to ${w[6]} past the ${w[7]}.`);
+  }
+  if (w.length >= 10) {
+    sentences.push(`At last, Sam said, "I can ${w[8]} and ${w[9]}!"`);
+  }
+  sentences.push('Sam felt very proud.');
+
+  return sentences.join(' ');
+}
+
+function buildQuestions(words, story) {
+  return [
+    {
+      text: `Which of these words is IN the story?`,
+      choices: shuffle([words[0], 'elephant', 'pizza', 'spaceship']),
+      correct: words[0],
+    },
+    {
+      text: `Who is the story about?`,
+      choices: shuffle(['Sam', 'Emma', 'Jake', 'Lucy']),
+      correct: 'Sam',
+    },
+    {
+      text: `How did Sam feel at the end?`,
+      choices: shuffle(['Proud', 'Sad', 'Scared', 'Angry']),
+      correct: 'Proud',
+    },
+    {
+      text: `Which word rhymes with "${words[0]}"?`,
+      choices: buildRhymeChoices(words[0], words),
+      correct: findBestRhyme(words[0], words),
+    },
+    {
+      text: `What is the FIRST word in this story?`,
+      choices: shuffle(['Sam', 'The', 'Then', 'At']),
+      correct: 'Sam',
+    },
+  ].slice(0, 4); // Show 4 questions
+}
+
+function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; }
+
+function findBestRhyme(word, wordList) {
+  const ending = word.slice(-2);
+  const rhyme = wordList.find(w => w !== word && w.endsWith(ending));
+  return rhyme || wordList[1] || word;
+}
+
+function buildRhymeChoices(word, wordList) {
+  const rhyme = findBestRhyme(word, wordList);
+  const distractors = ['cloud', 'tiger', 'purple'].filter(d => d !== rhyme && d !== word);
+  return shuffle([rhyme, ...distractors.slice(0, 3)]);
+}
+
+// ── Load from Supabase ──
+async function loadAndRender() {
+  document.getElementById('completeScreen').classList.remove('visible');
+  document.getElementById('gameArea').style.display = 'block';
+  document.getElementById('gameArea').innerHTML = '<div class="loading">⏳ Loading your story...</div>';
+
+  const params = new URLSearchParams(window.location.search);
+  const weekId = params.get('week');
+  const day    = params.get('day') || 'monday';
+
+  if (!weekId) {
+    document.getElementById('gameArea').innerHTML = '<div class="error-card">❌ No week in URL. Open from the weekly plan.</div>';
+    return;
+  }
+
+  try {
+    const [rdgRes, planRes] = await Promise.all([
+      db.from('meleah_daily_assignments').select('word_list, instructions').eq('week_id', weekId).eq('day_of_week', day).eq('track', 'reading').maybeSingle(),
+      db.from('meleah_weekly_plans').select('concept_name').eq('id', weekId).maybeSingle(),
+    ]);
+
+    const words = (rdgRes.data?.word_list || '').split(',').map(w => w.trim()).filter(Boolean);
+    const customPassage = rdgRes.data?.instructions || '';
+    const conceptName = planRes.data?.concept_name || '';
+
+    // If the instructions field has a passage (Melissa can write one), use it
+    // Otherwise generate from word list
+    const hasCustomPassage = customPassage.length > 80 && !customPassage.includes('Step ');
+
+    if (words.length < 4 && !hasCustomPassage) {
+      document.getElementById('gameArea').innerHTML = '<div class="loading">📋 The word list and passage are still being added. Check back after Melissa publishes the plan!</div>';
+      return;
+    }
+
+    if (hasCustomPassage) {
+      passage = customPassage;
+      questions = buildQuestions(words, passage);
+    } else {
+      const generated = generateStoryFromWords(words, conceptName);
+      passage = generated.story;
+      questions = generated.questions;
+    }
+
+    document.getElementById('headerSub').textContent = `Read the story, then answer ${questions.length} questions!`;
+    renderGame();
+  } catch(e) {
+    document.getElementById('gameArea').innerHTML = `<div class="error-card">❌ Could not load. Check internet and try again.<br><small>${e.message}</small></div>`;
+  }
+}
+
+// ── Render the reading game ──
+function renderGame() {
+  answers = Array(questions.length).fill(null);
+  score = 0;
+
+  document.getElementById('gameArea').innerHTML = `
+    <div class="progress-row">
+      <div>📖 Read the story first!</div>
+      <div>${questions.length} questions</div>
+    </div>
+
+    <!-- Story card -->
+    <div class="story-card">
+      <div class="story-header">
+        <div class="story-label">📖 Today's Story</div>
+        <button class="read-aloud-btn" id="readAloudBtn" onclick="toggleReadAloud()">
+          🔊 Read Aloud
+        </button>
+      </div>
+      <div class="story-text" id="storyText">${passage}</div>
+    </div>
+
+    <!-- Questions -->
+    <div class="questions-label">❓ Answer the questions</div>
+    <div id="questionsArea">
+      ${questions.map((q, i) => renderQuestion(q, i)).join('')}
+    </div>
+
+    <button id="submitAllBtn" onclick="submitAll()" style="
+      width:100%;background:var(--pink);color:white;border:none;border-radius:16px;
+      padding:16px;font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;
+      cursor:pointer;margin-top:4px;display:none">
+      ✅ See My Score!
+    </button>
+  `;
+}
+
+function renderQuestion(q, i) {
+  return `
+    <div class="question-card" id="qcard-${i}">
+      <div class="question-num">Question ${i + 1}</div>
+      <div class="question-text">${q.text}</div>
+      <div class="answer-choices">
+        ${q.choices.map((choice, ci) => `
+          <button class="answer-btn" id="ans-${i}-${ci}" onclick="selectAnswer(${i}, '${choice.replace(/'/g,"\\'")}', ${ci})">
+            <span class="answer-indicator">○</span>
+            ${choice}
+          </button>`).join('')}
+      </div>
+      <div class="question-feedback" id="qfeedback-${i}"></div>
+    </div>`;
+}
+
+let selectedAnswers = {};
+
+function selectAnswer(questionIdx, choice, choiceIdx) {
+  if (answers[questionIdx] !== null) return; // Already answered
+
+  selectedAnswers[questionIdx] = choice;
+
+  // Clear previous selection for this question
+  questions[questionIdx].choices.forEach((_, ci) => {
+    const btn = document.getElementById(`ans-${questionIdx}-${ci}`);
+    if (btn) { btn.querySelector('.answer-indicator').textContent = '○'; btn.style.background = ''; btn.style.border = ''; }
+  });
+
+  // Mark selected
+  const selectedBtn = document.getElementById(`ans-${questionIdx}-${choiceIdx}`);
+  if (selectedBtn) {
+    selectedBtn.querySelector('.answer-indicator').textContent = '●';
+    selectedBtn.style.background = 'var(--purple-light)';
+    selectedBtn.style.borderColor = 'var(--purple)';
+  }
+
+  // Check if all answered
+  if (Object.keys(selectedAnswers).length === questions.length) {
+    document.getElementById('submitAllBtn').style.display = 'block';
+  }
+}
+
+function submitAll() {
+  score = 0;
+  questions.forEach((q, i) => {
+    const chosen = selectedAnswers[i];
+    const correct = q.correct;
+    const isCorrect = chosen === correct;
+    if (isCorrect) score++;
+
+    const card = document.getElementById(`qcard-${i}`);
+    const feedback = document.getElementById(`qfeedback-${i}`);
+
+    if (card) card.className = `question-card ${isCorrect ? 'answered-correct' : 'answered-wrong'}`;
+
+    // Color the buttons
+    q.choices.forEach((choice, ci) => {
+      const btn = document.getElementById(`ans-${i}-${ci}`);
+      if (!btn) return;
+      btn.disabled = true;
+      if (choice === correct) { btn.className = 'answer-btn correct'; btn.querySelector('.answer-indicator').textContent = '✅'; }
+      else if (choice === chosen && !isCorrect) { btn.className = 'answer-btn wrong'; btn.querySelector('.answer-indicator').textContent = '❌'; }
+    });
+
+    if (feedback) {
+      feedback.textContent = isCorrect ? '✅ Correct!' : `The answer was: ${correct}`;
+      feedback.className = `question-feedback ${isCorrect ? 'correct' : 'wrong'}`;
+    }
+  });
+
+  document.getElementById('submitAllBtn').style.display = 'none';
+  setTimeout(endGame, 1500);
+}
+
+// ── Read Aloud ──
+function toggleReadAloud() {
+  if (!window.speechSynthesis) return;
+  const btn = document.getElementById('readAloudBtn');
+  if (isReading) {
+    window.speechSynthesis.cancel();
+    isReading = false;
+    btn.textContent = '🔊 Read Aloud';
+    btn.classList.remove('playing');
+  } else {
+    const utt = new SpeechSynthesisUtterance(passage);
+    utt.rate = 0.85; utt.pitch = 1.05;
+    utt.onend = () => { isReading = false; if(btn){btn.textContent='🔊 Read Aloud';btn.classList.remove('playing');} };
+    window.speechSynthesis.speak(utt);
+    isReading = true;
+    btn.textContent = '⏹ Stop Reading';
+    btn.classList.add('playing');
+  }
+}
+
+async function endGame() {
+  window.speechSynthesis?.cancel();
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('completeScreen').classList.add('visible');
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('completeMsg').textContent = `You got ${score} of ${questions.length} questions right (${pct}%)!`;
+  try {
+    const genId = () => Math.random().toString(36).slice(2);
+    await db.from('meleah_coin_history').insert({ id: genId(), user_id: USER_ID, amount: COINS_PER_GAME, reason: `Read & Answer 📖 (${pct}%)`, timestamp: new Date().toISOString() });
+    const { data: st } = await db.from('meleah_state').select('coins_total').eq('user_id', USER_ID).maybeSingle();
+    if (st) await db.from('meleah_state').update({ coins_total: (st.coins_total||0) + COINS_PER_GAME }).eq('user_id', USER_ID);
+  } catch(e) { console.warn('Coins error', e); }
+}
+
+loadAndRender();
+</script>
+</body>
+</html>

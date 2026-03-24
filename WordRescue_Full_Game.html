@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Word Rescue 🫧 — Meleah's World</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Nunito',sans-serif;background:linear-gradient(180deg,#E6F4F4 0%,#F0F0F0 100%);min-height:100vh;overflow-x:hidden;user-select:none;-webkit-user-select:none}
+
+  /* ===== HEADER ===== */
+  .game-header{background:linear-gradient(135deg,#1E7A7A,#237878);color:#fff;text-align:center;padding:14px 16px 10px}
+  .game-header .brand{font-size:10px;font-weight:700;letter-spacing:2px;opacity:.7;text-transform:uppercase}
+  .game-header h1{font-size:24px;font-weight:900;margin:2px 0}
+  .game-header .subtitle{font-size:12px;font-weight:600;opacity:.85}
+
+  /* ===== PROGRESS MAP ===== */
+  .progress-map{display:flex;align-items:center;justify-content:center;padding:12px 16px;background:#fff;gap:0;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+  .map-step{display:flex;align-items:center;gap:0}
+  .map-node{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;border:3px solid #DDD;background:#F5F5F5;color:#AAA;transition:all .3s}
+  .map-node.active{border-color:#1E7A7A;background:#E6F4F4;color:#1E7A7A;transform:scale(1.15);box-shadow:0 2px 10px rgba(30,122,122,.3)}
+  .map-node.complete{border-color:#4CAF50;background:#4CAF50;color:#fff}
+  .map-node.locked{opacity:.5}
+  .map-connector{width:28px;height:3px;background:#DDD;transition:background .3s}
+  .map-connector.complete{background:#4CAF50}
+  .map-label{font-size:8px;font-weight:700;color:#999;text-align:center;margin-top:2px;letter-spacing:.3px}
+  .map-step-wrap{display:flex;flex-direction:column;align-items:center}
+
+  /* ===== SCORE BAR ===== */
+  .score-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#FDF8E8;border-bottom:2px solid #F0E6C8}
+  .score-bar .coins{font-size:16px;font-weight:800;color:#C09A30}
+  .score-bar .streak{font-size:13px;font-weight:700;color:#B85C38}
+  .score-bar .round-info{font-size:12px;font-weight:700;color:#666}
+  .coin-pop{position:fixed;font-size:20px;font-weight:900;color:#C09A30;pointer-events:none;z-index:800;animation:coinFloat 1s ease forwards}
+  @keyframes coinFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.3)}}
+
+  /* ===== INSTRUCTION ===== */
+  .instruction-banner{text-align:center;padding:10px 16px;font-size:15px;font-weight:700;color:#1E7A7A;background:#E6F4F4;border-bottom:2px solid #D0EDED;min-height:44px;display:flex;align-items:center;justify-content:center}
+
+  /* ===== PLAY FIELD ===== */
+  #playField{
+    position:relative;
+    height:380px;
+    overflow:hidden;
+    background:linear-gradient(180deg,#DCF0FF 0%,#EAF6FF 60%,#F0F8FF 100%);
+    border-bottom:3px solid #C8E6FF;
+    margin:0;
+  }
+  #playField .clouds{
+    position:absolute;top:8px;left:0;right:0;
+    font-size:28px;opacity:.35;letter-spacing:24px;
+    pointer-events:none;user-select:none;
+  }
+  #playFieldMsg{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    font-size:18px;font-weight:800;color:#1E7A7A;opacity:.5;
+    pointer-events:none;text-align:center;
+  }
+  #rescueCount{
+    position:absolute;bottom:8px;right:12px;
+    font-size:13px;font-weight:800;color:#1E7A7A;
+    background:rgba(255,255,255,.8);border-radius:10px;padding:3px 8px;
+  }
+
+  /* ===== BUBBLES ===== */
+  .bubble{
+    position:absolute;
+    border-radius:50px;
+    padding:10px 20px;
+    font-size:20px;
+    font-weight:800;
+    border:3px solid #DDD;
+    cursor:pointer;
+    touch-action:manipulation;
+    transition:none;
+    user-select:none;
+    -webkit-user-select:none;
+    white-space:nowrap;
+    box-shadow:0 3px 10px rgba(0,0,0,.12);
+  }
+  .bubble.target{border-color:#1E7A7A;color:#1E7A7A;background:#E6F4F4;}
+  .bubble.decoy{border-color:#AAA;color:#666;background:#F8F8F8;}
+  .bubble.mystery{border-color:#B85C38;color:#B85C38;background:#FAF0EA;animation:mystPulse 1.5s ease infinite;}
+  @keyframes mystPulse{0%,100%{box-shadow:0 3px 10px rgba(184,92,56,.2)}50%{box-shadow:0 3px 20px rgba(184,92,56,.5)}}
+
+  .bubble.pop-anim{
+    transition:transform .2s ease,opacity .2s ease !important;
+    transform:scale(1.4) !important;
+    opacity:0 !important;
+    pointer-events:none;
+  }
+  .bubble.shake-anim{
+    animation:bubbleShake .25s ease !important;
+    border-color:#E53935 !important;
+    background:#FFEBEE !important;
+  }
+  @keyframes bubbleShake{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-5px)}
+    80%{transform:translateX(5px)}
+  }
+
+  /* ===== ROUND INTRO SCREEN ===== */
+  .round-intro{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:900;align-items:center;justify-content:center}
+  .round-intro.active{display:flex}
+  .round-intro-card{background:#fff;border-radius:24px;padding:36px 32px;text-align:center;max-width:380px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.2);animation:popIn .4s ease}
+  .round-intro-card .round-icon{font-size:56px;margin-bottom:8px}
+  .round-intro-card h2{font-size:26px;font-weight:900;color:#1E7A7A;margin-bottom:4px}
+  .round-intro-card .round-subtitle{font-size:15px;color:#666;font-weight:600;margin-bottom:12px}
+  .round-intro-card .round-details{font-size:13px;color:#888;line-height:1.6;margin-bottom:16px;text-align:left;background:#F8F8F8;padding:12px;border-radius:10px}
+  .round-intro-card .round-details span{font-weight:800;color:#1E7A7A}
+  .start-round-btn{background:#1E7A7A;color:#fff;border:none;border-radius:14px;padding:14px 36px;font-family:'Nunito',sans-serif;font-size:18px;font-weight:800;cursor:pointer;transition:all .15s;touch-action:manipulation}
+  .start-round-btn:hover{background:#176565;transform:scale(1.03)}
+
+  /* ===== SOUND OUT OVERLAY ===== */
+  .overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:400;align-items:center;justify-content:center}
+  .overlay.active{display:flex}
+  .overlay-card{background:#fff;border-radius:24px;padding:28px;text-align:center;max-width:340px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.2);animation:popIn .3s ease}
+  .sound-out-word{font-size:40px;font-weight:900;color:#2C2C2C;letter-spacing:4px;margin:8px 0}
+  .sound-out-word .hl{color:#B85C38;text-decoration:underline;text-decoration-color:#C09A30;text-underline-offset:6px}
+  .tap-circles{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+  .tap-circle{width:40px;height:40px;border-radius:50%;background:#E6F4F4;border:2px solid #1E7A7A;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#1E7A7A;cursor:pointer;transition:all .15s;touch-action:manipulation}
+  .tap-circle.tapped{background:#1E7A7A;color:#fff;transform:scale(1.15)}
+  .action-btn{border:none;border-radius:12px;padding:10px 24px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin:4px;transition:all .15s;touch-action:manipulation}
+  .action-btn.gold{background:#C09A30;color:#fff}
+  .action-btn.gold:hover{background:#A98528}
+  .action-btn.teal{background:#1E7A7A;color:#fff}
+  .action-btn.teal:hover{background:#176565}
+
+  /* ===== STREAK BANNER ===== */
+  .streak-banner{display:none;position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(0);background:linear-gradient(135deg,#B85C38,#C09A30);color:#fff;padding:8px 24px;border-radius:20px;font-size:16px;font-weight:900;z-index:600;box-shadow:0 4px 16px rgba(184,92,56,.4);transition:transform .3s cubic-bezier(.175,.885,.32,1.275);white-space:nowrap}
+  .streak-banner.show{display:block;transform:translateX(-50%) scale(1)}
+
+  /* ===== ROUND COMPLETE ===== */
+  .round-complete{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:900;align-items:center;justify-content:center}
+  .round-complete.active{display:flex}
+  .round-complete-card{background:#fff;border-radius:24px;padding:32px;text-align:center;max-width:380px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.2);animation:popIn .4s ease}
+  .round-complete-card h2{font-size:24px;font-weight:900;color:#1E7A7A;margin:8px 0}
+  .round-complete-card .stats{display:flex;gap:16px;justify-content:center;margin:16px 0}
+  .stat-box{background:#F8F8F8;border-radius:12px;padding:12px 16px;text-align:center;min-width:80px}
+  .stat-box .stat-value{font-size:24px;font-weight:900;color:#C09A30}
+  .stat-box .stat-label{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px}
+  .encouragement{font-size:14px;color:#666;font-weight:600;margin:8px 0 16px;font-style:italic}
+
+  /* ===== FINAL CELEBRATION ===== */
+  .final-celebration{display:none;text-align:center;padding:30px 20px}
+  .final-celebration.active{display:block}
+  .final-celebration .trophy{font-size:80px;margin-bottom:8px}
+  .final-celebration h2{font-size:30px;font-weight:900;color:#1E7A7A;margin-bottom:6px}
+  .final-celebration .stars-container{font-size:36px;margin:10px 0;letter-spacing:6px}
+  .final-celebration .final-stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+  .final-celebration p{font-size:15px;color:#555;font-weight:600;margin:6px 0}
+  .final-celebration .coins-earned{font-size:32px;font-weight:900;color:#C09A30;margin:12px 0}
+  .play-again-btn{background:#1E7A7A;color:#fff;border:none;border-radius:14px;padding:14px 36px;font-family:'Nunito',sans-serif;font-size:18px;font-weight:800;cursor:pointer;margin-top:12px;touch-action:manipulation}
+
+  /* ===== TOAST ===== */
+  .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:#fff;border-radius:20px;padding:20px 32px;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:600;text-align:center;transition:transform .3s cubic-bezier(.175,.885,.32,1.275)}
+  .toast.show{transform:translate(-50%,-50%) scale(1)}
+  .toast .emoji{font-size:44px}
+  .toast .msg{font-size:18px;font-weight:800;margin-top:4px}
+  .toast.correct .msg{color:#4CAF50}
+  .toast.wrong .msg{color:#E53935}
+
+  .confetti-piece{position:fixed;z-index:700;pointer-events:none}
+
+  /* Keep / Try Again Buttons */
+  .keep-coins-btn{background:linear-gradient(135deg,#C09A30,#D4AF37);color:#fff;border:none;border-radius:14px;padding:16px 40px;font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 4px 16px rgba(192,154,48,.4);transition:all .15s;min-width:260px;touch-action:manipulation}
+  .keep-coins-btn:hover{transform:scale(1.04);box-shadow:0 6px 20px rgba(192,154,48,.5)}
+  .try-again-btn{background:transparent;color:#1E7A7A;border:3px solid #1E7A7A;border-radius:14px;padding:12px 32px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all .15s;min-width:260px;touch-action:manipulation}
+  .try-again-btn:hover{background:#E6F4F4}
+
+  /* Coins Saved Screen */
+  .coins-saved{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,#FDF8E8 0%,#FAF0EA 50%,#E6F4F4 100%);z-index:1000;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}
+  .coins-saved.active{display:flex}
+  .coins-saved-card{animation:popIn .5s ease}
+  .coins-saved-icon{font-size:100px;margin-bottom:0;animation:coinBounce 1s ease infinite}
+  .coins-saved-sparkle{font-size:40px;margin:-10px 0 10px}
+  .coins-saved h2{font-size:34px;font-weight:900;color:#C09A30;margin-bottom:8px}
+  .coins-saved-total{font-size:64px;font-weight:900;color:#C09A30;margin:8px 0;text-shadow:0 2px 8px rgba(192,154,48,.3)}
+  .coins-saved p{font-size:16px;color:#666;font-weight:600;margin-bottom:16px}
+  .coins-saved-msg{font-size:18px;color:#1E7A7A;font-weight:700;margin:8px 0}
+  .coins-saved-done{margin-top:24px;font-size:20px;font-weight:800;color:#4CAF50;background:#E8F5E9;display:inline-block;padding:12px 32px;border-radius:14px}
+  @keyframes coinBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+
+  .coach-footer{background:#FDF8E8;border-top:3px solid #C09A30;padding:12px 16px;margin-top:16px}
+  .coach-footer .label{font-size:10px;font-weight:800;color:#C09A30;letter-spacing:.5px;margin-bottom:3px}
+  .coach-footer p{font-size:12px;color:#666;line-height:1.5}
+
+  @keyframes popIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+  @keyframes confettiFall{0%{transform:translateY(-10vh) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+  .personal-best{text-align:center;padding:8px;font-size:13px;font-weight:700;color:#C09A30}
+</style>
+</head>
+<body>
+
+<div class="game-header">
+  <div class="brand">MELEAH'S WORLD 🌟</div>
+  <h1>🫧 Word Rescue</h1>
+  <div class="subtitle" id="headerSubtitle">Rescue the -nk words before they float away!</div>
+</div>
+
+<!-- Progress Map -->
+<div class="progress-map" id="progressMap">
+  <div class="map-step-wrap"><div class="map-node active" id="mapNode1">🔍</div><div class="map-label">Scout</div></div>
+  <div class="map-connector" id="mapConn1"></div>
+  <div class="map-step-wrap"><div class="map-node locked" id="mapNode2">🧭</div><div class="map-label">Explorer</div></div>
+  <div class="map-connector" id="mapConn2"></div>
+  <div class="map-step-wrap"><div class="map-node locked" id="mapNode3">🏆</div><div class="map-label">Champion</div></div>
+  <div class="map-connector" id="mapConn3"></div>
+  <div class="map-step-wrap"><div class="map-node locked" id="mapNode4">⚡</div><div class="map-label">Lightning</div></div>
+</div>
+
+<div class="score-bar">
+  <span class="coins">🪙 <span id="coinCount">0</span></span>
+  <span class="streak" id="streakDisplay"></span>
+  <span class="round-info" id="roundInfo">Round 1 of 4</span>
+</div>
+
+<div class="instruction-banner" id="instruction">Loading...</div>
+
+<!-- Play Field -->
+<div id="playField">
+  <div class="clouds">☁️ ☁️ ☁️</div>
+  <div id="playFieldMsg">Get ready! 🫧</div>
+  <div id="rescueCount"></div>
+</div>
+
+<div class="personal-best" id="personalBestDisplay"></div>
+
+<!-- Final Celebration (inline) -->
+<div class="final-celebration" id="finalCelebration">
+  <div class="trophy">🏆</div>
+  <h2>Rescue Master!</h2>
+  <div class="stars-container" id="finalStars"></div>
+  <p id="finalMsg"></p>
+  <div class="final-stats" id="finalStats"></div>
+  <div class="coins-earned">🪙 <span id="finalTotalCoins">0</span> total coins!</div>
+  <p style="font-size:13px;color:#888">You rescued every word — that's word-recognition superpower! 🫧</p>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:16px">
+    <button class="keep-coins-btn" onclick="keepCoins()">🪙 Keep My Coins!</button>
+    <button class="try-again-btn" onclick="fullReset()">🔄 Try Again for More Coins</button>
+  </div>
+</div>
+
+<!-- Round Intro Overlay -->
+<div class="round-intro" id="roundIntro">
+  <div class="round-intro-card">
+    <div class="round-icon" id="introIcon">🔍</div>
+    <h2 id="introTitle">Scout Mode</h2>
+    <div class="round-subtitle" id="introSubtitle">Learn the patterns</div>
+    <div class="round-details" id="introDetails"></div>
+    <button class="start-round-btn" id="startRoundBtn" onclick="startCurrentRound()">Let's Go! 🚀</button>
+  </div>
+</div>
+
+<!-- Sound Out Overlay -->
+<div class="overlay" id="soundOverlay">
+  <div class="overlay-card">
+    <p style="font-size:13px;color:#888;font-weight:700">🔊 Let's sound it out!</p>
+    <div class="sound-out-word" id="soundOutWord"></div>
+    <div style="font-size:14px;color:#666;font-weight:700;margin:6px 0" id="soundOutTaps"></div>
+    <div class="tap-circles" id="tapCircles"></div>
+    <p style="font-size:12px;color:#999;margin:6px 0" id="tapInstruction">Tap each circle as you say each sound!</p>
+    <div style="margin-top:10px">
+      <button class="action-btn gold" onclick="hearCurrentWord()">🔊 Hear It</button>
+      <button class="action-btn teal" onclick="closeSoundOut()">✅ Got It!</button>
+    </div>
+  </div>
+</div>
+
+<!-- Round Complete Overlay -->
+<div class="round-complete" id="roundComplete">
+  <div class="round-complete-card">
+    <div style="font-size:48px" id="rcIcon">🎉</div>
+    <h2 id="rcTitle">Round Complete!</h2>
+    <div class="stats" id="rcStats"></div>
+    <div class="encouragement" id="rcEncouragement"></div>
+    <button class="start-round-btn" id="rcNextBtn" onclick="nextRound()">Next Round →</button>
+  </div>
+</div>
+
+<!-- Coins Saved Confirmation -->
+<div class="coins-saved" id="coinsSaved">
+  <div class="coins-saved-card">
+    <div class="coins-saved-icon">🪙</div>
+    <div class="coins-saved-sparkle">✨</div>
+    <h2>Coins Saved!</h2>
+    <div class="coins-saved-total" id="savedTotal">0</div>
+    <p>coins added to your Meleah's World account!</p>
+    <div class="coins-saved-msg">Great rescue mission — you earned every single one! 💛</div>
+    <div class="coins-saved-done">✅ You're all done!</div>
+    <button class="play-again-btn" onclick="fullReset()" style="margin-top:16px;touch-action:manipulation">Play Again 🔄</button>
+  </div>
+</div>
+
+<div class="streak-banner" id="streakBanner"></div>
+<div class="toast" id="toast"><div class="emoji" id="toastEmoji"></div><div class="msg" id="toastMsg"></div></div>
+
+<div class="coach-footer">
+  <div class="label">💡 FOR GRANDMA &amp; DAD</div>
+  <p>Word Rescue builds rapid word recognition — Meleah needs to identify patterns at speed! In Scout Mode she has plenty of time. The words that "escape" aren't failures — they're practice. Say: "You rescued ___ out of ___!" Focus on what she DID get. 🫧</p>
+</div>
+
+<script>
+// ===================== CONFIGURATION =====================
+const ALL_WORDS = [
+  {word:"drink",  cat:"nk", sounds:["d","r","i","nk"], end:"nk"},
+  {word:"stung",  cat:"ng", sounds:["s","t","u","ng"],  end:"ng"},
+  {word:"honk",   cat:"nk", sounds:["h","o","nk"],      end:"nk"},
+  {word:"blank",  cat:"nk", sounds:["b","l","a","nk"],  end:"nk"},
+  {word:"sing",   cat:"ng", sounds:["s","i","ng"],       end:"ng"},
+  {word:"trunk",  cat:"nk", sounds:["t","r","u","nk"],  end:"nk"},
+  {word:"stink",  cat:"nk", sounds:["s","t","i","nk"],  end:"nk"},
+  {word:"bring",  cat:"ng", sounds:["b","r","i","ng"],  end:"ng"},
+  {word:"mustang",cat:"ng", sounds:["m","u","s","t","a","ng"], end:"ng"},
+  {word:"belong", cat:"ng", sounds:["b","e","l","o","ng"], end:"ng"},
+  {word:"sunk",   cat:"nk", sounds:["s","u","nk"],      end:"nk"},
+  {word:"rang",   cat:"ng", sounds:["r","a","ng"],       end:"ng"},
+  {word:"think",  cat:"nk", sounds:["th","i","nk"],     end:"nk"},
+  {word:"blink",  cat:"nk", sounds:["b","l","i","nk"],  end:"nk"},
+  {word:"chunk",  cat:"nk", sounds:["ch","u","nk"],     end:"nk"},
+  {word:"strong", cat:"ng", sounds:["s","t","r","o","ng"], end:"ng"},
+  {word:"king",   cat:"ng", sounds:["k","i","ng"],       end:"ng"},
+  {word:"bank",   cat:"nk", sounds:["b","a","nk"],      end:"nk"},
+  {word:"long",   cat:"ng", sounds:["l","o","ng"],       end:"ng"},
+  {word:"pink",   cat:"nk", sounds:["p","i","nk"],      end:"nk"}
+];
+
+// Target = nk, Decoy = ng
+const ROUNDS = [
+  {name:"Scout Mode",       icon:"🔍", subtitle:"Rescue the -nk words — you have plenty of time!",
+   coinsPerWord:1, streakBonus:0, showSoundOutAfterRescue:true, showSoundOutOnDecoy:false, hasMystery:false, isLightning:false,
+   details:"<span>4 targets</span> + 2 decoys • <span>1 coin</span> per rescue • Bubbles fall slowly! Sound out every rescued word.",
+   rescue:{targets:4, decoys:2, fallSpeed:1.2, maxSimultaneous:1}},
+  {name:"Explorer Mode",    icon:"🧭", subtitle:"Streaks earn bonus coins!",
+   coinsPerWord:2, streakBonus:1, showSoundOutAfterRescue:false, showSoundOutOnDecoy:true, hasMystery:false, isLightning:false,
+   details:"<span>6 targets</span> + 4 decoys • <span>2 coins</span> per rescue • Get <span>3 in a row</span> for a streak bonus! Sound-out helps when you tap wrong.",
+   rescue:{targets:6, decoys:4, fallSpeed:1.6, maxSimultaneous:2}},
+  {name:"Champion Rescue",  icon:"🏆", subtitle:"Mystery bubble challenge!",
+   coinsPerWord:3, streakBonus:2, showSoundOutAfterRescue:false, showSoundOutOnDecoy:true, hasMystery:true, isLightning:false,
+   details:"<span>8 targets</span> + 5 decoys • <span>3 coins</span> per rescue • Streak bonuses <span>doubled!</span> • One <span>Mystery Bubble</span> — rescue it by sound alone!",
+   rescue:{targets:8, decoys:5, fallSpeed:1.9, maxSimultaneous:3}},
+  {name:"Lightning Rescue", icon:"⚡", subtitle:"Beat your personal best!",
+   coinsPerWord:2, streakBonus:1, showSoundOutAfterRescue:false, showSoundOutOnDecoy:false, hasMystery:false, isLightning:true,
+   details:"All <span>10 targets</span> + 3 decoys — super fast! Tap <span>-nk words</span> only. No timer pressure — just beat <span>your own best</span> score. Big coin jackpot at the end!",
+   rescue:{targets:10, decoys:3, fallSpeed:2.2, maxSimultaneous:4}}
+];
+
+// ===================== STATE =====================
+let currentRound    = 0;
+let totalCoins      = 0;
+let roundCoins      = 0;
+let streak          = 0;
+let bestStreak      = 0;
+let correctInRound  = 0;   // targets rescued this round
+let totalCorrectAll = 0;
+let totalWordsAll   = 0;
+let personalBest    = null;
+let roundUnlocked   = [true, false, false, false];
+let roundCompleteFired = false;
+
+// Bubble game state
+let spawnQueue      = [];   // [{word, isTarget, isMystery}]
+let activeBubbles   = [];   // [{el, word, isTarget, isMystery, top, left, tapped}]
+let spawnIndex      = 0;    // next index in spawnQueue to spawn
+let roundTargetCount = 0;   // total targets this round
+let gameRunning     = false;
+let roundEndChecked = false;
+
+let fallInterval    = null; // moves bubbles down
+let spawnInterval   = null; // spawns next bubble
+let currentSoundWord = null;
+let pendingSoundOutWord = null; // queued sound-out after a rescue (scout mode)
+
+// ===================== SPEECH =====================
+function speak(text, rate=0.8) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = rate; u.pitch = 1; u.volume = 1;
+  const voices = speechSynthesis.getVoices();
+  const pref = voices.find(v=>v.name.includes('Samantha'))
+             ||voices.find(v=>v.lang.startsWith('en')&&v.localService)
+             ||voices.find(v=>v.lang.startsWith('en'));
+  if(pref) u.voice = pref;
+  speechSynthesis.speak(u);
+}
+if('speechSynthesis' in window){
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
+}
+function hearCurrentWord(){ if(currentSoundWord) speak(currentSoundWord.word,.6); }
+
+// ===================== UTILITIES =====================
+function shuffle(a){
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [b[i],b[j]]=[b[j],b[i]];
+  }
+  return b;
+}
+
+function updateScoreBar(){
+  document.getElementById('coinCount').textContent=totalCoins;
+  const sd=document.getElementById('streakDisplay');
+  sd.textContent=streak>=2?'🔥 '+streak+' streak!':'';
+  document.getElementById('roundInfo').textContent=`Round ${currentRound+1} of ${ROUNDS.length}`;
+}
+
+function updateMap(){
+  for(let i=0;i<4;i++){
+    const node=document.getElementById('mapNode'+(i+1));
+    const conn=document.getElementById('mapConn'+(i+1));
+    node.className='map-node';
+    if(i<currentRound){node.classList.add('complete');if(conn)conn.classList.add('complete');}
+    else if(i===currentRound) node.classList.add('active');
+    else if(roundUnlocked[i]) node.classList.remove('locked');
+    else node.classList.add('locked');
+  }
+}
+
+function showCoinPop(x,y,amount){
+  const el=document.createElement('div');
+  el.className='coin-pop';
+  el.textContent='+'+amount+' 🪙';
+  el.style.left=x+'px'; el.style.top=y+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1000);
+}
+
+function updateRescueCount(){
+  const r=ROUNDS[currentRound];
+  const total=r.rescue.targets;
+  document.getElementById('rescueCount').textContent=`🫧 ${correctInRound}/${total} rescued`;
+}
+
+// ===================== ROUND INTRO =====================
+function showRoundIntro(){
+  const r=ROUNDS[currentRound];
+  document.getElementById('introIcon').textContent=r.icon;
+  document.getElementById('introTitle').textContent=r.name;
+  document.getElementById('introSubtitle').textContent=r.subtitle;
+  document.getElementById('introDetails').innerHTML=r.details;
+  document.getElementById('roundIntro').classList.add('active');
+  document.getElementById('startRoundBtn').textContent=
+    currentRound===3?'⚡ Start Lightning Rescue!':"Let's Go! 🚀";
+}
+
+// ===================== START ROUND =====================
+function startCurrentRound(){
+  document.getElementById('roundIntro').classList.remove('active');
+  const r=ROUNDS[currentRound];
+  roundCoins=0; streak=0; bestStreak=0; correctInRound=0;
+  roundEndChecked=false; roundCompleteFired=false;
+
+  // Clear field
+  clearField();
+  document.getElementById('finalCelebration').classList.remove('active');
+  document.getElementById('playFieldMsg').style.display='none';
+  document.getElementById('rescueCount').textContent='';
+
+  if(r.isLightning){
+    document.getElementById('personalBestDisplay').textContent=
+      personalBest!==null?'⭐ Personal Best: '+personalBest+'/'+r.rescue.targets+' rescued':'⭐ Set your first personal best!';
+  } else {
+    document.getElementById('personalBestDisplay').textContent='';
+  }
+
+  updateScoreBar(); updateMap();
+  document.getElementById('instruction').textContent=
+    r.isLightning?'⚡ Tap -nk words only — as fast as you can! 🫧':'🫧 Rescue the -nk words! Tap them before they float away!';
+
+  buildSpawnQueue(r);
+  roundTargetCount=r.rescue.targets;
+  updateRescueCount();
+  startFallLoop(r.rescue.fallSpeed);
+  startSpawnLoop(r);
+  gameRunning=true;
+}
+
+// ===================== SPAWN QUEUE =====================
+function buildSpawnQueue(r){
+  const cfg=r.rescue;
+  const nkWords=shuffle(ALL_WORDS.filter(w=>w.cat==='nk'));
+  const ngWords=shuffle(ALL_WORDS.filter(w=>w.cat==='ng'));
+
+  let targets=nkWords.slice(0,cfg.targets).map((w,i)=>({
+    word:w,
+    isTarget:true,
+    isMystery: r.hasMystery && i===cfg.targets-1
+  }));
+  let decoys=ngWords.slice(0,cfg.decoys).map(w=>({
+    word:w,
+    isTarget:false,
+    isMystery:false
+  }));
+
+  spawnQueue=shuffle([...targets,...decoys]);
+  spawnIndex=0;
+  activeBubbles=[];
+}
+
+// ===================== FALL LOOP =====================
+function startFallLoop(fallSpeed){
+  if(fallInterval) clearInterval(fallInterval);
+  fallInterval=setInterval(()=>{
+    const field=document.getElementById('playField');
+    const fieldH=field.offsetHeight||380;
+
+    activeBubbles.forEach(b=>{
+      if(b.tapped||b.escaped) return;
+      b.top+=fallSpeed;
+      b.el.style.top=b.top+'px';
+
+      if(b.top>fieldH){
+        // Bubble escaped
+        b.escaped=true;
+        if(b.isTarget){
+          // Missed target: break streak
+          streak=0;
+          updateScoreBar();
+        }
+        b.el.remove();
+        setTimeout(()=>checkRoundEnd(), 100);
+      }
+    });
+    // Remove escaped from array periodically
+    activeBubbles=activeBubbles.filter(b=>!b.escaped&&!b.tapped);
+  },80);
+}
+
+// ===================== SPAWN LOOP =====================
+function startSpawnLoop(r){
+  if(spawnInterval) clearInterval(spawnInterval);
+  spawnInterval=setInterval(()=>{
+    if(!gameRunning) return;
+    if(spawnIndex>=spawnQueue.length){
+      clearInterval(spawnInterval);
+      spawnInterval=null;
+      return;
+    }
+    const cfg=r.rescue;
+    const live=activeBubbles.filter(b=>!b.tapped&&!b.escaped).length;
+    if(live>=cfg.maxSimultaneous) return; // wait — field not too crowded
+    spawnNextBubble(r);
+  },1500);
+}
+
+// ===================== SPAWN ONE BUBBLE =====================
+function spawnNextBubble(r){
+  if(spawnIndex>=spawnQueue.length) return;
+  const item=spawnQueue[spawnIndex++];
+
+  const field=document.getElementById('playField');
+  const fieldW=field.offsetWidth||360;
+
+  const el=document.createElement('div');
+  el.className='bubble';
+
+  if(item.isMystery){
+    el.classList.add('mystery');
+    el.innerHTML='🫧❓ <button style="background:none;border:none;cursor:pointer;font-size:16px;touch-action:manipulation" onclick="event.stopPropagation();speak(\''+item.word.word+'\',0.7)">🔊</button>';
+    // Auto-speak mystery word
+    setTimeout(()=>speak(item.word.word,0.7),300);
+  } else if(item.isTarget){
+    el.classList.add('target');
+    el.textContent=item.word.word;
+  } else {
+    el.classList.add('decoy');
+    el.textContent=item.word.word;
+  }
+
+  el.style.top='-60px';
+
+  const bObj={el, word:item.word, isTarget:item.isTarget, isMystery:item.isMystery, top:-60, left:10, tapped:false, escaped:false};
+
+  // Tap handler — bObj declared first so closures capture it correctly
+  el.addEventListener('click', ()=>handleBubbleTap(bObj), false);
+  el.addEventListener('touchend', (e)=>{e.preventDefault();handleBubbleTap(bObj);},{passive:false});
+
+  activeBubbles.push(bObj);
+  field.appendChild(el);
+
+  // Random horizontal position — measure actual rendered width after append
+  const actualW=el.offsetWidth;
+  const safeMax=Math.max(fieldW-actualW-10, 10);
+  const left=10+Math.floor(Math.random()*(safeMax-10));
+  el.style.left=left+'px';
+  bObj.left=left;
+}
+
+// ===================== BUBBLE TAP =====================
+function handleBubbleTap(bObj){
+  if(bObj.tapped||bObj.escaped) return;
+  const r=ROUNDS[currentRound];
+
+  if(bObj.isTarget){
+    // CORRECT — rescue it
+    bObj.tapped=true;
+    correctInRound++;
+
+    // Earn coins
+    const earned=r.coinsPerWord;
+    roundCoins+=earned; totalCoins+=earned;
+    streak++;
+    if(streak>bestStreak) bestStreak=streak;
+
+    if(streak>=3&&r.streakBonus>0){
+      const bonus=r.streakBonus;
+      roundCoins+=bonus; totalCoins+=bonus;
+      showStreakBanner(streak,bonus);
+    }
+
+    updateScoreBar();
+    updateRescueCount();
+
+    // Coin pop at bubble position
+    const rect=bObj.el.getBoundingClientRect();
+    showCoinPop(rect.left+rect.width/2, rect.top, earned);
+
+    // Show toast
+    showToast(true);
+
+    // Pop animation
+    bObj.el.classList.add('pop-anim');
+    setTimeout(()=>bObj.el.remove(),220);
+
+    // Sound out logic
+    if(r.showSoundOutAfterRescue){
+      // Scout: pause game, show sound-out, then resume
+      pendingSoundOutWord=bObj.word;
+      pauseGame();
+      setTimeout(()=>showSoundOut(bObj.word),400);
+    } else {
+      if(bObj.isMystery){
+        showToastMsg('🔍 Great detective work!');
+      }
+    }
+
+    // Delay check so pop-anim removal and array filter happen first
+    setTimeout(()=>checkRoundEnd(), 350);
+
+  } else {
+    // WRONG — decoy tapped
+    streak=0;
+    updateScoreBar();
+    showToast(false);
+
+    // Shake animation
+    bObj.el.classList.remove('shake-anim');
+    void bObj.el.offsetWidth;
+    bObj.el.classList.add('shake-anim');
+    setTimeout(()=>{
+      if(bObj.el.parentNode) bObj.el.classList.remove('shake-anim');
+    },300);
+
+    // Sound out on decoy tap (Explorer/Champion)
+    if(r.showSoundOutOnDecoy){
+      pendingSoundOutWord=bObj.word;
+      pauseGame();
+      setTimeout(()=>showSoundOut(bObj.word),400);
+    }
+  }
+}
+
+function showToastMsg(msg){
+  // Show a brief custom message via toast
+  const t=document.getElementById('toast');
+  t.className='toast correct';
+  document.getElementById('toastEmoji').textContent='🔍';
+  document.getElementById('toastMsg').textContent=msg.replace(/^[^\s]+ /,'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1200);
+}
+
+// ===================== PAUSE / RESUME =====================
+function pauseGame(){
+  gameRunning=false;
+  if(fallInterval){clearInterval(fallInterval);fallInterval=null;}
+  if(spawnInterval){clearInterval(spawnInterval);spawnInterval=null;}
+}
+
+function resumeGame(){
+  gameRunning=true;
+  const r=ROUNDS[currentRound];
+  startFallLoop(r.rescue.fallSpeed);
+  // Only restart spawn if there are still items queued
+  if(spawnIndex<spawnQueue.length){
+    startSpawnLoop(r);
+  } else {
+    // All spawned — just need fall loop to clear remaining bubbles
+  }
+}
+
+// ===================== ROUND END CHECK =====================
+function checkRoundEnd(){
+  if(roundEndChecked) return;
+  // Round ends when: all spawned AND all active bubbles resolved
+  const allSpawned=spawnIndex>=spawnQueue.length&&spawnInterval===null;
+  const noneActive=activeBubbles.filter(b=>!b.tapped&&!b.escaped).length===0;
+  if(allSpawned&&noneActive){
+    roundEndChecked=true;
+    gameRunning=false;
+    if(fallInterval){clearInterval(fallInterval);fallInterval=null;}
+    setTimeout(()=>completeRound(),600);
+  }
+}
+
+// ===================== SOUND OUT =====================
+function showSoundOut(w){
+  currentSoundWord=w;
+  const base=w.word.slice(0,w.word.length-w.end.length);
+  const ending=w.word.slice(w.word.length-w.end.length);
+  document.getElementById('soundOutWord').innerHTML=base+'<span class="hl">'+ending+'</span>';
+  document.getElementById('soundOutTaps').textContent=w.sounds.length+' sounds — tap each circle!';
+  const cc=document.getElementById('tapCircles'); cc.innerHTML='';
+  w.sounds.forEach(s=>{
+    const c=document.createElement('div'); c.className='tap-circle'; c.textContent=s;
+    c.onclick=()=>{
+      c.classList.add('tapped');
+      speak(s,.55);
+      if(cc.querySelectorAll('.tapped').length===w.sounds.length){
+        document.getElementById('tapInstruction').textContent='🎉 You sounded it out!';
+        setTimeout(()=>speak(w.word,.65),300);
+      }
+    };
+    cc.appendChild(c);
+  });
+  document.getElementById('tapInstruction').textContent='Tap each circle as you say each sound!';
+  document.getElementById('soundOverlay').classList.add('active');
+  setTimeout(()=>speak(w.word,.6),200);
+}
+
+function closeSoundOut(){
+  document.getElementById('soundOverlay').classList.remove('active');
+  currentSoundWord=null;
+  pendingSoundOutWord=null;
+  // Resume if game was paused for sound-out
+  if(!gameRunning&&!roundEndChecked){
+    resumeGame();
+  }
+  // If round was already done, trigger end check
+  if(!gameRunning&&roundEndChecked){
+    // already handled
+  }
+}
+
+// ===================== STREAK BANNER =====================
+function showStreakBanner(count,bonus){
+  const b=document.getElementById('streakBanner');
+  b.textContent='🔥 '+count+' in a row! +'+bonus+' bonus coin'+(bonus>1?'s':'')+'!';
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),1800);
+}
+
+// ===================== TOAST =====================
+function showToast(correct){
+  const t=document.getElementById('toast');
+  const yes=['🎉 Rescued!','⭐ Awesome!','🫧 Caught it!','💪 Got it!','🔥 On fire!','✨ Perfect!'];
+  const no=['🤔 Oops!','💭 That\'s -ng!','👀 Look for -nk!'];
+  const pick=correct?yes[Math.floor(Math.random()*yes.length)]:no[Math.floor(Math.random()*no.length)];
+  t.className=correct?'toast correct':'toast wrong';
+  document.getElementById('toastEmoji').textContent=pick.split(' ')[0];
+  document.getElementById('toastMsg').textContent=pick.split(' ').slice(1).join(' ');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),800);
+}
+
+// ===================== ROUND COMPLETE =====================
+function completeRound(){
+  if(roundCompleteFired) return;
+  roundCompleteFired=true;
+  const r=ROUNDS[currentRound];
+  const totalTargets=r.rescue.targets;
+  totalCorrectAll+=correctInRound; totalWordsAll+=totalTargets;
+  const pct=totalTargets>0?correctInRound/totalTargets:0;
+
+  // Lightning personal best
+  if(r.isLightning){
+    if(personalBest===null||correctInRound>personalBest) personalBest=correctInRound;
+    const jackpot=correctInRound>=8?10:correctInRound>=6?5:2;
+    roundCoins+=jackpot; totalCoins+=jackpot;
+    updateScoreBar();
+
+    document.getElementById('rcIcon').textContent='⚡';
+    document.getElementById('rcTitle').textContent='Lightning Rescue Complete!';
+    document.getElementById('rcStats').innerHTML=`
+      <div class="stat-box"><div class="stat-value">${correctInRound}/${totalTargets}</div><div class="stat-label">Rescued</div></div>
+      <div class="stat-box"><div class="stat-value">🪙 ${roundCoins}</div><div class="stat-label">Coins</div></div>
+      <div class="stat-box"><div class="stat-value">⭐ ${personalBest}</div><div class="stat-label">Best Score</div></div>`;
+    document.getElementById('rcEncouragement').textContent=
+      correctInRound===totalTargets?'PERFECT rescue mission — incredible speed!':'⚡ Lightning rescuer — amazing work!';
+    document.getElementById('rcNextBtn').textContent='🏁 See Final Results';
+    document.getElementById('rcNextBtn').onclick=()=>{
+      document.getElementById('roundComplete').classList.remove('active');
+      showFinalCelebration();
+    };
+    document.getElementById('roundComplete').classList.add('active');
+    launchMiniConfetti();
+    return;
+  }
+
+  document.getElementById('rcIcon').textContent=pct===1?'🌟':pct>=.75?'🎉':'👏';
+  document.getElementById('rcTitle').textContent=ROUNDS[currentRound].name+' Complete!';
+  document.getElementById('rcStats').innerHTML=`
+    <div class="stat-box"><div class="stat-value">${correctInRound}/${totalTargets}</div><div class="stat-label">Rescued</div></div>
+    <div class="stat-box"><div class="stat-value">🪙 ${roundCoins}</div><div class="stat-label">Coins</div></div>
+    <div class="stat-box"><div class="stat-value">🔥 ${bestStreak}</div><div class="stat-label">Best Streak</div></div>`;
+
+  const msgs=[
+    'Your brain is getting stronger with every word!',
+    'Those neural pathways are firing up!',
+    'You are building real reading power!',
+    'Every word you practice makes you sharper!'
+  ];
+  document.getElementById('rcEncouragement').textContent=msgs[Math.floor(Math.random()*msgs.length)];
+
+  if(currentRound<3){
+    roundUnlocked[currentRound+1]=true;
+    if(currentRound===2&&pct<0.8){
+      roundUnlocked[3]=false;
+      document.getElementById('rcNextBtn').textContent='🏁 See Final Results';
+      document.getElementById('rcNextBtn').onclick=()=>{
+        document.getElementById('roundComplete').classList.remove('active');
+        showFinalCelebration();
+      };
+    } else {
+      document.getElementById('rcNextBtn').textContent='Next Round →';
+      document.getElementById('rcNextBtn').onclick=()=>nextRound();
+    }
+  } else {
+    document.getElementById('rcNextBtn').textContent='🏁 See Final Results';
+    document.getElementById('rcNextBtn').onclick=()=>{
+      document.getElementById('roundComplete').classList.remove('active');
+      showFinalCelebration();
+    };
+  }
+
+  document.getElementById('roundComplete').classList.add('active');
+  updateMap();
+  launchMiniConfetti();
+}
+
+function nextRound(){
+  document.getElementById('roundComplete').classList.remove('active');
+  currentRound++;
+  updateMap();
+  showRoundIntro();
+}
+
+// ===================== FINAL CELEBRATION =====================
+function showFinalCelebration(){
+  clearField();
+  const pct=totalWordsAll>0?totalCorrectAll/totalWordsAll:0;
+  const stars=pct>=.95?5:pct>=.85?4:pct>=.7?3:pct>=.5?2:1;
+  document.getElementById('finalStars').textContent='⭐'.repeat(stars)+'☆'.repeat(5-stars);
+  document.getElementById('finalTotalCoins').textContent=totalCoins;
+  document.getElementById('finalMsg').textContent=
+    pct===1?'PERFECT across every round — you are a true Rescue Master! 🫧':
+    pct>=.8?'Incredible rescuing — your pattern recognition is so strong!':
+    'Great effort — every bubble you practice makes your brain more powerful!';
+  document.getElementById('finalStats').innerHTML=`
+    <div class="stat-box"><div class="stat-value">${totalCorrectAll}</div><div class="stat-label">Words Rescued</div></div>
+    <div class="stat-box"><div class="stat-value">${totalWordsAll}</div><div class="stat-label">Total Targets</div></div>
+    <div class="stat-box"><div class="stat-value">${Math.round(pct*100)}%</div><div class="stat-label">Accuracy</div></div>`;
+  document.getElementById('finalCelebration').classList.add('active');
+  document.getElementById('instruction').textContent='🏆 Rescue Master!';
+  document.getElementById('playFieldMsg').style.display='none';
+  launchConfetti();
+}
+
+// ===================== CONFETTI =====================
+function launchConfetti(){
+  const cols=['#1E7A7A','#C09A30','#B85C38','#D6336C','#4CAF50','#2196F3'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=cols[Math.floor(Math.random()*cols.length)];
+    p.style.width=(Math.random()*8+6)+'px';
+    p.style.height=(Math.random()*8+6)+'px';
+    p.style.borderRadius=Math.random()>.5?'50%':'2px';
+    p.style.animation=`confettiFall ${Math.random()*2+1.5}s ease-out ${Math.random()*.5}s forwards`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),4000);
+  }
+}
+function launchMiniConfetti(){
+  const cols=['#C09A30','#1E7A7A','#4CAF50'];
+  for(let i=0;i<25;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=cols[Math.floor(Math.random()*cols.length)];
+    p.style.width=(Math.random()*6+4)+'px';
+    p.style.height=(Math.random()*6+4)+'px';
+    p.style.borderRadius='50%';
+    p.style.animation=`confettiFall ${Math.random()*1.5+1}s ease-out ${Math.random()*.3}s forwards`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),3000);
+  }
+}
+
+// ===================== KEEP COINS =====================
+function keepCoins(){
+  document.getElementById('finalCelebration').classList.remove('active');
+  document.getElementById('savedTotal').textContent=totalCoins;
+  document.getElementById('coinsSaved').classList.add('active');
+  launchConfetti();
+
+    // === SUPABASE HOOK ===
+  const SUPABASE_URL = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+  const _h = {'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
+  fetch(SUPABASE_URL+'/rest/v1/meleah_coin_history',{method:'POST',headers:_h,body:JSON.stringify({amount:totalCoins,reason:'word-rescue'})});
+  fetch(SUPABASE_URL+'/rest/v1/meleah_state?user_id=eq.meleah',{headers:_h})
+    .then(r=>r.json())
+    .then(rows=>fetch(SUPABASE_URL+'/rest/v1/meleah_state?user_id=eq.meleah',{method:'PATCH',headers:_h,body:JSON.stringify({coins_total:(rows[0]?.coins_total||0)+totalCoins})}))
+    .catch(e=>console.log('Will sync later'));
+}
+
+// ===================== CLEAR FIELD =====================
+function clearField(){
+  // Remove all bubble DOM elements
+  const field=document.getElementById('playField');
+  activeBubbles.forEach(b=>{if(b.el&&b.el.parentNode)b.el.remove();});
+  activeBubbles=[];
+  spawnQueue=[];
+  spawnIndex=0;
+}
+
+// ===================== FULL RESET =====================
+function fullReset(){
+  // FIRST: clear coinsSaved screen
+  document.getElementById('coinsSaved').classList.remove('active');
+
+  // Stop all timers
+  if(fallInterval){clearInterval(fallInterval);fallInterval=null;}
+  if(spawnInterval){clearInterval(spawnInterval);spawnInterval=null;}
+
+  // Clear confetti
+  document.querySelectorAll('.confetti-piece').forEach(p=>p.remove());
+
+  // Reset all state
+  currentRound=0; totalCoins=0; totalCorrectAll=0; totalWordsAll=0;
+  roundUnlocked=[true,false,false,false];
+  gameRunning=false; roundEndChecked=false;
+  correctInRound=0; streak=0; bestStreak=0; roundCoins=0;
+  pendingSoundOutWord=null; currentSoundWord=null;
+
+  // Clear field
+  clearField();
+
+  // Reset UI
+  document.getElementById('finalCelebration').classList.remove('active');
+  document.getElementById('soundOverlay').classList.remove('active');
+  document.getElementById('roundComplete').classList.remove('active');
+  document.getElementById('playFieldMsg').textContent='Get ready! 🫧';
+  document.getElementById('playFieldMsg').style.display='block';
+  document.getElementById('rescueCount').textContent='';
+  document.getElementById('personalBestDisplay').textContent='';
+
+  updateMap();
+  updateScoreBar();
+  showRoundIntro();
+}
+
+// ===================== START =====================
+updateMap();
+showRoundIntro();
+</script>
+</body>
+</html>

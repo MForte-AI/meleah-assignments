@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Studio Worksheet 📚</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../print.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --purple: #7C5CBF; --purple-light: #EDE8F8;
+    --gold: #F4A62A; --gold-light: #FEF3D8;
+    --teal: #1E8A8A; --bg: #FFF8F0;
+    --text: #2C2C2C; --muted: #888;
+    --radius: 14px; --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); }
+
+  .worksheet {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* ── Header ── */
+  .ws-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 4px solid var(--purple);
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .ws-title-block h1 {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--purple);
+  }
+  .ws-title-block .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .ws-name-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .ws-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--muted);
+  }
+  .ws-field-line {
+    border-bottom: 2px solid var(--purple);
+    width: 120px;
+    height: 20px;
+  }
+
+  /* Concept badge */
+  .concept-tag {
+    display: inline-block;
+    background: var(--purple-light);
+    color: var(--purple);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+
+  .session-type-banner {
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .session-type-banner.paper { background: #FFF3E0; color: #E65100; border: 2px solid #FFE0B2; }
+  .session-type-banner.interactive { background: #E8F5E9; color: #2E7D32; border: 2px solid #C8E6C9; }
+
+  /* ── Activity block ── */
+  .activity-block {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    border-left: 5px solid var(--purple);
+  }
+  .activity-title { font-size: 20px; font-weight: 900; color: var(--purple); margin-bottom: 8px; }
+  .duration-tag { font-size: 12px; color: var(--muted); font-weight: 700; margin-bottom: 14px; }
+
+  /* ── Word list ── */
+  .word-section-label {
+    font-size: 11px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px;
+  }
+  .word-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .word-box {
+    border: 2px solid var(--purple);
+    border-radius: 10px;
+    padding: 10px 8px;
+    font-size: 17px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--purple);
+    background: var(--purple-light);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Instructions ── */
+  .instructions-label {
+    font-size: 11px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px;
+  }
+  .instructions-block {
+    background: #FAFAFA;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    color: var(--text);
+    border: 1px solid #EEE;
+    margin-bottom: 14px;
+  }
+
+  /* ── Writing practice ── */
+  .write-section {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    border-left: 5px solid var(--teal);
+  }
+  .write-title { font-size: 16px; font-weight: 900; color: var(--teal); margin-bottom: 12px; }
+  .write-prompt { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+  .writing-line { border-bottom: 2px solid #CCC; height: 36px; margin-bottom: 6px; }
+
+  /* ── Coach tips ── */
+  .coach-box {
+    background: var(--gold-light);
+    border-left: 5px solid var(--gold);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .coach-box-title { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin-bottom: 6px; }
+  .coach-box-text { font-size: 13px; font-weight: 600; line-height: 1.7; color: #7A5000; white-space: pre-wrap; }
+
+  /* ── Print button (screen only) ── */
+  .print-bar {
+    background: var(--purple);
+    color: white;
+    text-align: center;
+    padding: 16px;
+    border-radius: var(--radius);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: opacity 0.2s;
+  }
+  .print-bar:hover { opacity: 0.9; }
+
+  /* ── Loading/error ── */
+  .loading { text-align: center; padding: 60px 20px; font-size: 16px; color: var(--muted); }
+  .error-card { background: #FFEAEA; border: 2px solid #E53935; border-radius: var(--radius); padding: 20px; }
+
+  @media print {
+    body { background: white; }
+    .print-bar { display: none; }
+    .activity-block, .write-section { box-shadow: none; border: 1px solid #DDD; }
+  }
+</style>
+</head>
+<body>
+<div class="worksheet">
+  <div class="loading" id="loadingState">⏳ Loading worksheet...</div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://zuzapnckjmyzafblvgrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1emFwbmNram15emFmYmx2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE1MjYsImV4cCI6MjA4Nzk2NzUyNn0.ZasGUhTkmAAzLZWHm1kf2DJWoXSLocHXDGFa1R1zZmo';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function formatDay(day) {
+  const m = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday' };
+  return m[day] || day;
+}
+
+function getDayDate(weekId, day) {
+  const offset = { monday:0, tuesday:1, wednesday:2, thursday:3, friday:4 };
+  const d = new Date(weekId + 'T12:00:00');
+  d.setDate(d.getDate() + (offset[day] || 0));
+  return d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+}
+
+async function loadAndRender() {
+  const params = new URLSearchParams(window.location.search);
+  const weekId = params.get('week');
+  const day    = params.get('day') || 'monday';
+
+  if (!weekId) {
+    document.getElementById('loadingState').innerHTML = '<div class="error-card">No week specified in the URL.</div>';
+    return;
+  }
+
+  try {
+    const [planRes, assignRes] = await Promise.all([
+      db.from('meleah_weekly_plans').select('*').eq('id', weekId).maybeSingle(),
+      db.from('meleah_daily_assignments').select('*').eq('week_id', weekId).eq('day_of_week', day).eq('track', 'reading').maybeSingle(),
+    ]);
+
+    const plan = planRes.data;
+    const rdg  = assignRes.data || {};
+    const isInteractive = ['monday','wednesday'].includes(day);
+    const words = (rdg.word_list || '').split(',').map(w => w.trim()).filter(Boolean);
+    const conceptLine = (plan?.concept_name) ? `FCL Concept ${plan.fcl_concept || ''} — ${plan.concept_name}` : '';
+    const dateStr = getDayDate(weekId, day);
+
+    const html = `
+      <div class="print-bar no-print" onclick="window.print()">🖨️ Print This Worksheet</div>
+
+      <!-- Header -->
+      <div class="ws-header">
+        <div class="ws-title-block">
+          <h1>📚 Reading Studio</h1>
+          <div class="subtitle">${formatDay(day)} · ${dateStr}</div>
+        </div>
+        <div class="ws-name-block">
+          <div class="ws-field">Name: <div class="ws-field-line"></div></div>
+          <div class="ws-field">Date: <div class="ws-field-line"></div></div>
+        </div>
+      </div>
+
+      ${conceptLine ? `<div class="concept-tag">📚 ${esc(conceptLine)}</div>` : ''}
+
+      <!-- Session type banner -->
+      <div class="session-type-banner ${isInteractive ? 'interactive' : 'paper'}">
+        ${isInteractive
+          ? '🖥️ Today is an interactive iPad day — use the activity links from the weekly plan!'
+          : '🖨️ Paper Day — do these activities with Grandma or Dad'}
+      </div>
+
+      <!-- Activity block -->
+      <div class="activity-block">
+        ${rdg.activity_name ? `<div class="activity-title">${esc(rdg.activity_name)}</div>` : '<div class="activity-title">Reading Practice</div>'}
+        ${rdg.duration_min ? `<div class="duration-tag">⏱ About ${rdg.duration_min} minutes</div>` : ''}
+
+        ${words.length ? `
+          <div class="word-section-label">Word List</div>
+          <div class="word-grid">
+            ${words.map(w => `<div class="word-box">${esc(w)}</div>`).join('')}
+          </div>` : ''}
+
+        ${rdg.instructions ? `
+          <div class="instructions-label">Instructions — Coach Reads This</div>
+          <div class="instructions-block">${esc(rdg.instructions)}</div>` : ''}
+      </div>
+
+      <!-- Writing practice -->
+      ${words.length ? `
+        <div class="write-section">
+          <div class="write-title">✏️ Write the Words</div>
+          <div class="write-prompt">Practice writing your favorite words from today's list.</div>
+          ${Array(6).fill('<div class="writing-line"></div>').join('')}
+        </div>` : ''}
+
+      <!-- Coach tips -->
+      ${rdg.coach_tips ? `
+        <div class="coach-box">
+          <div class="coach-box-title">💡 Coach Tips for Grandma &amp; Dad</div>
+          <div class="coach-box-text">${esc(rdg.coach_tips)}</div>
+        </div>` : ''}
+    `;
+
+    document.getElementById('loadingState').style.display = 'none';
+    const content = document.getElementById('content');
+    content.style.display = 'block';
+    content.innerHTML = html;
+    document.title = `📚 ${formatDay(day)} Reading Worksheet — ${weekId}`;
+  } catch(e) {
+    document.getElementById('loadingState').innerHTML = `<div class="error-card">Could not load the worksheet. Check your internet and try again.<br><small>${e.message}</small></div>`;
+  }
+}
+
+loadAndRender();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# Personal/private files
+*.pdf
+*.docx
+*.pages
+*.pptx
+
+# Resource folders (not web files)
+FCL Concepts/
+March/
+Resources/
+
+# Private docs
+MeleahsWorld_ClaudeCode_Spec.md
+Meleahs_Learning_Team_Guide.docx
+Meleahs_Learning_Team_Guide.pages
+Meleah_Reading_Book.docx
+Meleah_Lessons_Week_*.docx
+
+# Claude Code internal files
+.claude/
+
+# Node
+node_modules/
+
+# macOS
+.DS_Store
+**/.DS_Store
