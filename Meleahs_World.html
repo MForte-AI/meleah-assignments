@@ -10,7 +10,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <style>
   :root {
     --purple: #7C5CBF;
@@ -127,6 +126,15 @@
   /* FLYING COINS */
   .coin-fly { position: fixed; font-size: 28px; pointer-events: none; z-index: 9999; animation: flyUp 1.2s ease-out forwards; }
   @keyframes flyUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 60% { transform: translateY(-180px) scale(1.3); opacity: 1; } 100% { transform: translateY(-280px) scale(0.5); opacity: 0; } }
+
+  /* HEART RAIN */
+  .heart-fly { position: fixed; font-size: 32px; pointer-events: none; z-index: 9999; animation: heartFall 2s ease-in forwards; }
+  @keyframes heartFall { 0% { transform: translateY(-40px) rotate(-10deg) scale(0.8); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(110vh) rotate(15deg) scale(1.1); opacity: 0; } }
+  .kindness-msg-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 10000; pointer-events: none; animation: kindFadeInOut 2s ease forwards; }
+  .kindness-msg-inner { background: rgba(255,255,255,0.95); border-radius: 24px; padding: 28px 36px; text-align: center; box-shadow: 0 8px 40px rgba(233,30,99,0.25); }
+  .kindness-msg-inner p { font-size: 28px; font-weight: 900; color: #C2185B; margin: 0; }
+  .kindness-msg-inner span { font-size: 48px; }
+  @keyframes kindFadeInOut { 0% { opacity: 0; transform: scale(0.85); } 20% { opacity: 1; transform: scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: scale(0.95); } }
 
   /* BOTTOM NAV */
   .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #EEE; display: flex; padding: 8px 0 env(safe-area-inset-bottom, 8px); box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 100; }
@@ -396,13 +404,14 @@
     </div>
   </div>
 
-  <!-- Melissa's Tasks -->
-  <div class="section-header"><span class="icon">📋</span> My 3 Things Today</div>
-  <div class="task-grid" id="taskGrid"></div>
-
   <!-- Learning Tracks -->
   <div class="section-header"><span class="icon">📚</span> My Learning Tracks</div>
   <div class="tracks-grid" id="tracksGrid"></div>
+
+  <!-- Acts of Kindness -->
+  <div class="section-header"><span class="icon">❤️</span> Acts of Kindness</div>
+  <div class="todo-grid" id="kindnessGrid"></div>
+  <button class="add-todo-btn" id="addKindnessBtn" onclick="openAddKindness()">+ Add an Act of Kindness</button>
 
   <!-- Meleah's Own To-Dos -->
   <div class="section-header">
@@ -627,8 +636,14 @@
         <div style="font-size:14px;font-weight:700;color:var(--purple)" id="wpFclDocLabel">Click to choose FCL PDF</div>
         <div style="font-size:12px;color:var(--muted);margin-top:4px">Select a PDF from your FCL Concepts folder — helps the AI plan the right activities</div>
       </div>
-      <input type="file" id="wpFclDocInput" accept=".pdf" style="display:none" onchange="wpSelectFclDoc(this)">
+      <input type="file" id="wpFclDocInput" accept=".pdf,.docx" style="display:none" onchange="wpSelectFclDoc(this)">
       <div id="wpFclDocStatus" style="font-size:13px;font-weight:700;color:var(--teal);margin-top:8px;display:none"></div>
+      <div id="wpFclNotesWrap" style="margin-top:10px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted)">Or paste key patterns &amp; words from this concept (for image-based PDFs):</label>
+        <textarea id="wpFclConceptNotes" rows="3" class="input-field" style="margin-top:4px"
+          placeholder="e.g. s-blends: sn, sm, sc, sk, st, sw — snap, slim, scab, skin, step, swim"
+          oninput="wpState._fclConceptNotes = this.value.trim() || null"></textarea>
+      </div>
     </div>
 
     <!-- FCL Concept Number -->
@@ -649,33 +664,42 @@
       </button>
     </div>
 
-    <!-- Decodable Reader -->
+    <!-- Decodable Reader — Two Stories -->
     <div class="input-group" style="margin-top:4px;background:linear-gradient(135deg,#F0EBFF,#E8E0FF);border-radius:16px;padding:18px 16px;border:2px solid #C5B3F0">
       <div style="font-size:15px;font-weight:900;color:#5A3D9E;margin-bottom:4px">📖 This Week's Decodable Reader</div>
-      <p style="font-size:12px;color:#7A6BA8;font-weight:600;margin-bottom:14px;line-height:1.5">Add a custom reader story that matches your FCL concept. It will print at the bottom of the weekly plan — two versions: one with illustration boxes for drawing, one clean for fluency practice.</p>
+      <p style="font-size:12px;color:#7A6BA8;font-weight:600;margin-bottom:14px;line-height:1.5">Upload your FCL/reading docs, enter two story themes, and type 5 vocabulary words. The AI will generate two decodable stories — one per theme.</p>
 
-      <label class="input-label">Story Title</label>
-      <input class="input-field" id="wpReaderTitle" placeholder="e.g. Chef, Mylo, and the Squishy"
-        oninput="wpDebounceSaveReader()">
+      <!-- Reading Practice Documents -->
+      <label class="input-label">📂 Reading Practice Documents (up to 3)</label>
+      <div id="wpReadingDocsZone" style="min-height:36px;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
+      <input type="file" id="wpReadingDocsInput" accept=".pdf" multiple style="display:none" onchange="wpSelectReadingDocs(this)">
+      <button onclick="document.getElementById('wpReadingDocsInput').click()" style="background:#EDE7F6;border:2px dashed #C5B3F0;border-radius:10px;color:#5A3D9E;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;padding:8px 14px;cursor:pointer;width:100%;margin-bottom:4px">+ Add Documents (PDF)</button>
+      <div id="wpReadingDocsStatus" style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px;display:none"></div>
 
-      <label class="input-label" style="margin-top:10px">Phonics Focus</label>
-      <input class="input-field" id="wpReaderPhonics" placeholder="e.g. R &amp; L Blends, Closed &amp; Open Syllables"
-        oninput="wpDebounceSaveReader()">
+      <!-- Story Themes -->
+      <label class="input-label" style="margin-top:6px">Story 1 Theme</label>
+      <input class="input-field" id="wpStoryTheme1" placeholder="e.g. Meleah and her dogs at the park">
 
-      <label class="input-label" style="margin-top:10px">Target Words (comma-separated)</label>
-      <input class="input-field" id="wpReaderWords" placeholder="e.g. gripped, grin, grabbed, clapped, flat, glad"
-        oninput="wpDebounceSaveReader()">
+      <label class="input-label" style="margin-top:10px">Story 2 Theme</label>
+      <input class="input-field" id="wpStoryTheme2" placeholder="e.g. A rainy day baking adventure">
 
-      <label class="input-label" style="margin-top:10px">Story Text</label>
-      <p style="font-size:12px;color:#888;font-weight:600;margin-bottom:6px;line-height:1.5">Type each sentence on its own line. Leave a blank line between pages (2–3 sentences per page).</p>
-      <textarea class="input-field" id="wpReaderStory" rows="14"
-        placeholder="Meleah ran up the steps.&#10;She gripped her big squishy.&#10;&#34;I am so glad!&#34; she sang.&#10;&#10;She ran to Aunt Kariss.&#10;Chef and Mylo ran to her.&#10;Mylo had a big grin.&#10;&#10;Continue adding pages with a blank line between each..."
-        oninput="wpDebounceSaveReader()" style="font-size:14px;line-height:1.9;font-family:'Nunito',sans-serif"></textarea>
+      <!-- Vocabulary Words -->
+      <label class="input-label" style="margin-top:10px">Vocabulary Words for the Week</label>
+      <p style="font-size:12px;color:#888;font-weight:600;margin-bottom:6px">These 5 words will be listed for practice alongside the stories.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+        <input class="input-field" id="wpVocabWord1" placeholder="Word 1" style="margin-bottom:0">
+        <input class="input-field" id="wpVocabWord2" placeholder="Word 2" style="margin-bottom:0">
+        <input class="input-field" id="wpVocabWord3" placeholder="Word 3" style="margin-bottom:0">
+        <input class="input-field" id="wpVocabWord4" placeholder="Word 4" style="margin-bottom:0">
+      </div>
+      <input class="input-field" id="wpVocabWord5" placeholder="Word 5">
 
-      <button onclick="wpGenerateReader()" style="width:100%;margin-top:10px;background:linear-gradient(135deg,#7C5CBF,#5A3D9E);color:white;border:none;border-radius:12px;padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer">✨ Generate Reader Story with AI</button>
-      <div id="wpReaderAiStatus" style="font-size:13px;font-weight:700;color:#5A3D9E;margin-top:6px;text-align:center;display:none"></div>
-      <button class="action-btn" style="margin-top:8px;width:100%;background:#5A3D9E" onclick="wpSaveReader()">💾 Save Reader to Plan</button>
-      <div id="wpReaderSaved" style="display:none;font-size:13px;font-weight:800;color:#2E7D32;margin-top:6px;text-align:center">✓ Reader saved to this week's plan!</div>
+      <!-- Generate -->
+      <button onclick="wpGenerateTwoStories()" style="width:100%;margin-top:10px;background:linear-gradient(135deg,#7C5CBF,#5A3D9E);color:white;border:none;border-radius:12px;padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer">✨ Generate This Week's Stories</button>
+      <div id="wpStoriesAiStatus" style="font-size:13px;font-weight:700;color:#5A3D9E;margin-top:6px;text-align:center;display:none"></div>
+      <div id="wpStoriesPreview" style="display:none;margin-top:8px;font-size:13px;font-weight:700;color:#5A3D9E"></div>
+      <button class="action-btn" style="margin-top:8px;width:100%;background:#5A3D9E" onclick="wpSaveStories()">💾 Save Stories to Plan</button>
+      <div id="wpStoriesSaved" style="display:none;font-size:13px;font-weight:800;color:#2E7D32;margin-top:6px;text-align:center">✓ Stories saved to this week's plan!</div>
     </div>
 
     <!-- AI Auto-Generate -->
@@ -765,6 +789,41 @@
     </div>
     <p style="font-size:13px;color:var(--teal);font-weight:700;margin-bottom:16px">🪙 You earn 2 coins when you check it off!</p>
     <button class="action-btn" style="width:100%;padding:16px;font-size:17px;border-radius:16px" onclick="saveNewTodo()">Add it! ✨</button>
+  </div>
+</div>
+
+<!-- ═══ ADD KINDNESS SHEET ═══ -->
+<div class="sheet-overlay" id="addKindnessSheet" onclick="closeSheetIfBg(event,'addKindnessSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Acts of Kindness ❤️</h2>
+    <p class="sub">What kind thing did you do today?</p>
+    <div class="emoji-picker" id="kindnessEmojiPicker"></div>
+    <div class="input-group">
+      <label class="input-label">What did you do?</label>
+      <input class="input-field" id="kindnessTextInput" placeholder="e.g. I helped my sister" style="font-size:17px;padding:14px 16px"
+        onkeydown="if(event.key==='Enter')saveNewKindness()">
+    </div>
+    <button class="action-btn" style="width:100%;padding:16px;font-size:17px;border-radius:16px;background:linear-gradient(135deg,#E91E8C,#C2185B)" onclick="saveNewKindness()">Add it! ❤️</button>
+  </div>
+</div>
+
+<!-- ═══ KINDNESS REFLECTION SHEET ═══ -->
+<div class="sheet-overlay" id="kindnessReflectionSheet" onclick="closeSheetIfBg(event,'kindnessReflectionSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 style="color:#C2185B">Tell me your story! 💛</h2>
+    <p class="sub">You just did something amazing. Write about it!</p>
+    <div class="input-group" style="margin-bottom:12px">
+      <label class="input-label">What did you do?</label>
+      <textarea class="journal-textarea" id="kindnessReflectWhat" placeholder="Describe what you did..." style="min-height:70px"></textarea>
+    </div>
+    <div class="input-group">
+      <label class="input-label">How did it make them feel or react?</label>
+      <textarea class="journal-textarea" id="kindnessReflectFeel" placeholder="How did they react? What did they say?" style="min-height:70px"></textarea>
+    </div>
+    <button class="action-btn" style="width:100%;padding:16px;font-size:17px;border-radius:16px;background:linear-gradient(135deg,#E91E8C,#C2185B);margin-bottom:8px" onclick="saveKindnessReflection()">Save My Story 💛</button>
+    <button onclick="closeSheet('kindnessReflectionSheet');render()" style="width:100%;background:none;border:none;color:var(--muted);font-size:14px;font-weight:700;padding:8px;cursor:pointer">Skip for now</button>
   </div>
 </div>
 
@@ -899,6 +958,7 @@ const DEFAULT = {
     plan:    { done: false, streak: 0, coins: 5  },
   },
   myTodos: [], // { id, emoji, text, done, coins: 2 }
+  myKindness: [], // { id, emoji, text, done, week_id }
   goals: {
     quick: { name: 'Movie Night 🍿', target: 50,  earned: 0 },
     dream: { name: 'NYC Trip ✈️',   target: 500, earned: 0 },
@@ -917,13 +977,14 @@ const DEFAULT = {
 // ─── Load from Supabase (falls back to localStorage) ───────
 async function loadFromSupabase() {
   try {
-    const [stateRes, tasksRes, todosRes, tracksRes, journalRes, histRes] = await Promise.all([
+    const [stateRes, tasksRes, todosRes, tracksRes, journalRes, histRes, kindnessRes] = await Promise.all([
       db.from('meleah_state').select('*').eq('user_id', USER_ID).maybeSingle(),
       db.from('meleah_tasks').select('*').eq('user_id', USER_ID).order('sort_order'),
       db.from('meleah_todos').select('*').eq('user_id', USER_ID).eq('done', false),
       db.from('meleah_tracks').select('*').eq('user_id', USER_ID),
       db.from('meleah_journal').select('*').eq('user_id', USER_ID).order('created_at', {ascending:false}).limit(50),
       db.from('meleah_coin_history').select('*').eq('user_id', USER_ID).order('timestamp', {ascending:false}).limit(30),
+      db.from('meleah_kindness').select('*').eq('user_id', USER_ID).eq('done', false),
     ]);
     const st = JSON.parse(JSON.stringify(DEFAULT));
     if (stateRes.data) {
@@ -942,6 +1003,7 @@ async function loadFromSupabase() {
     }
     if (tasksRes.data?.length)  st.tasks   = tasksRes.data.map(t => ({id:t.id,emoji:t.emoji,name:t.name,coins:t.coins,done:t.done}));
     if (todosRes.data?.length)  st.myTodos = todosRes.data.map(t => ({id:t.id,emoji:t.emoji,text:t.text,done:t.done,coins:t.coins}));
+    if (kindnessRes.data?.length) st.myKindness = kindnessRes.data.map(k => ({id:k.id,emoji:k.emoji,text:k.text,done:k.done,week_id:k.week_id}));
     if (tracksRes.data?.length) tracksRes.data.forEach(t => { if (st.tracks[t.track_key]) st.tracks[t.track_key] = {done:t.done,streak:t.streak,coins:t.coins}; });
     if (journalRes.data?.length) st.journal = journalRes.data.map(e => ({date:e.entry_date,dateDisplay:e.date_display,mood:e.mood,moodEmoji:e.mood_emoji,text:e.entry_text||''}));
     if (histRes.data?.length)   st.history = histRes.data.map(h => ({task:h.reason,emoji:'✅',coins:h.amount,date:new Date(h.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short'})}));
@@ -1229,6 +1291,7 @@ function render() {
   renderCoins();
   renderTasks();
   renderTracks();
+  renderKindness();
   renderMyTodos();
   renderGoalsPreview();
   renderRewards();
@@ -1610,6 +1673,146 @@ function saveNewTodo() {
   closeSheet('addTodoSheet');
   render();
   if (isOnline) db.from('meleah_todos').insert({id:newId,user_id:USER_ID,emoji:selectedEmoji,text,done:false,coins:2,date_added:todayStr()}).then().catch(()=>{});
+}
+
+// ════════════════════════════════════════════
+// ACTS OF KINDNESS
+// ════════════════════════════════════════════
+const KINDNESS_EMOJIS = ['❤️','🤝','🌸','💐','🫂','🎁','😊','🌟','🙏','💌','🐾','🍪','🌈','💛','🌻','🎀','🦋','🌺','💝','🫶'];
+let selectedKindnessEmoji = '❤️';
+let _kindnessCompleteId = null;
+
+function renderKindness() {
+  const items = state.myKindness || [];
+  const grid = document.getElementById('kindnessGrid');
+  if (!grid) return;
+  if (!items.length) {
+    grid.innerHTML = '<p style="color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:16px 0">Nothing yet! Tap below to add an act of kindness. ❤️</p>';
+    return;
+  }
+  grid.innerHTML = '';
+  items.forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'todo-card';
+    d.innerHTML = `
+      <div class="todo-check" onclick="completeKindness('${item.id}')">${item.emoji}</div>
+      <div class="todo-body" style="flex:1" onclick="completeKindness('${item.id}')">
+        <div class="todo-text">${item.text}</div>
+        <div class="todo-coins" style="color:#C2185B">tap to mark done ❤️</div>
+      </div>
+      <button class="todo-del" onclick="deleteKindness('${item.id}')">✕</button>
+    `;
+    grid.appendChild(d);
+  });
+}
+
+function openAddKindness() {
+  selectedKindnessEmoji = '❤️';
+  const picker = document.getElementById('kindnessEmojiPicker');
+  picker.innerHTML = KINDNESS_EMOJIS.map(e =>
+    `<div class="emoji-opt${e === selectedKindnessEmoji ? ' selected' : ''}" onclick="selectKindnessEmoji('${e}')">${e}</div>`
+  ).join('');
+  document.getElementById('kindnessTextInput').value = '';
+  openSheet('addKindnessSheet');
+  setTimeout(() => document.getElementById('kindnessTextInput').focus(), 400);
+}
+
+function selectKindnessEmoji(e) {
+  selectedKindnessEmoji = e;
+  document.querySelectorAll('#kindnessEmojiPicker .emoji-opt').forEach(el => el.classList.toggle('selected', el.textContent === e));
+}
+
+function saveNewKindness() {
+  const text = document.getElementById('kindnessTextInput').value.trim();
+  if (!text) return;
+  if (!state.myKindness) state.myKindness = [];
+  const newId = genId();
+  const weekId = wpGetMonday(new Date());
+  const newItem = { id: newId, emoji: selectedKindnessEmoji, text, done: false, week_id: weekId };
+  state.myKindness.push(newItem);
+  saveState();
+  closeSheet('addKindnessSheet');
+  render();
+  if (isOnline) db.from('meleah_kindness').insert({id:newId, user_id:USER_ID, emoji:selectedKindnessEmoji, text, done:false, week_id:weekId}).then().catch(()=>{});
+}
+
+function completeKindness(id) {
+  const item = (state.myKindness || []).find(k => k.id === id);
+  if (!item) return;
+  item.done = true;
+  state.myKindness = (state.myKindness || []).filter(k => k.id !== id);
+  _kindnessCompleteId = id;
+  saveState();
+  if (isOnline) db.from('meleah_kindness').update({done:true}).eq('id', id).then().catch(()=>{});
+  // Launch hearts then open reflection
+  launchHearts();
+  setTimeout(() => {
+    document.getElementById('kindnessReflectWhat').value = item.text;
+    document.getElementById('kindnessReflectFeel').value = '';
+    openSheet('kindnessReflectionSheet');
+  }, 2200);
+}
+
+function deleteKindness(id) {
+  state.myKindness = (state.myKindness || []).filter(k => k.id !== id);
+  saveState();
+  render();
+  if (isOnline) db.from('meleah_kindness').delete().eq('id', id).then().catch(()=>{});
+}
+
+function launchHearts() {
+  // Big "You're so kind!" message
+  const overlay = document.createElement('div');
+  overlay.className = 'kindness-msg-overlay';
+  overlay.innerHTML = '<div class="kindness-msg-inner"><span>❤️</span><p>You\'re so kind!</p></div>';
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 2200);
+  // Rain hearts
+  for (let i = 0; i < 14; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'heart-fly';
+      el.textContent = ['❤️','💛','💜','💖','💗'][Math.floor(Math.random()*5)];
+      el.style.left = (5 + Math.random() * 88) + '%';
+      el.style.top = '-40px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2100);
+    }, i * 100);
+  }
+}
+
+function saveKindnessReflection() {
+  const what = document.getElementById('kindnessReflectWhat').value.trim();
+  const feel = document.getElementById('kindnessReflectFeel').value.trim();
+  closeSheet('kindnessReflectionSheet');
+  render();
+  // Save reflection back to kindness row
+  if (isOnline && _kindnessCompleteId) {
+    db.from('meleah_kindness').update({reflection_what:what, reflection_feel:feel}).eq('id', _kindnessCompleteId).then().catch(()=>{});
+  }
+  // Also save to journal so it shows in Journal tab
+  if (!state.journal) state.journal = [];
+  const d = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const entryText = `I did something kind: ${what}${feel ? '. It made them feel: ' + feel : ''}.`;
+  const entry = {
+    date: todayStr(),
+    dateDisplay: `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`,
+    mood: 'kind',
+    moodEmoji: '❤️',
+    text: entryText,
+  };
+  state.journal.unshift(entry);
+  saveState();
+  if (isOnline) {
+    db.from('meleah_journal').insert({
+      id: genId(), user_id:USER_ID, entry_date:entry.date, date_display:entry.dateDisplay,
+      mood:entry.mood, mood_emoji:entry.moodEmoji, entry_text:entry.text
+    }).then().catch(()=>{});
+  }
+  _kindnessCompleteId = null;
+  setTimeout(() => celebrate('❤️', 'So kind!', 'Your story is saved in your journal. Meleah, you have such a big heart! 💛'), 300);
 }
 
 // ════════════════════════════════════════════
@@ -2169,8 +2372,9 @@ let wpState = {
   assignments: {},      // keyed by day → reading/story/plan data
   baseUrl: '',
   dirty: false,
-  _fclDocText: null,    // extracted PDF text from selected FCL document
-  _fclDocName: null,    // selected FCL PDF filename
+  _fclDocText: null,    // extracted PDF/.docx text from selected FCL document
+  _fclDocName: null,    // selected FCL filename
+  _fclConceptNotes: null, // manual fallback when PDF is image-based
   _lastAiData: null,    // raw AI response (needed for publish if not yet saved)
 };
 
@@ -2233,10 +2437,13 @@ async function wpLoadWeek(weekId) {
   // Reset FCL doc selection state for new week
   wpState._fclDocText = null;
   wpState._fclDocName = null;
+  wpState._fclConceptNotes = null;
   const fclLabel  = document.getElementById('wpFclDocLabel');
   const fclStatus = document.getElementById('wpFclDocStatus');
-  if (fclLabel)  fclLabel.textContent = 'Click to choose FCL PDF';
+  const fclNotes  = document.getElementById('wpFclConceptNotes');
+  if (fclLabel)  fclLabel.textContent = 'Click to choose FCL PDF or lesson plan (.docx)';
   if (fclStatus) { fclStatus.textContent = ''; fclStatus.style.display = 'none'; }
+  if (fclNotes)  fclNotes.value = '';
 }
 
 // ─── Render week header ───────────────────────
@@ -2256,134 +2463,155 @@ function wpRenderWeekHeader() {
   if (teacherNotesEl) teacherNotesEl.value = wpState.plan?.teacher_notes || '';
   const additionalNotesEl = document.getElementById('wpAdditionalNotes');
   if (additionalNotesEl) additionalNotesEl.value = wpState.plan?.additional_notes || '';
-  wpLoadReaderForm(wpState.plan);
+  wpLoadStoriesForm(wpState.plan);
 }
 
 
-// ─── Decodable Reader ─────────────────────────
-let _wpReaderTimer = null;
+// ─── Decodable Reader — Two Stories ───────────
 
-function wpDebounceSaveReader() {
-  clearTimeout(_wpReaderTimer);
-  _wpReaderTimer = setTimeout(wpSaveReader, 1800);
+function wpLoadStoriesForm(plan) {
+  if (!plan?.reader_story_json) return;
+  let d = null;
+  try { d = JSON.parse(plan.reader_story_json); } catch(e) { return; }
+  if (!d) return;
+  // Support new format {vocab_words, story1, story2} only
+  if (!d.story1 && !d.story2) return; // old single-story format — skip
+  const v = d.vocab_words || [];
+  ['wpVocabWord1','wpVocabWord2','wpVocabWord3','wpVocabWord4','wpVocabWord5'].forEach((id, i) => {
+    const el = document.getElementById(id); if (el) el.value = v[i] || '';
+  });
+  const t1 = document.getElementById('wpStoryTheme1'); if (t1) t1.value = d.story1?.theme || '';
+  const t2 = document.getElementById('wpStoryTheme2'); if (t2) t2.value = d.story2?.theme || '';
+  // Show preview titles
+  if (d.story1 || d.story2) {
+    const prev = document.getElementById('wpStoriesPreview');
+    if (prev) {
+      prev.style.display = 'block';
+      prev.innerHTML = `<div style="background:#E8F5E9;border-radius:10px;padding:10px 12px">
+        ${d.story1 ? `<div>📖 Story 1: <b>${d.story1.title}</b></div>` : ''}
+        ${d.story2 ? `<div style="margin-top:4px">📖 Story 2: <b>${d.story2.title}</b></div>` : ''}
+      </div>`;
+    }
+  }
 }
 
-async function wpSaveReader() {
-  if (!isOnline || !wpState.weekId) { showToast('Connect first to save reader'); return; }
+async function wpSaveStories() {
+  if (!isOnline || !wpState.weekId) { showToast('Connect first to save stories'); return; }
 
-  const title   = (document.getElementById('wpReaderTitle')?.value || '').trim();
-  const phonics = (document.getElementById('wpReaderPhonics')?.value || '').trim();
-  const words   = (document.getElementById('wpReaderWords')?.value || '').trim();
-  const text    = document.getElementById('wpReaderStory')?.value || '';
+  const vocab = ['wpVocabWord1','wpVocabWord2','wpVocabWord3','wpVocabWord4','wpVocabWord5']
+    .map(id => (document.getElementById(id)?.value || '').trim())
+    .filter(Boolean);
+  const theme1 = (document.getElementById('wpStoryTheme1')?.value || '').trim();
+  const theme2 = (document.getElementById('wpStoryTheme2')?.value || '').trim();
 
-  // Split text into pages (blank line separator) → each page is array of sentences
-  const pages = text.split(/\n[ \t]*\n/)
-    .map(block => block.split('\n').map(l => l.trim()).filter(Boolean))
-    .filter(p => p.length > 0);
+  // Merge with any existing generated story data
+  const existing = wpState._lastStoriesData || {};
+  const payload = {
+    vocab_words: vocab,
+    story1: existing.story1 ? { ...existing.story1, theme: theme1 } : (theme1 ? { theme: theme1 } : null),
+    story2: existing.story2 ? { ...existing.story2, theme: theme2 } : (theme2 ? { theme: theme2 } : null),
+  };
 
-  if (!title && !pages.length) return;
+  if (!vocab.length && !payload.story1 && !payload.story2) return;
 
-  const json = JSON.stringify({ title, phonics_focus: phonics, target_words: words, pages });
-
+  const json = JSON.stringify(payload);
   const { error } = await db.from('meleah_weekly_plans')
     .update({ reader_story_json: json, updated_at: new Date().toISOString() })
     .eq('id', wpState.weekId);
 
   if (!error) {
     if (wpState.plan) wpState.plan.reader_story_json = json;
-    const saved = document.getElementById('wpReaderSaved');
+    const saved = document.getElementById('wpStoriesSaved');
     if (saved) { saved.style.display = 'block'; setTimeout(() => { saved.style.display = 'none'; }, 2500); }
   } else {
-    showToast('⚠️ Could not save reader — check Supabase column (see instructions)');
-    console.warn('reader save error', error);
+    showToast('⚠️ Could not save stories');
+    console.warn('stories save error', error);
   }
 }
 
-function wpLoadReaderForm(plan) {
-  if (!plan?.reader_story_json) return;
-  let reader = null;
-  try { reader = JSON.parse(plan.reader_story_json); } catch(e) { return; }
-  if (!reader) return;
-
-  const t = document.getElementById('wpReaderTitle');
-  const p = document.getElementById('wpReaderPhonics');
-  const w = document.getElementById('wpReaderWords');
-  const s = document.getElementById('wpReaderStory');
-  if (t) t.value = reader.title || '';
-  if (p) p.value = reader.phonics_focus || '';
-  if (w) w.value = reader.target_words || '';
-  if (s && reader.pages) s.value = reader.pages.map(pg => pg.join('\n')).join('\n\n');
-}
-
-async function wpGenerateReader() {
-  const fclNum          = (document.getElementById('wpFclNumber')?.value || '').trim();
-  const additionalNotes = (document.getElementById('wpAdditionalNotes')?.value || '').trim();
-  const statusEl        = document.getElementById('wpReaderAiStatus');
+async function wpGenerateTwoStories() {
+  const fclNum  = (document.getElementById('wpFclNumber')?.value || '').trim();
+  const theme1  = (document.getElementById('wpStoryTheme1')?.value || '').trim();
+  const theme2  = (document.getElementById('wpStoryTheme2')?.value || '').trim();
+  const statusEl = document.getElementById('wpStoriesAiStatus');
 
   if (!fclNum) { showToast('Enter the FCL Concept number first (above)'); return; }
+  if (!theme1 || !theme2) { showToast('Enter both Story Themes before generating'); return; }
 
   const instrSnippet = state.aiInstructions ? `About Meleah: ${state.aiInstructions}\n\n` : '';
-  const hintsSnippet = additionalNotes ? `Story hints from teacher: ${additionalNotes}\n\n` : '';
+  const docsText = (wpState._readingDocTexts || []).join('\n\n---\n\n').slice(0, 4000);
+  const docsSnippet = docsText ? `READING PRACTICE REFERENCE DOCS:\n${docsText}\n\n` : '';
 
-  const readerPrompt = `You are an expert Orton-Gillingham dyslexia reading tutor. Write a short decodable reader story for Meleah, age 9.
+  const prompt = `You are an expert Orton-Gillingham dyslexia reading tutor creating two decodable reader stories for Meleah, age 9, learning FCL Concept #${fclNum}.
 
-${instrSnippet}FCL Concept this week: #${fclNum}
-${hintsSnippet}STORY RULES:
-- 5 to 7 pages total, 2 to 3 sentences per page
-- Use ONLY words fully decodable with FCL Concept #${fclNum} patterns (closed syllables, open syllables, and any blends/patterns taught up to that concept)
-- Default characters: Meleah, Chef the dog, Mylo the dog, squishy fidgets — use characters or themes from the story hints above if provided
-- Meleah is high-energy, joyful, loves to laugh, sing, and dance — her personality should shine
+${instrSnippet}${docsSnippet}STORY RULES (apply to BOTH stories):
+- 5 to 7 pages total per story, 2 to 3 sentences per page
+- Use ONLY words decodable with FCL Concept #${fclNum} patterns from the reference docs above
+- Default characters: Meleah, Chef the dog, Mylo the dog, squishy fidgets
+- Meleah is high-energy, joyful, loves to laugh, sing, and dance
 - Every sentence must be 10 words or fewer
-- Story must have a clear beginning, middle, and end
+- Each story must have a clear beginning, middle, and end
 - Tone: warm, silly, fun, and celebratory
-- Do NOT use any words with un-taught patterns (no sneaky hard words!)
+- Do NOT use any words with un-taught phonics patterns
+- Do NOT include vocabulary words inside the stories (they are listed separately for practice)
+
+Story 1 theme: ${theme1}
+Story 2 theme: ${theme2}
 
 Return ONLY valid JSON, no markdown, no extra text:
 {
-  "title": "Short fun title",
-  "phonics_focus": "FCL Concept ${fclNum} — brief pattern description",
-  "target_words": "word1, word2, word3, word4, word5, word6, word7",
-  "pages": [
-    ["Sentence.", "Sentence.", "Sentence."],
-    ["Sentence.", "Sentence.", "Sentence."],
-    ["Sentence.", "Sentence.", "Sentence."],
-    ["Sentence.", "Sentence.", "Sentence."],
-    ["Sentence.", "Sentence.", "Sentence."]
-  ]
+  "story1": {
+    "title": "Short fun title",
+    "phonics_focus": "FCL Concept ${fclNum} — brief pattern description",
+    "pages": [
+      ["Sentence.", "Sentence.", "Sentence."],
+      ["Sentence.", "Sentence.", "Sentence."],
+      ["Sentence.", "Sentence.", "Sentence."],
+      ["Sentence.", "Sentence.", "Sentence."],
+      ["Sentence.", "Sentence.", "Sentence."]
+    ]
+  },
+  "story2": {
+    "title": "Short fun title",
+    "phonics_focus": "FCL Concept ${fclNum} — brief pattern description",
+    "pages": [
+      ["Sentence.", "Sentence.", "Sentence."],
+      ["Sentence.", "Sentence.", "Sentence."],
+      ["Sentence.", "Sentence.", "Sentence."],
+      ["Sentence.", "Sentence.", "Sentence."],
+      ["Sentence.", "Sentence.", "Sentence."]
+    ]
+  }
 }`;
 
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '✨ Writing reader story… (10–15 seconds)'; statusEl.style.color = '#5A3D9E'; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '✨ Writing two stories… (15–25 seconds)'; statusEl.style.color = '#5A3D9E'; }
 
   try {
     const res = await fetch('/api/generate-plan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: readerPrompt }),
+      body: JSON.stringify({ prompt }),
     });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Server error ${res.status}`);
-    }
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `Server error ${res.status}`); }
     const result = await res.json();
-    const reader = wpExtractJson(result.content?.[0]?.text || '');
+    const data = wpExtractJson(result.content?.[0]?.text || '');
+    if (!data?.story1 || !data?.story2) throw new Error('AI did not return two stories — try again');
 
-    // Populate the form
-    wpLoadReaderForm({ reader_story_json: JSON.stringify(reader) });
-
-    // Auto-save to Supabase if we have a week
-    if (wpState.weekId && isOnline) {
-      const readerJson = JSON.stringify(reader);
-      await db.from('meleah_weekly_plans')
-        .update({ reader_story_json: readerJson, updated_at: new Date().toISOString() })
-        .eq('id', wpState.weekId)
-        .then().catch(e => console.warn('reader save error', e));
-      if (wpState.plan) wpState.plan.reader_story_json = readerJson;
+    // Store generated data and update preview
+    wpState._lastStoriesData = data;
+    const prev = document.getElementById('wpStoriesPreview');
+    if (prev) {
+      prev.style.display = 'block';
+      prev.innerHTML = `<div style="background:#E8F5E9;border-radius:10px;padding:10px 12px">
+        <div>📖 Story 1: <b>${data.story1.title}</b></div>
+        <div style="margin-top:4px">📖 Story 2: <b>${data.story2.title}</b></div>
+        <div style="margin-top:6px;font-size:12px;color:var(--muted)">Tap 💾 Save Stories to Plan to save them.</div>
+      </div>`;
     }
-
-    if (statusEl) { statusEl.textContent = '✅ Reader story ready! Review it below, then save.'; statusEl.style.color = '#2E7D32'; }
+    if (statusEl) { statusEl.textContent = '✅ Both stories ready! Tap Save to add them to the plan.'; statusEl.style.color = '#2E7D32'; }
+    if (wpState.weekId && isOnline) await wpSaveStories();
   } catch(e) {
-    console.error('wpGenerateReader error', e);
+    console.error('wpGenerateTwoStories error', e);
     if (statusEl) { statusEl.textContent = '❌ ' + (e.message || 'Something went wrong'); statusEl.style.color = '#E53935'; }
   }
 }
@@ -2673,7 +2901,9 @@ async function wpGenerateWithAI() {
   const fclNum          = document.getElementById('wpFclNumber')?.value       || '';
   const teacherNotes    = document.getElementById('wpTeacherNotes')?.value    || '';
   const additionalNotes = document.getElementById('wpAdditionalNotes')?.value || '';
-  const fclDocSnippet   = wpState._fclDocText ? wpState._fclDocText.slice(0, 2000) : null;
+  const fclDocSnippet   = wpState._fclDocText
+    ? wpState._fclDocText.slice(0, 2000)
+    : (wpState._fclConceptNotes || null);
   if (!fclNum) {
     showToast('Enter the FCL Concept number first');
     return;
@@ -2807,36 +3037,114 @@ function wpLoadPdfJs(callback) {
   document.head.appendChild(s);
 }
 
-// ─── FCL PDF file selection + text extraction ─
+// ─── FCL document selection + text extraction (.pdf or .docx) ─
 async function wpSelectFclDoc(input) {
   const file = input.files[0];
   if (!file) return;
   const status = document.getElementById('wpFclDocStatus');
   const label  = document.getElementById('wpFclDocLabel');
-  if (status) { status.style.display = 'block'; status.textContent = '⏳ Reading PDF...'; }
+  if (status) { status.style.display = 'block'; status.textContent = '⏳ Reading document...'; }
   wpState._fclDocName = file.name;
   if (label) label.textContent = '📄 ' + file.name;
 
-  wpLoadPdfJs(async () => {
+  if (file.name.toLowerCase().endsWith('.docx')) {
+    // Use mammoth.js to extract text from Word documents
     try {
-      const ab  = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
-      let text = '';
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page    = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        text += content.items.map(item => item.str).join(' ') + '\n';
-      }
-      wpState._fclDocText = text.trim() || null;
+      const ab = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer: ab });
+      wpState._fclDocText = result.value.trim() || null;
       if (status) status.textContent = wpState._fclDocText
-        ? `✅ Loaded: ${file.name} (${pdf.numPages} pages)`
-        : `⚠️ PDF is image-based — AI will use concept number only`;
+        ? `✅ Loaded: ${file.name}`
+        : `⚠️ Could not read document — try pasting key words below`;
     } catch(e) {
       wpState._fclDocText = null;
-      if (status) status.textContent = `⚠️ Could not read PDF — AI will use concept number only`;
+      if (status) status.textContent = `⚠️ Could not read document — try pasting key words below`;
     }
+  } else {
+    // Use PDF.js for PDF files
+    wpLoadPdfJs(async () => {
+      try {
+        const ab  = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+        let text = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page    = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map(item => item.str).join(' ') + '\n';
+        }
+        wpState._fclDocText = text.trim() || null;
+        if (status) status.textContent = wpState._fclDocText
+          ? `✅ Loaded: ${file.name} (${pdf.numPages} pages)`
+          : `⚠️ PDF is image-based — paste key patterns in the box below`;
+      } catch(e) {
+        wpState._fclDocText = null;
+        if (status) status.textContent = `⚠️ Could not read PDF — paste key patterns in the box below`;
+      }
+    });
+  }
+  input.value = '';
+}
+
+// ─── Reading docs multi-file selection ────────
+async function wpSelectReadingDocs(input) {
+  const files = Array.from(input.files || []).slice(0, 3);
+  if (!files.length) return;
+  const statusEl = document.getElementById('wpReadingDocsStatus');
+  const zone = document.getElementById('wpReadingDocsZone');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '⏳ Reading documents...'; }
+  if (!wpState._readingDocTexts) wpState._readingDocTexts = [];
+  if (!wpState._readingDocNames) wpState._readingDocNames = [];
+
+  wpLoadPdfJs(async () => {
+    for (const file of files) {
+      try {
+        const ab  = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+        let text = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page    = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map(item => item.str).join(' ') + '\n';
+        }
+        const trimmed = text.trim().slice(0, 1500);
+        if (trimmed) {
+          wpState._readingDocTexts.push(trimmed);
+          wpState._readingDocNames.push(file.name);
+        }
+      } catch(e) {
+        wpState._readingDocNames.push(file.name + ' (unreadable)');
+      }
+    }
+    // Render name chips
+    if (zone) {
+      zone.innerHTML = wpState._readingDocNames.map((name, i) =>
+        `<span style="background:#D4BBFF;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;color:#5A3D9E;display:inline-flex;align-items:center;gap:4px">
+          📄 ${name}
+          <span onclick="wpRemoveReadingDoc(${i})" style="cursor:pointer;color:#7C5CBF;font-size:14px;line-height:1">✕</span>
+        </span>`
+      ).join('');
+    }
+    if (statusEl) statusEl.textContent = `✅ Loaded: ${wpState._readingDocNames.filter(n => !n.includes('unreadable')).length} document(s)`;
   });
   input.value = '';
+}
+
+function wpRemoveReadingDoc(i) {
+  if (wpState._readingDocTexts) wpState._readingDocTexts.splice(i, 1);
+  if (wpState._readingDocNames) wpState._readingDocNames.splice(i, 1);
+  const zone = document.getElementById('wpReadingDocsZone');
+  const statusEl = document.getElementById('wpReadingDocsStatus');
+  if (zone) zone.innerHTML = (wpState._readingDocNames || []).map((name, j) =>
+    `<span style="background:#D4BBFF;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;color:#5A3D9E;display:inline-flex;align-items:center;gap:4px">
+      📄 ${name}
+      <span onclick="wpRemoveReadingDoc(${j})" style="cursor:pointer;color:#7C5CBF;font-size:14px;line-height:1">✕</span>
+    </span>`
+  ).join('');
+  if (statusEl) {
+    const count = (wpState._readingDocNames || []).filter(n => !n.includes('unreadable')).length;
+    statusEl.textContent = count ? `✅ Loaded: ${count} document(s)` : '';
+    statusEl.style.display = count ? 'block' : 'none';
+  }
 }
 
 // ─── Save all 5 days + story studio from AI data ─
