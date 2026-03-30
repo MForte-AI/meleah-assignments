@@ -649,7 +649,7 @@
     <!-- FCL Concept Number -->
     <div class="input-group">
       <label class="input-label">📚 FCL Concept Number This Week (26–45)</label>
-      <input class="input-field" id="wpFclNumber" type="number" min="26" max="45" placeholder="e.g. 38" style="max-width:100px;display:inline-block">
+      <input class="input-field" id="wpFclNumber" type="number" min="26" max="45" placeholder="e.g. 38" style="max-width:100px;display:inline-block" oninput="wpAutoFillConceptNotes(this.value)" onchange="wpAutoFillConceptNotes(this.value)">
     </div>
 
     <!-- Additional Notes for this week -->
@@ -915,6 +915,82 @@ const FCL_CONCEPTS = {
   43: 'y as a vowel (ī sound)',
   44: '-ng / -nk endings',
   45: '-ck / -k endings',
+};
+
+// Detailed phonics notes auto-filled into the FCL concept box when a concept number is entered
+const FCL_CONCEPT_NOTES = {
+  26: `Concept 26 — qu / kw patterns
+Patterns: "q" is always followed by "u" — together they make the /kw/ sound
+Words: quit, quiz, quack, queen, quick, quilt, quest, squid, quip, liquid
+Teacher tip: Remind Meleah that q never goes alone — it always brings u with it!`,
+
+  27: `Concept 27 — Long vowels: ā, ē, ī, ō, yōō
+Patterns: open syllable (go, me, hi, so, be) and VCe / silent-e (cake, time, home, cute, Pete)
+Words: go, me, he, no, be, cake, time, home, cute, pine, cape, note, tube, these
+Teacher tip: Open syllable = vowel at the end of a syllable, so it "opens the door" and says its name. Silent e reaches back over the consonant to make the vowel long.`,
+
+  34: `Concept 34 — Compound Words
+Pattern: two complete words joined together to make one new word
+Words: sunlight, into, cannot, himself, birthday, cupcake, popcorn, sandbox, notebook, bedtime
+Teacher tip: Each part keeps its own spelling. Have Meleah find the two smaller words hiding inside the big word before she reads it.`,
+
+  35: `Concept 35 — Closed/Open Syllables: VCCV and VCV patterns
+VCCV: split between the two consonants → rab-bit, hap-pen, sis-ter, din-ner, but-ter
+VCV: try open first (ti-ger, ba-con, mo-ment); if it sounds wrong, close it (cab-in, sev-en, fin-ish)
+Words: rabbit, happen, sister, tiger, bacon, seven, cabin, moment, dinner, finish, butter, pilot
+Teacher tip: Tap syllables on the arm. Mark the vowels first, then find the VCCV or VCV pattern to know where to divide.`,
+
+  36: `Concept 36 — Beginning R Blends (br, cr, dr, fr, gr, pr, tr)
+Blends: br, cr, dr, fr, gr, pr, tr
+Words: brag, crib, drip, frog, grip, prim, trip, brush, crab, drop, fresh, grab, press, trend, grin, prank
+Teacher tip: Both consonant sounds must be heard — no vowel sneaks between them. Try sky-writing each blend before adding the vowel.`,
+
+  37: `Concept 37 — Beginning L Blends (bl, cl, fl, gl, pl, sl)
+Blends: bl, cl, fl, gl, pl, sl
+Words: black, clam, flat, glad, plan, slim, block, cluck, flip, glum, plop, slug, blend, clock, flag, plus
+Teacher tip: The /l/ slides right into the vowel. Practice tapping the two consonants together as one unit, then add the vowel.`,
+
+  38: `Concept 38 — Beginning S Blends (sc, sk, sl, sm, sn, sp, st, sw)
+Blends: sc, sk, sl, sm, sn, sp, st, sw
+Words: scab, skip, slim, smug, snip, spin, step, swim, scan, skull, slap, smash, snap, spot, stem, swift
+Teacher tip: /s/ blends smoothly with the next consonant — no extra vowel sound between them. Use Red/White/Green cards: blend card on red, vowel on white.`,
+
+  39: `Concept 39 — Beginning W Blends (tw, qu)
+Blends: tw (/tw/), qu (/kw/ — always together)
+Words: twin, twist, twelve, twig, twirl, twice, tweet, tweed, quilt, quick, queen, quiz, squid, squint
+Teacher tip: tw = two sounds glued together at the start. qu = /kw/ — remind Meleah that q never travels without u.`,
+
+  40: `Concept 40 — Ending T Blends (ct, ft, lt, nt, pt, st, xt)
+Blends: ct, ft, lt, nt, pt, st, xt
+Words: act, left, melt, dent, wept, best, next, fact, soft, salt, hint, kept, rest, text, lift, bent
+Teacher tip: Don't drop the final consonant — say both ending sounds clearly. Arm-blend: tap elbow for first consonant, wrist for second.`,
+
+  41: `Concept 41 — Ending L Blends (ld, lf, lk, lm, lp, lt, lve)
+Blends: ld, lf, lk, lm, lp, lt, lve
+Words: bold, elf, milk, film, help, melt, twelve, cold, shelf, silk, calm, gulp, felt, solve, hold, wolf
+Teacher tip: The /l/ blends into the final consonant — both sounds must be heard. Watch for the -lve ending where the e is silent (twelve, solve, twelve).`,
+
+  42: `Concept 42 — Remaining Ending Blends (nd, nk, mp, sk, sp, st)
+Blends: nd, nk, mp, sk, sp, st
+Words: band, tank, jump, desk, crisp, nest, bond, pink, stomp, risk, clasp, last, blend, trunk, wisp, dust
+Teacher tip: Practice each blend family with word sorts (nd words vs nk words vs mp words). Tapping helps — one tap per consonant at the end.`,
+
+  43: `Concept 43 — y as a vowel (ī sound at end of one-syllable words)
+Pattern: y at end of a one-syllable word says /ī/ (like the long i)
+Words: my, by, fly, try, cry, dry, sky, why, fry, spy, sly, pry, shy, ply
+Teacher tip: Single-syllable word + y at the end = long /ī/. Compare to multi-syllable words where y says /ē/ (happy, funny) — that comes later!`,
+
+  44: `Concept 44 — -ng / -nk endings
+-ng: nasal /ŋ/ hum at end (ring, sing, long, strong)
+-nk: /ŋk/ — nasal hum + /k/ (pink, bank, trunk, think)
+Words: ring, sing, long, strong, thing, king, song, pink, bank, trunk, think, drink, stink, blank, clang, chunk
+Teacher tip: -ng = hold the nasal hum and stop. -nk = add a /k/ pop after the hum. Use nonsense words too: zang, fink, blung — helps Meleah hear the pattern.`,
+
+  45: `Concept 45 — -ck / -k endings
+Rule: use -ck right after a short vowel in a one-syllable word (duck, black, stick, rock, deck)
+Use -k after a consonant or long vowel (milk, bark, week, book, peak)
+Words: duck, black, stick, rock, pack, deck, kick, lock, truck, snack, milk, bark, week, book, silk, peak
+Teacher tip: "Short vowel right before? Use -ck. Anything else? Use -k." Red/White/Green drill cards work great here.`,
 };
 
 // ════════════════════════════════════════════
@@ -2392,7 +2468,18 @@ function wpFormatWeekLabel(weekId) {
   return 'Week of ' + d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
 }
 
-// ─── Init: called by renderMelissaPanel ──────
+/// ─── Auto-fill FCL concept notes when concept number is typed ─
+function wpAutoFillConceptNotes(val) {
+  const num = parseInt(val);
+  if (!num || !FCL_CONCEPT_NOTES[num]) return;
+  const notesEl = document.getElementById('wpFclConceptNotes');
+  if (notesEl) {
+    notesEl.value = FCL_CONCEPT_NOTES[num];
+    wpState._fclConceptNotes = FCL_CONCEPT_NOTES[num];
+  }
+}
+
+/ ─── Init: called by renderMelissaPanel ──────
 async function wpInit() {
   if (!wpState.weekId) {
     wpState.weekId = wpGetMonday(new Date());
